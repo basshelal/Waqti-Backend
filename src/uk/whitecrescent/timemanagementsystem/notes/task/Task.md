@@ -1,3 +1,4 @@
+# Task
 
 A Task is the smallest unit, a Task can contain properties that add conditions or Constraints to its existence, these properties can also help structure and categorize the Task in terms of a whole system.
 
@@ -8,13 +9,15 @@ A constraint is basically a set of conditions that allow a Task to exist or die,
 
 So, a Task has a lifecycle. 
 * A Task can be existing, meaning it is currently active and can be killed.
-* A Task can be killed, meaning it is done and cannot be done again, this occurs when the Constraints have been achieved.
+* A Task can be killed, meaning it is done and cannot be done again, this occurs when the Constraints have been achieved (Note the default Constraint)
+* A Task can be failed, meaning it has not been killed but can never be killed anymore because of a failable Constraint.
+* A Task can be self creating, this has to do with having Preset Tasks, the PresetTask can never be killed or failed, it exists indefinitely, however its only purpose is to create instances of itself which are killable and failable.
 
 A Task may or may not have these constraints and can in fact never end existence and never have a fixed time of start existence (other than creation time). In such a case there MUST be the killing constraint that the user checks off this Task, the default constraint.
 
 Constraints should at some point be made by the user or at least added to. Extra constraints may include a checklist or another Task (this has to do with Task ordering, for example, you are not allowed to kill Task "wash dishes" before the Task "have lunch" is killed) this creates an ordering or dependence on Tasks
 
-Tasks can be ordered and can dependent or independent of one another
+Tasks can be ordered and can dependent or independent of one another, this is a Constraint, a Task N cannot be killed unless Task M is killed first.
 
 A Task does not require a time or duration, a task can therefore be menial, in fact this could be a feature, creating powerful categories that will allow tasks to have properties of a super Task, for example the Task "Return Books" can have the properties of the category "Short Tasks" which would be the category of Tasks that don't have a duration attached to them but are definitely short, this would require a duration range feature, since predicting task duration is not easy, this would be similar to having some sort of inheritance or sharing of properties
 
