@@ -4,7 +4,7 @@ A Task is the smallest, independent unit in the Time Management System.
 
 A Task may have Properties that add information to it, an example Property would be the duration Property that describes the duration of time of the Task. All Properties are optional. See [Property](Property.md).
 
-## The Task Lifecycle
+## The Task Lifecycle 
 
 All Tasks have a lifecycle. A Task may be in any of the following lifecycle states.
 
