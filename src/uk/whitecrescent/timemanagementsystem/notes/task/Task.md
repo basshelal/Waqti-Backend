@@ -1,9 +1,22 @@
 # Task
 
-A Task is the smallest unit, a Task can contain properties that add conditions or Constraints to its existence, these properties can also help structure and categorize the Task in terms of a whole system.
+A Task is the smallest, independent unit in the Time Management System.
 
-A Task can consist of a fixed / scheduled time or a duration or both, these are Properties/ Constraints.
-We call these Constraints and Constraints are not just limited to being time-based.
+A Task may have Properties that add information to it, an example Property would be the duration Property that describes the duration of time of the Task. All Properties are optional. See [Property](Property.md).
+
+## The Task Lifecycle
+
+All Tasks have a lifecycle. A Task may be in any of the following lifecycle states.
+
+* Unborn (Not yet relevant, cannot be killed this only applies if it has a scheduled time otherwise it is existing immediately after creation)
+* Existing (Currently relevant, now killable)
+* Waiting (to be killed) (No longer relevant but not yet killed, this only applies to tasks that have a relevance time window)
+* Failed (Not killed and no longer able to be killed, no longer needed)
+* Killed (No longer relevant and no longer needed)
+* Reborn (At a point when it is killable it becomes no longer killable until another time, this happens because of delegation)
+* Immortal (Self Replicating, non killable and non existent its only purpose is to create copies of itself)
+
+## Old Notes
 
 A constraint is basically a set of conditions that allow a Task to exist or die, so a fixed time Task will "begin existing" at the time that it is schedules to occur, if it has a duration then it ends existence after that duration (or another fixed time). By default Tasks will die when the user kills it (checks it off).
 
@@ -33,8 +46,17 @@ There will exist categories which can help for filtering and analytics.
 
 There may exist an importance level, this will be how important / urgent a Task is so that when 2 Tasks collide the important one is shown over the less important one (but with a warning of collision and override)
 
-There will exist routines, a set of Tasks together to form a specific larger Task
+There will exist Routines, a set of Tasks together to form a specific larger Task
 
 There will exist Habits / Goals, these are different from both Macros and Routines
 
 There will also be macros, a set of Tasks that form like a skeleton/ framework for the day
+
+## Examples
+
+## Old Notes (Not Needed)
+
+A Task can contain properties that add Constraints to its existence, these properties can also help structure and categorize the Task in terms of a whole system.
+
+A Task can consist of a fixed / scheduled time or a duration or both, these are Properties/ Constraints.
+We call these Constraints and Constraints are not just limited to being time-based.

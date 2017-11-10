@@ -7,3 +7,20 @@ Time Blocks do not have to follow natural time units, there can exist pre-define
 Time blocks can be a range and not and exact number, for example a Time Block Range called "Short" can be user-defined to be between 10-30 minutes. This can then be set as a time based property of the Task. A Time Block can be defined using a natural time unit or even other Time Units, for example a "Full Pomodoro" could include 4 Units of "Pomodoro", which itself is defined using natural units.
 
 For any time we can use the new Java Time API in `java.time.*`
+
+### Todoist features:
+* Projects, like larger scale categories, similar to Lists or Boards in Trello, in a Project you have similar and related Tasks and they can all be viewed by date in the Main / Inbox Project
+* Labels are like custom categories or tags
+* Priority levels
+* Parent Tasks
+* Comments
+* Reminders
+* Tasks can be delegated to a later time, so instead of being failed they can age
+* All kinds of sorting, filtering and data analytics
+* Search feature
+
+Templates so this is like a Skeleton.
+
+Recurring Tasks
+
+Task Collections
