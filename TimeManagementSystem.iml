@@ -18,5 +18,7 @@
         <SOURCES />
       </library>
     </orderEntry>
+    <orderEntry type="library" name="no.tornado:tornadofx:1.7.12" level="application" />
+    <orderEntry type="library" name="com.jfoenix:jfoenix:1.10.0" level="application" />
   </component>
 </module>
