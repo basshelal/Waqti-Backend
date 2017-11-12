@@ -12,6 +12,8 @@ Duration: This Property represents the estimated amount of Time / Time duration 
 
 Aged: This Property represents if a Task has aged (been reborn) and for how long and how many times. This Property cannot be set by the user.
 
-Child Tasks: This Property would be the list of Child Tasks that this Task has, by default the Task has zero Child Tasks
+Failed Time: 
+
+SubTasks: This Property would be the list of SubTasks that this Task has, by default the Task has zero SubTasks
 
 ## Examples
