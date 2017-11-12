@@ -8,6 +8,10 @@ Time blocks can be a range and not and exact number, for example a Time Block Ra
 
 For any time we can use the new Java Time API in `java.time.*`
 
+We should have a timer in the app
+
+Tasks can exist in pairs or groups, this would be a Routine or not necessarily
+
 ### Todoist features:
 * Projects, like larger scale categories, similar to Lists or Boards in Trello, in a Project you have similar and related Tasks and they can all be viewed by date in the Main / Inbox Project
 * Labels are like custom categories or tags

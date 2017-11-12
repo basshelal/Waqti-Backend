@@ -2,33 +2,38 @@
 
 A Task is the smallest, independent unit in the Time Management System.
 
-A Task may have Properties that add information to it, an example Property would be the duration Property that describes the duration of time of the Task. All Properties are optional. See [Property](Property.md).
+A Task may have Properties that add information to it, an example Property would be the duration Property that describes the duration of time of the Task. All Properties are optional.
 
-## The Task Lifecycle 
+## The Task Lifecycle
 
 All Tasks have a lifecycle. A Task may be in any of the following lifecycle states.
 
 * Unborn (Not yet relevant, cannot be killed this only applies if it has a scheduled time otherwise it is existing immediately after creation)
 * Existing (Currently relevant, now killable)
-* Waiting (to be killed) (No longer relevant but not yet killed, this only applies to tasks that have a relevance time window)
 * Failed (Not killed and no longer able to be killed, no longer needed)
+* Sleeping (Is no longer killable until it will be existing again, this happens because of delegation, we say the Task has Aged since it has been delegated and will be reborn into existence)
 * Killed (No longer relevant and no longer needed)
-* Reborn (At a point when it is killable it becomes no longer killable until another time, this happens because of delegation)
+
 * Immortal (Self Replicating, non killable and non existent its only purpose is to create copies of itself)
 
-## Old Notes
+Notes on the Task lifecycle:
 
-A constraint is basically a set of conditions that allow a Task to exist or die, so a fixed time Task will "begin existing" at the time that it is schedules to occur, if it has a duration then it ends existence after that duration (or another fixed time). By default Tasks will die when the user kills it (checks it off).
+* If a Parent Task has been killed then its Child Tasks are all killed as well, provided all Constraints are met. Constraints of Child Tasks should by definition be Constraints of the Parent Task.
+* A Task becomes killable when it is in the Existing state and all its Constraints are met. If there exists a Constraint of the Task that is not met then the task is not killable despite being Existing.
+* A Task is failable when it has a Constraint that can be failed and the Task is currently Existing as well.
+
+## Blueprint Tasks (Self Replicating Tasks)
+
+A Blueprint Task is a Task that exists only to create copies of itself that are normal Tasks.
+A Blueprint Task therefore is always in the Immortal state.
+
+## Old Notes
 
 So, a Task has a lifecycle. 
 * A Task can be existing, meaning it is currently active and can be killed.
 * A Task can be killed, meaning it is done and cannot be done again, this occurs when the Constraints have been achieved (Note the default Constraint)
 * A Task can be failed, meaning it has not been killed but can never be killed anymore because of a failable Constraint.
 * A Task can be self creating, this has to do with having Preset Tasks, the PresetTask can never be killed or failed, it exists indefinitely, however its only purpose is to create instances of itself which are killable and failable.
-
-A Task may or may not have these constraints and can in fact never end existence and never have a fixed time of start existence (other than creation time). In such a case there MUST be the killing constraint that the user checks off this Task, the default constraint.
-
-Constraints should at some point be made by the user or at least added to. Extra constraints may include a checklist or another Task (this has to do with Task ordering, for example, you are not allowed to kill Task "wash dishes" before the Task "have lunch" is killed) this creates an ordering or dependence on Tasks
 
 Tasks can be ordered and can dependent or independent of one another, this is a Constraint, a Task N cannot be killed unless Task M is killed first.
 
@@ -53,10 +58,3 @@ There will exist Habits / Goals, these are different from both Macros and Routin
 There will also be macros, a set of Tasks that form like a skeleton/ framework for the day
 
 ## Examples
-
-## Old Notes (Not Needed)
-
-A Task can contain properties that add Constraints to its existence, these properties can also help structure and categorize the Task in terms of a whole system.
-
-A Task can consist of a fixed / scheduled time or a duration or both, these are Properties/ Constraints.
-We call these Constraints and Constraints are not just limited to being time-based.
