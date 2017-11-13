@@ -162,5 +162,3 @@ There will exist Routines, a set of Tasks together to form a specific larger Tas
 There will exist Habits / Goals, these are different from both Macros and Routines
 
 There will also be macros, a set of Tasks that form like a skeleton/ framework for the day
-
-## Examples
