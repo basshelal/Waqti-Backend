@@ -36,6 +36,7 @@ Projects / Boards could be like Boards in Kanban, there could be a feature to ha
 
 Boards can be left for a little later, not a necessary feature but a good one to take care of early
 
+A Task can be paired or merged to another, this can be considered a delegation, so they both become a Task Group
 
 ### Todoist features:
 * Projects, like larger scale categories, similar to Lists or Boards in Trello, in a Project you have similar and related Tasks and they can all be viewed by date in the Main / Inbox Project
