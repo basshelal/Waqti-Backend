@@ -38,6 +38,16 @@ Boards can be left for a little later, not a necessary feature but a good one to
 
 A Task can be paired or merged to another, this can be considered a delegation, so they both become a Task Group
 
+There will exist Routines, a set of Tasks together to form a specific larger Task
+
+There will exist Habits / Goals, these are different from both Macros and Routines
+
+There will also be macros, a set of Tasks that form like a skeleton/ framework for the day
+
+A Task can be failed, then delegated? But it will say Failed and how many times? This seems like it defeats the purpose of being Failable but we can consider it maybe.
+
+We can say that we "push" a Task, since it has been Failed, this is delegation for Failed Tasks, this (I think) is no different than regular delegation
+
 ### Todoist features:
 * Projects, like larger scale categories, similar to Lists or Boards in Trello, in a Project you have similar and related Tasks and they can all be viewed by date in the Main / Inbox Project
 * Labels are like custom categories or tags
