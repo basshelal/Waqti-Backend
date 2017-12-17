@@ -117,20 +117,24 @@ An example of this would be the following Task:
 
 This task is in the Immortal state since it is a Blueprint Task, it cannot exist, and is not failable nor killable. Its sole purpose is to create copies of itself that are regular Tasks.
 
-
 ### Notes on the Task lifecycle:
 
 * If a SuperTask has been killed then its SubTasks are all killed as well, provided all Constraints are met. Constraints of SubTasks should by definition be Constraints of the SuperTask (this should be a selectable option, to Constrain the SuperTask to its SubTasks, if not Constrained and the SuperTask is killed the SubTasks will be either independent Tasks or killed as well)
 * A Task becomes killable when it is in the Existing state and all its Constraints are met. If there exists a Constraint of the Task that is not met then the task is not killable despite being Existing.
 
+## Other Task Notes
+
 ### Killable
+
+A Task is killable when all its Constraints are met and it has not yet been failed if it is failable
 
 ### Failable
 
 A Task is failable when it has a Constraint that can be failed and the Task is currently Existing as well.
 
-## Blueprint/ Template Tasks (Self Replicating Tasks)
+### Blueprint/ Template Tasks (Self Replicating Tasks)
 
 A Blueprint Task is a Task that exists only to create copies of itself that are normal Tasks.
+
 A Blueprint Task therefore is always in the Immortal state.
 
