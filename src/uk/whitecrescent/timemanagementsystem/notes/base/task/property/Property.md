@@ -26,6 +26,8 @@ Note that many if not most of these Properties can be Constraints.
 
 * Priority: A Customizable way of representing the Priority of a Task, this would allow for more important Tasks to be highlighted and be shown over less important Tasks, this would be a Collision, when 2 or more Tasks take the same time period. If this is the case then there will be a Collision Warning and the Task with the higher priority will be shown, if the Tasks have equal priority then we call this a Strong Collision, this needs to be solved by the user.
 
+* Description:
+
 ### Other Internal Properties
 
 * Blueprint: Shows whether this Task is a Blueprint Task or not, this should disallow other Properties from existing as a result (but maybe not).

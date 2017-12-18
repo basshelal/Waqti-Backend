@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<board>
+    <list title="Today">
+
+        <tuple title="Weigh in, breakfast and multivitamins"
+               count="3" duration="30 minutes">
+
+            <task title="Weigh in">
+                <properties>
+                    <description value="Weigh yourself today before having and food or drink"/>
+                    <label value="Health and Fitness"/>
+                    <optional value="true"/>
+                    <constraints>
+                        <!--
+                         This Task is constrained by being before Breakfast, if Breakfast is killed before this one
+                         then this Task is failed, but Breakfast does not necessarily have to come after this one,
+                         especially since this Task is optional
+                         -->
+                        <task_constraint before="Breakfast"/>
+                    </constraints>
+                </properties>
+            </task>
+
+            <task title="Breakfast">
+                <properties>
+                    <description value="Breakfast of eggs and chicken with coffee"/>
+                    <scheduled_time value="08:00"/>
+                    <duration value="30 minutes"/>
+                    <label value="Health and Fitness"/>
+                </properties>
+            </task>
+
+            <task title="Take multivitamins">
+                <properties>
+                    <description value="Take all supplements and multivitamins"/>
+                    <constraints>
+                        <task_constraint after="Breakfast"/>
+                    </constraints>
+                </properties>
+            </task>
+
+        </tuple>
+
+        <tuple title="Shower, shave, wash face, brush teeth, cut nails"
+               count="5" duration="60 minutes">
+
+            <task title="Shave">
+                <properties>
+                    <description value="Shave face"/>
+                    <label value="Personal Care"/>
+                    <duration value="15 minutes"/>
+                    <optional value="true"/>
+                    <constraints>
+                        <task_constraint before="Shower"/>
+                        <!--
+                        Meaning if this is done then Shower should come after it but more importantly,
+                        this cannot be done after Shower is done
+                         -->
+                    </constraints>
+                </properties>
+            </task>
+
+            <task title="Shower">
+                <properties>
+                    <description value="Cold shower for cleanliness and revitalization"/>
+                    <scheduled_time value="08:30"/>
+                    <duration value="30 minutes"/>
+                    <label value="Personal Care"/>
+                    <priority value="High"/>
+                </properties>
+            </task>
+
+            <tuple title="Wash face and brush teeth">
+                <task title="Wash face">
+                    <properties>
+                        <description value="Wash face with daily face scrub"/>
+                        <label value="Personal Care"/>
+                    </properties>
+                </task>
+
+                <task title="Brush teeth">
+                    <properties>
+                        <description value="Brush teeth with mouthwash"/>
+                        <label value="Personal Care"/>
+                        <constraints>
+                            <task_constraint after="Wash face"/>
+                        </constraints>
+                    </properties>
+                </task>
+            </tuple>
+
+            <task title="Cut nails">
+                <properties>
+                    <description value="Cut fingernails and toenails"/>
+                    <label value="Personal Care"/>
+                    <optional value="true"/>
+                    <duration value="15 minutes"/>
+                    <constraints>
+                        <task_constraint after="Shower"/>
+                    </constraints>
+                </properties>
+            </task>
+
+        </tuple>
+
+        <task title="Exercise">
+            <properties>
+                <description value="Exercise doing sit ups and cardiovascular activities"/>
+                <scheduled_time value="09:00"/>
+                <label value="Health and Fitness"/>
+                <priority value="Medium"/>
+                <duration value="10 minutes"/>
+            </properties>
+        </task>
+
+        <task title="Meditate">
+            <properties>
+                <duration value="15 minutes"/>
+                <description value="Unguided meditation for relaxation and mind clarity"/>
+                <label value="Health and Fitness"/>
+                <priority value="High"/>
+            </properties>
+        </task>
+
+        <task title="Listen to music">
+            <properties>
+                <description value="Listen to relaxing music to be happy and start the day off right"/>
+                <label value="Music"/>
+                <duration value="30 minutes"/>
+                <optional value="true"/>
+            </properties>
+        </task>
+
+        <anonymous_task>
+            <!-- The Properties that this anonymous Task must adhere to -->
+            <restrictive_properties>
+                <labels>
+                    <label value="University"/>
+                    <label value="Software Development"/>
+                </labels>
+            </restrictive_properties>
+            <!-- The Properties added by the user -->
+            <properties>
+                <scheduled_time value="10:00"/>
+                <priority value="Very High"/>
+                <constraints>
+                    <duration value="4 Work Units"/>
+                </constraints>
+            </properties>
+        </anonymous_task>
+
+        <task title="Go to Costa and work on Time management System">
+            <properties>
+                <labels>
+                    <label value="Software Development"/>
+                    <label value="Social"/>
+                </labels>
+                <scheduled_time value="14:00"/>
+                <constraints>
+                    <task_constraint after="Continue Studying CS-250"/>
+                    <target value="Finish the Collections ideas"/>
+                </constraints>
+            </properties>
+        </task>
+
+        <moment title="Sunset" time="16:21"/>
+
+        <task title="Self Improvement">
+            <properties>
+                <description value="Watch John Sonmez videos"/>
+                <duration value="1 hour"/>
+                <priority value="Medium"/>
+                <label value="Self Improvement"/>
+                <constraints>
+                    <task_constraint after="Continue Studying CS-250"/>
+                </constraints>
+            </properties>
+        </task>
+
+        <tuple title="Meditate and hair care">
+
+            <task title="Hair Care">
+                <properties>
+                    <description value="Minoxidil on hair to avoid further hair loss and promote hair growth"/>
+                    <duration value="10 minutes"/>
+                    <label value="Personal Care"/>
+                    <habit value="true"/>
+                </properties>
+            </task>
+
+            <task title="Meditate">
+                <properties>
+                    <description value="Guided meditation using HeadSpace app"/>
+                    <priority value="High"/>
+                    <duration value="10 minutes"/>
+                    <label value="Health and Fitness"/>
+                    <habit value="true"/>
+                    <constraints>
+                        <task_constraint title="Hair Care"/>
+                    </constraints>
+                </properties>
+            </task>
+
+        </tuple>
+
+        <tuple title="Journal and planning">
+
+            <task title="Journal">
+                <properties>
+                    <description value="Write today's journal entry"/>
+                    <duration value="15 minutes"/>
+                    <label value="Personal"/>
+                    <priority value="High"/>
+                    <scheduled_time value="23:00"/>
+                    <habit value="true"/>
+                </properties>
+            </task>
+
+            <task title="Planning">
+                <properties>
+                    <description value="Plan tomorrow's day"/>
+                    <duration value="10 minutes"/>
+                    <priority value="Very High"/>
+                    <label value="Personal"/>
+                    <habit value="true"/>
+                </properties>
+            </task>
+
+        </tuple>
+
+    </list>
+</board>
+

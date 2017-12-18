@@ -48,6 +48,16 @@ A Task can be failed, then delegated? But it will say Failed and how many times?
 
 We can say that we "push" a Task, since it has been Failed, this is delegation for Failed Tasks, this (I think) is no different than regular delegation
 
+Moments are significant points in time, things like "Sunset" or other things that just happen, not requiring the user to take any action, so not a Task, but an important point in time
+
+Targets are things that enforce the SMART goals, specifically the M, measurable, the Target is a Constraint used to check progress of the Task, this is user based, so the user can check off this Constraint even if it has not been done, discipline and honesty are very nice things you know
+
+There should before and after Task Constraints, meaning a Task N can only be checked off if an optional Task was done, also, Task M must be done if optional Task N was done, this enforces coupling between Tasks if desired, a strong feature of Tuples
+
+We can bound slots to anonymous Tasks of certain Properties, an example of this is basically at 16:00 a Task with either the label of "Software Development" or "University" must be done, nothing else, so we can bound this time slot to an anonymous Task that fits this criteria or accept a true Task that fits such criteria. We need to explain what bounded and unbounded time or slots means.
+
+A Routine can be a template Tuple?
+
 ### Todoist features:
 * Projects, like larger scale categories, similar to Lists or Boards in Trello, in a Project you have similar and related Tasks and they can all be viewed by date in the Main / Inbox Project
 * Labels are like custom categories or tags

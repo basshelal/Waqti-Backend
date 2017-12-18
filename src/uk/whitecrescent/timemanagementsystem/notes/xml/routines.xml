@@ -1,0 +1,82 @@
+<routines>
+
+    <!-- This is kind of wrong, we'll fix this, see the Routine notes -->
+    <routine title="Morning Routine"
+             count="8" duration="105 minutes" habit="true">
+
+        <task title="Breakfast">
+            <properties>
+                <description value="Breakfast of eggs and chicken with coffee"/>
+                <scheduled_time value="08:00"/>
+                <duration value="30 minutes"/>
+                <label value="Health and Fitness"/>
+            </properties>
+        </task>
+
+        <task title="Take multivitamins">
+            <properties>
+                <description value="Take all supplements and multivitamins"/>
+                <constraints>
+                    <task_constraint title="Breakfast"/>
+                </constraints>
+            </properties>
+        </task>
+
+        <task title="Shower">
+            <properties>
+                <description value="Cold shower for cleanliness and revitalization"/>
+                <scheduled_time value="08:30"/>
+                <duration value="30 minutes"/>
+                <label value="Personal Care"/>
+                <priority value="High"/>
+            </properties>
+        </task>
+
+        <task title="Wash face">
+            <properties>
+                <description value="Wash face with daily face scrub"/>
+                <label value="Personal Care"/>
+            </properties>
+        </task>
+
+        <task title="Brush teeth">
+            <properties>
+                <description value="Brush teeth with mouthwash"/>
+                <label value="Personal Care"/>
+                <constraints>
+                    <task_constraint title="Wash face"/>
+                </constraints>
+            </properties>
+        </task>
+
+        <task title="Exercise">
+            <properties>
+                <description value="Exercise doing sit ups and cardiovascular activities"/>
+                <scheduled_time value="09:00"/>
+                <label value="Health and Fitness"/>
+                <priority value="Medium"/>
+                <duration value="10 minutes"/>
+            </properties>
+        </task>
+
+        <task title="Meditate">
+            <properties>
+                <duration value="15 minutes"/>
+                <description value="Unguided meditation for relaxation and mind clarity"/>
+                <label value="Health and Fitness"/>
+                <priority value="High"/>
+            </properties>
+        </task>
+
+        <task title="Listen to music">
+            <properties>
+                <description value="Listen to relaxing music to be happy and start the day off right"/>
+                <label value="Music"/>
+                <duration value="30 minutes"/>
+                <optional value="true"/>
+            </properties>
+        </task>
+
+    </routine>
+
+</routines>
