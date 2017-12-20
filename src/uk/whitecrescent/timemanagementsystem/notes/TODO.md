@@ -12,8 +12,6 @@
 
 * Do Task Aging
 
-* Rename Blueprint Task to something a little better like Template Task, this is the Self Replicating Task which is Immortal
-
 * Properties categorization, meaning we should categorize Properties internally for better understanding and separation of concerns
 
 * Need to set what Properties for a Task are by default if not defined (at least in the xml)

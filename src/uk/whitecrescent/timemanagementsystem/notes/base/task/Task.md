@@ -132,7 +132,7 @@ A Task is killable when all its Constraints are met and it has not yet been fail
 
 A Task is failable when it has a Constraint that can be failed and the Task is currently Existing as well.
 
-### Blueprint/ Template Tasks (Self Replicating Tasks)
+### Template Tasks (Self Replicating Tasks)
 
 A Blueprint Task is a Task that exists only to create copies of itself that are normal Tasks.
 
