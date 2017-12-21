@@ -1,8 +1,5 @@
 package uk.whitecrescent.timemanagementsystem.code
 
-import java.time.Duration
-import java.time.LocalDateTime
-
 abstract class Property(val value: Any, val task: Task) {
 
     override fun equals(other: Any?): Boolean {
@@ -18,17 +15,6 @@ abstract class Property(val value: Any, val task: Task) {
     }
 
 }
-
-abstract class Constraint(constraint: Any, task: Task): Property(constraint, task) {
-
-}
-
-class TaskTitle(var title: String, task: Task) : Property(title, task)
-
-class TaskTime(var time: LocalDateTime, task: Task) : Property(time, task)
-
-class TaskDuration(var duration: Duration, task: Task) : Property(duration, task)
-
 class TaskPriority(var priority: String, task: Task) : Property(priority, task)
 
 class TaskLabel(var label: String, task: Task) : Property(label, task)

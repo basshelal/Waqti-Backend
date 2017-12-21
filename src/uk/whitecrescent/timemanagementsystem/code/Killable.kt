@@ -4,8 +4,6 @@ interface Killable {
 
     var isKillable: Boolean
 
-    fun kill() {
-
-    }
+    fun kill()
 
 }

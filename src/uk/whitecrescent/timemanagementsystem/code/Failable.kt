@@ -4,9 +4,7 @@ interface Failable{
 
     var isFailable: Boolean
 
-    fun fail() {
-
-    }
+    fun fail()
 
 
 }

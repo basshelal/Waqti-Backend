@@ -1,44 +1,56 @@
 package uk.whitecrescent.timemanagementsystem.test
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import uk.whitecrescent.timemanagementsystem.code.DEFAULT_PRIORITY
+import uk.whitecrescent.timemanagementsystem.code.Priority
 import uk.whitecrescent.timemanagementsystem.code.Task
 import uk.whitecrescent.timemanagementsystem.code.TaskState
-import uk.whitecrescent.timemanagementsystem.code.TaskTime
-import uk.whitecrescent.timemanagementsystem.code.TaskTitle
 import java.time.LocalDateTime
 
 open class KTestSuite {
 
+    @DisplayName("Task Title")
     @Test
-    fun testAddition() {
-        assertEquals(4, 2 + 2)
+    fun taskTitle() {
+        val task = Task("First Name")
+        assertEquals("First Name", task.title)
+
+        task.title = "Second Name"
+        assertEquals("Second Name", task.title)
     }
 
+
+    @DisplayName("Task Time")
     @Test
-    fun testEmptyArray() {
-        val array = Array(5, { String() })
-
-        array.set(0, String())
-        array.set(1, String())
-
-        println(array.size)
-        Assertions.assertNotNull(array.size)
-        Assertions.assertThrows(ArrayIndexOutOfBoundsException::class.java, { array.set(5, String()) })
+    fun taskTime() {
+        val task = Task("Task")
+        assertEquals(LocalDateTime.MIN, task.time.value)
     }
 
+    @DisplayName("Test")
     @Test
-    fun testTask() {
-        val task = Task()
+    fun test() {
+        assertEquals(DEFAULT_PRIORITY, Priority.createNewPriority("DEFAULT"))
+        assertEquals(
+                Priority.createNewPriority("My Priority"),
+                Priority.createNewPriority("My Priority"))
 
-        task.title = TaskTitle("Task 1", task)
-        task.time = TaskTime(LocalDateTime.now(), task)
+        assertEquals(2, Priority.allPriorities.size)
 
-        assertEquals(LocalDateTime.now().second, task.time.time.second)
-        assertEquals(LocalDateTime.now().minute, task.time.time.minute)
-        assertEquals(LocalDateTime.now().hour, task.time.time.hour)
-        assertEquals("Task 1", task.title.toString())
+        assertEquals(DEFAULT_PRIORITY, Priority.getPriorityByName("DEFAULT"))
+        assertThrows(IllegalArgumentException::class.java, {Priority.getPriorityByName("Stuff")})
+
+    }
+
+    @DisplayName("Runner")
+    @Test
+    fun test0() {
+        val task = Task("Task 1")
+
+        assertEquals("Task 1", task.title)
 
         assertEquals(TaskState.UNBORN, task.state)
 
