@@ -13,5 +13,3 @@
 * Do Task Aging
 
 * Properties categorization, meaning we should categorize Properties internally for better understanding and separation of concerns
-
-* Need to set what Properties for a Task are by default if not defined (at least in the xml)

@@ -6,36 +6,27 @@ class Label private constructor(var name: String) {
 
         var allLabels = ArrayList<Label>()
 
-        fun createNewLabel(newName: String): Label {
-
-            val newLabel = Label(newName)
-
-            for (current in allLabels) {
-                if (current.equals(newLabel)) {
-                    return current
-                }
-            }
-
-            allLabels.add(newLabel)
-            return newLabel
+        fun createNewLabel(name: String): Label {
+            val newLabel = Label(name)
+            if (allLabels.find { it.equals(newLabel) } == null) {
+                allLabels.add(newLabel)
+                return newLabel
+            } else return allLabels.find { it.equals(newLabel) }!!
         }
 
-        fun getLabelByName(name: String) : Label{
-            for (label in allLabels) {
-                if (label.name.equals(name)) {
-                    return label
-                }
-            }
-            throw IllegalArgumentException("Does not exist!")
+        fun getLabelByName(name: String): Label {
+            if (allLabels.find { it.name.equals(name) } == null) {
+                throw IllegalArgumentException("Does not exist!")
+            } else return allLabels.find { it.name.equals(name) }!!
         }
     }
 
-    override fun hashCode(): Int {
-        return this.name.hashCode()
-    }
+    override fun hashCode() =
+            name.hashCode()
 
-    override fun equals(other: Any?): Boolean {
-        return other is Label && other.name.equals(this.name)
-    }
+    override fun equals(other: Any?) =
+            other is Label && other.name.equals(this.name)
+
+    override fun toString() = name
 
 }

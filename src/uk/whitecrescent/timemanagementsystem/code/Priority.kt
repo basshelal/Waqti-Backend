@@ -6,37 +6,27 @@ class Priority private constructor(var name: String) {
 
         var allPriorities = ArrayList<Priority>()
 
-        fun createNewPriority(newName: String): Priority {
-
-            val newPriority = Priority(newName)
-
-            for (current in allPriorities) {
-                if (current.equals(newPriority)) {
-                    return current
-                }
-            }
-
-            allPriorities.add(newPriority)
-            return newPriority
+        fun createNewPriority(name: String): Priority {
+            val newPriority = Priority(name)
+            if (allPriorities.find { it.equals(newPriority) } == null) {
+                allPriorities.add(newPriority)
+                return newPriority
+            } else return allPriorities.find { it.equals(newPriority) }!!
         }
 
-        fun getPriorityByName(name: String) : Priority{
-            for (priority in allPriorities) {
-                if (priority.name.equals(name)) {
-                    return priority
-                }
-            }
-            throw IllegalArgumentException("Does not exist!")
+        fun getPriorityByName(name: String): Priority {
+            if (allPriorities.find { it.name.equals(name) } == null) {
+                throw IllegalArgumentException("Does not exist!")
+            } else return allPriorities.find { it.name.equals(name) }!!
         }
-
     }
 
-    override fun hashCode(): Int {
-        return this.name.hashCode()
-    }
+    override fun hashCode() =
+            name.hashCode()
 
-    override fun equals(other: Any?): Boolean {
-        return other is Priority && other.name.equals(this.name)
-    }
+    override fun equals(other: Any?) =
+            other is Priority && other.name.equals(this.name)
 
+    override fun toString() = name
+    
 }
