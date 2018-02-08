@@ -28,5 +28,5 @@ class Priority private constructor(var name: String) {
             other is Priority && other.name.equals(this.name)
 
     override fun toString() = name
-    
+
 }

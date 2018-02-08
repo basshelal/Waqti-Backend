@@ -13,7 +13,10 @@ class TestSuite {
     @DisplayName("Runner")
     @Test
     fun runner() {
-        val tuple = Tuple(Task("Task1"), Task("Task2"), Task("Task3"))
+        val task22 = Task("Task2")
+        task22.optional = Property(SHOWING, true)
+        task22.priority = Property(SHOWING, Priority.createNewPriority("HIGH"))
+        val tuple = Tuple(Task("Task1"), task22, Task("Task3"))
 
         val tasks = tuple.tasks
         val task1 = tasks[0]
@@ -30,7 +33,8 @@ class TestSuite {
 
         assertNull(task3.after.value)
 
-        println(tuple.tasks)
+        println(tasks)
+
     }
 
     @DisplayName("Task")
@@ -76,6 +80,12 @@ class TestSuite {
             assertFalse(task.time is Constraint)
             assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
             assertTrue(task.time.isVisible)
+
+            // Hide time and check that it resets to default values
+            task.hideTime()
+            assertFalse(task.time is Constraint)
+            assertEquals(DEFAULT_TIME, task.time.value)
+            assertFalse(task.time.isVisible)
         }
 
         @DisplayName("Task time Constraint")
@@ -98,6 +108,10 @@ class TestSuite {
             assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
             assertTrue(task.time.isVisible)
             assertTrue((task.time as Constraint).isMet)
+
+            // Try to hide time when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideTime()})
+            assertTrue(task.time is Constraint)
         }
 
         @DisplayName("Task duration Property")
@@ -114,6 +128,13 @@ class TestSuite {
             assertFalse(task.duration is Constraint)
             assertEquals(Duration.ofSeconds(15), task.duration.value)
             assertTrue(task.duration.isVisible)
+
+            // Hide duration and check that it resets to default values
+            task.hideDuration()
+            assertFalse(task.duration is Constraint)
+            assertEquals(DEFAULT_DURATION, task.duration.value)
+            assertFalse(task.duration.isVisible)
+
         }
 
         @DisplayName("Task duration Constraint")
@@ -136,6 +157,10 @@ class TestSuite {
             assertEquals(Duration.ofSeconds(15), task.duration.value)
             assertTrue(task.duration.isVisible)
             assertTrue((task.duration as Constraint).isMet)
+
+            // Try to hide duration when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideDuration()})
+            assertTrue(task.duration is Constraint)
         }
 
         @DisplayName("Task priority Property")
@@ -152,6 +177,12 @@ class TestSuite {
             assertFalse(task.priority is Constraint)
             assertEquals(Priority.getPriorityByName("High"), task.priority.value)
             assertTrue(task.priority.isVisible)
+
+            // Hide priority and check that it resets to default values
+            task.hidePriority()
+            assertFalse(task.priority is Constraint)
+            assertEquals(DEFAULT_PRIORITY, task.priority.value)
+            assertFalse(task.priority.isVisible)
         }
 
         @DisplayName("Task priority Constraint")
@@ -174,6 +205,10 @@ class TestSuite {
             assertEquals(Priority.getPriorityByName("High"), task.priority.value)
             assertTrue(task.priority.isVisible)
             assertTrue((task.priority as Constraint).isMet)
+
+            // Try to hide priority when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hidePriority()})
+            assertTrue(task.priority is Constraint)
         }
 
         @DisplayName("Task label Property")
@@ -190,6 +225,12 @@ class TestSuite {
             assertFalse(task.label is Constraint)
             assertEquals(Label.getLabelByName("Label1"), task.label.value)
             assertTrue(task.label.isVisible)
+
+            // Hide label and check that it resets to default values
+            task.hideLabel()
+            assertFalse(task.label is Constraint)
+            assertEquals(DEFAULT_LABEL, task.label.value)
+            assertFalse(task.label.isVisible)
         }
 
         @DisplayName("Task label Constraint")
@@ -212,6 +253,10 @@ class TestSuite {
             assertEquals(Label.getLabelByName("Label1"), task.label.value)
             assertTrue(task.label.isVisible)
             assertTrue((task.label as Constraint).isMet)
+
+            // Try to label time when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideLabel()})
+            assertTrue(task.label is Constraint)
         }
 
         @DisplayName("Task optional Property")
@@ -228,6 +273,12 @@ class TestSuite {
             assertFalse(task.optional is Constraint)
             assertEquals(true, task.optional.value)
             assertTrue(task.optional.isVisible)
+
+            // Hide optional and check that it resets to default values
+            task.hideOptional()
+            assertFalse(task.optional is Constraint)
+            assertEquals(DEFAULT_OPTIONAL, task.optional.value)
+            assertFalse(task.optional.isVisible)
         }
 
         @DisplayName("Task optional Constraint")
@@ -250,6 +301,10 @@ class TestSuite {
             assertEquals(true, task.optional.value)
             assertTrue(task.optional.isVisible)
             assertTrue((task.optional as Constraint).isMet)
+
+            // Try to hide optional when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideOptional()})
+            assertTrue(task.optional is Constraint)
         }
 
         @DisplayName("Task description Property")
@@ -266,6 +321,12 @@ class TestSuite {
             assertFalse(task.description is Constraint)
             assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
             assertTrue(task.description.isVisible)
+
+            // Hide description and check that it resets to default values
+            task.hideDescription()
+            assertFalse(task.description is Constraint)
+            assertEquals(DEFAULT_DESCRIPTION, task.description.value)
+            assertFalse(task.description.isVisible)
         }
 
         @DisplayName("Task description Constraint")
@@ -288,6 +349,10 @@ class TestSuite {
             assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
             assertTrue(task.description.isVisible)
             assertTrue((task.description as Constraint).isMet)
+
+            // Try to hide description when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideDescription()})
+            assertTrue(task.description is Constraint)
         }
 
         @DisplayName("Task checklist Property")
@@ -304,6 +369,12 @@ class TestSuite {
             assertFalse(task.checkList is Constraint)
             assertEquals(CheckList("1", "2", "3"), task.checkList.value)
             assertTrue(task.checkList.isVisible)
+
+            // Hide checklist and check that it resets to default values
+            task.hideChecklist()
+            assertFalse(task.checkList is Constraint)
+            assertEquals(DEFAULT_CHECKLIST, task.checkList.value)
+            assertFalse(task.checkList.isVisible)
         }
 
         @DisplayName("Task checklist Constraint")
@@ -326,6 +397,10 @@ class TestSuite {
             assertEquals(CheckList("1", "2", "3"), task.checkList.value)
             assertTrue(task.checkList.isVisible)
             assertTrue((task.checkList as Constraint).isMet)
+
+            // Try to hide checklist when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideChecklist()})
+            assertTrue(task.checkList is Constraint)
         }
 
         @DisplayName("Task deadline Property")
@@ -342,6 +417,12 @@ class TestSuite {
             assertFalse(task.deadline is Constraint)
             assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
             assertTrue(task.deadline.isVisible)
+
+            // Hide deadline and check that it resets to default values
+            task.hideDeadline()
+            assertFalse(task.deadline is Constraint)
+            assertEquals(DEFAULT_DEADLINE, task.deadline.value)
+            assertFalse(task.deadline.isVisible)
         }
 
         @DisplayName("Task deadline Constraint")
@@ -364,6 +445,10 @@ class TestSuite {
             assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
             assertTrue(task.deadline.isVisible)
             assertTrue((task.deadline as Constraint).isMet)
+
+            // Try to hide deadline when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideDeadline()})
+            assertTrue(task.deadline is Constraint)
         }
 
         @DisplayName("Task target Property")
@@ -380,6 +465,12 @@ class TestSuite {
             assertFalse(task.target is Constraint)
             assertEquals("Target!", task.target.value)
             assertTrue(task.target.isVisible)
+
+            // Hide target and check that it resets to default values
+            task.hideTarget()
+            assertFalse(task.target is Constraint)
+            assertEquals(DEFAULT_TARGET, task.target.value)
+            assertFalse(task.target.isVisible)
         }
 
         @DisplayName("Task target Constraint")
@@ -402,6 +493,10 @@ class TestSuite {
             assertEquals("Target!", task.target.value)
             assertTrue(task.target.isVisible)
             assertTrue((task.target as Constraint).isMet)
+
+            // Try to hide target when it is a Constraint
+            assertThrows(IllegalStateException::class.java, {task.hideTarget()})
+            assertTrue(task.target is Constraint)
         }
 
         @DisplayName("Task Before Constraint")

@@ -1,8 +1,10 @@
 # TODO
 
+* Everything should be a Property initially with the option to switch to a Constraint and back
+
 * Make sure all Task Properties are working perfectly
 
-* Check the infinite looping stuff with other Task Constraints like before and after
+* Check the infinite looping stuff with other Task Constraints like before and after, we can use Task IDs for this
 
 * Consider removing the inheritance between Constraint and Property
 

@@ -3,9 +3,13 @@ package uk.whitecrescent.timemanagementsystem.code
 import java.time.Duration
 import java.time.LocalDateTime
 
-class Task(var title: String) : Killable, Failable {
+class Task(var title: String) {
+    private var state = DEFAULT_TASK_STATE
+    var isFailable = DEFAULT_FAILABLE
+    var isKillable = DEFAULT_KILLABLE
 
-    // Properties
+    // Task Properties, all initially set to default values
+    //TODO maybe put these in the primary constructor? Depends on the order of creation and setting
     var time: Property<LocalDateTime> = DEFAULT_TIME_PROPERTY
     var duration: Property<Duration> = DEFAULT_DURATION_PROPERTY
     var priority: Property<Priority> = DEFAULT_PRIORITY_PROPERTY
@@ -16,14 +20,11 @@ class Task(var title: String) : Killable, Failable {
     var deadline: Property<LocalDateTime> = DEFAULT_DEADLINE_PROPERTY
     var target: Property<String> = DEFAULT_TARGET_PROPERTY
 
-    // Constraints
+    // Task Constraints
     var before = DEFAULT_BEFORE_CONSTRAINT
     var after = DEFAULT_AFTER_CONSTRAINT
+    //TODO Change these to become Properties initially! These are a cause for many problems :(
 
-    override var isFailable = DEFAULT_FAILABLE
-    override var isKillable = DEFAULT_KILLABLE
-
-    private var state = DEFAULT_TASK_STATE
 
     private fun getAllProperties() = listOf(
             time,
@@ -36,38 +37,65 @@ class Task(var title: String) : Killable, Failable {
             deadline,
             target)
 
-    // Hide Properties functions
-    fun hideTime() {
-        if (isNotConstraint(time)) time = DEFAULT_TIME_PROPERTY
-    }
-
-    fun hideDuration() {
-        if (isNotConstraint(duration)) duration = DEFAULT_DURATION_PROPERTY
-    }
-
-    fun hidePriority() {
-        if (isNotConstraint(priority)) priority = DEFAULT_PRIORITY_PROPERTY
-    }
-
-    fun hideLabel() {
-        if (isNotConstraint(label)) label = DEFAULT_LABEL_PROPERTY
-    }
-
-    fun hideOptional() {
-        if (isNotConstraint(optional)) optional = DEFAULT_OPTIONAL_PROPERTY
-    }
-
-    fun hideDescription() {
-        if (isNotConstraint(description)) description = DEFAULT_DESCRIPTION_PROPERTY
-    }
-
-    fun hideChecklist() {
-        if (isNotConstraint(checkList)) checkList = DEFAULT_CHECKLIST_PROPERTY
-    }
+    private fun getAllConstraints() = listOf<Constraint<*>>(before, after) + getAllProperties().filter { it is Constraint }
 
     private fun isNotConstraint(property: Property<*>) = property !is Constraint
 
-    private fun getAllConstraints() = listOf<Constraint<*>>(before, after) + getAllProperties().filter { it is Constraint }
+
+    // Hide Properties functions, sets them to default values if they are not Constraints
+    fun hideTime() {
+        if (isNotConstraint(time)) {
+            time = DEFAULT_TIME_PROPERTY
+        } else throw IllegalStateException("Cannot hide, time is Constraint")
+    }
+
+    fun hideDuration() {
+        if (isNotConstraint(duration)) {
+            duration = DEFAULT_DURATION_PROPERTY
+        } else throw IllegalStateException("Cannot hide, duration is Constraint")
+    }
+
+    fun hidePriority() {
+        if (isNotConstraint(priority)) {
+            priority = DEFAULT_PRIORITY_PROPERTY
+        } else throw IllegalStateException("Cannot hide, priority is Constraint")
+    }
+
+    fun hideLabel() {
+        if (isNotConstraint(label)) {
+            label = DEFAULT_LABEL_PROPERTY
+        } else throw IllegalStateException("Cannot hide, label is Constraint")
+    }
+
+    fun hideOptional() {
+        if (isNotConstraint(optional)) {
+            optional = DEFAULT_OPTIONAL_PROPERTY
+        } else throw IllegalStateException("Cannot hide, optional is Constraint")
+    }
+
+    fun hideDescription() {
+        if (isNotConstraint(description)) {
+            description = DEFAULT_DESCRIPTION_PROPERTY
+        } else throw IllegalStateException("Cannot hide, description is Constraint")
+    }
+
+    fun hideChecklist() {
+        if (isNotConstraint(checkList)) {
+            checkList = DEFAULT_CHECKLIST_PROPERTY
+        } else throw IllegalStateException("Cannot hide, checklist is Constraint")
+    }
+
+    fun hideDeadline() {
+        if (isNotConstraint(deadline)) {
+            deadline = DEFAULT_DEADLINE_PROPERTY
+        } else throw IllegalStateException("Cannot hide, deadline is Constraint")
+    }
+
+    fun hideTarget() {
+        if (isNotConstraint(target)) {
+            target = DEFAULT_TARGET_PROPERTY
+        } else throw IllegalStateException("Cannot hide, target is Constraint")
+    }
 
     fun getAllShowingProperties() =
             getAllProperties().filter { it.isVisible }
@@ -81,16 +109,16 @@ class Task(var title: String) : Killable, Failable {
     fun getTaskState() = this.state
 
     fun canKill() =
-            (state != TaskState.KILLED && isKillable && getAllUnmetAndVisibleConstraints().isEmpty())
+            state != TaskState.KILLED &&
+                    isKillable &&
+                    getAllUnmetAndVisibleConstraints().isEmpty()
 
     fun canFail() =
             state != TaskState.FAILED && isFailable
 
 
-    // Overriden functions
-
     //TODO Failing is still a problem since what decides if we can fail it?? Actually it's because was killable and now no longer killable
-    override fun fail() {
+    fun fail() {
         if (state == TaskState.FAILED) {
             throw IllegalStateException("Fail unsuccessful, $this is already Failed!")
         }
@@ -101,7 +129,7 @@ class Task(var title: String) : Killable, Failable {
         }
     }
 
-    override fun kill() {
+    fun kill() {
         if (state == TaskState.KILLED) {
             throw IllegalStateException("Kill unsuccessful, $this is already Killed!")
         }
@@ -115,22 +143,25 @@ class Task(var title: String) : Killable, Failable {
         }
     }
 
+
     override fun hashCode() =
             title.hashCode() + getAllShowingProperties().hashCode()
 
     override fun equals(other: Any?) =
             other is Task &&
                     other.title.equals(this.title) &&
+                    other.getTaskState().equals(this.state) &&
                     other.getAllShowingProperties().equals(this.getAllShowingProperties())
 
     override fun toString(): String {
-        val s = StringBuilder("""Task:
-            |   title = $title
-            |
-        """.trimMargin())
+        val s = StringBuilder("Task: title = $title\n")
+
         getAllShowingProperties().forEach { s.append("$it \n") }
-        if (before.isVisible) s.append("before: ${before.value?.title} \n")
-        if (after.isVisible) s.append("after: ${after.value?.title} \n")
+
+        if (before.isVisible) s.append("before: ${before.value?.title}\n")
+        if (after.isVisible) s.append("after: ${after.value?.title}\n")
+        s.append("state = $state\n\n")
+
         return s.toString()
     }
 }

@@ -15,7 +15,5 @@ open class Property<V>(open var isVisible: Boolean, open val value: V) {
             other is Property<*> && this.value!!.equals(other.value) && this.isVisible == other.isVisible
 
     override fun toString() =
-            """Property:
-                |   isVisible = $isVisible
-                |   value = ${value}""".trimMargin()
+            "Property: isVisible = $isVisible value = ${value}"
 }

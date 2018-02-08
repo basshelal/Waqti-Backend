@@ -4,6 +4,7 @@ class Constraint<V>(override var isVisible: Boolean, override val value: V, var 
 
     companion object {
         fun <T> toProperty(constraint: Constraint<T>) = Property(constraint.isVisible, constraint.value)
+        //TODO maybe a check to see if Constraint is met before converting to Property?
     }
 
     fun toProperty() = Constraint.toProperty(this)
@@ -15,8 +16,5 @@ class Constraint<V>(override var isVisible: Boolean, override val value: V, var 
             other is Constraint<*> && this.value!!.equals(other.value) && this.isVisible == other.isVisible && this.isMet == other.isMet
 
     override fun toString() =
-            """Constraint:
-                |   isVisible = $isVisible
-                |   value = ${value.toString()}
-                |   isMet = $isMet""".trimMargin()
+            "Constraint: isVisible = $isVisible value = ${value.toString()} isMet = $isMet"
 }
