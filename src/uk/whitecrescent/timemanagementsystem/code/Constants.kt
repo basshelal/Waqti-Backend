@@ -3,14 +3,13 @@ package uk.whitecrescent.timemanagementsystem.code
 import java.time.Duration
 import java.time.LocalDateTime
 
-val NUMBER_OF_OPTIONAL_PROPERTIES = 8
-val NUMBER_OF_CONSTRAINTS = 2
+const val NUMBER_OF_PROPERTIES = 10
 
-val HIDDEN = false
-val SHOWING = true
+const val HIDDEN = false
+const val SHOWING = true
 
-val MET = true
-val UNMET = false
+const val MET = true
+const val UNMET = false
 
 val DEFAULT_TIME = LocalDateTime.MIN!!
 val DEFAULT_DURATION = Duration.ZERO!!
@@ -22,6 +21,7 @@ val DEFAULT_CHECKLIST = CheckList()
 val DEFAULT_TARGET = "DEFAULT"
 val DEFAULT_DEADLINE = LocalDateTime.MIN!!
 
+val DEFAULT_TASK: Task? = null
 val DEFAULT_TASK_STATE = TaskState.EXISTING
 
 val DEFAULT_FAILABLE = false
@@ -36,8 +36,6 @@ val DEFAULT_DESCRIPTION_PROPERTY = Property(HIDDEN, DEFAULT_DESCRIPTION)
 val DEFAULT_CHECKLIST_PROPERTY = Property(HIDDEN, DEFAULT_CHECKLIST)
 val DEFAULT_TARGET_PROPERTY = Property(HIDDEN, DEFAULT_TARGET)
 val DEFAULT_DEADLINE_PROPERTY = Property(HIDDEN, DEFAULT_DEADLINE)
+val DEFAULT_BEFORE_PROPERTY = Property(HIDDEN, DEFAULT_TASK)
+val DEFAULT_AFTER_PROPERTY = Property(HIDDEN, DEFAULT_TASK)
 
-val DEFAULT_TASK: Task? = null
-
-val DEFAULT_BEFORE_CONSTRAINT = Constraint(HIDDEN, DEFAULT_TASK, UNMET)
-val DEFAULT_AFTER_CONSTRAINT = Constraint(HIDDEN, DEFAULT_TASK, UNMET)

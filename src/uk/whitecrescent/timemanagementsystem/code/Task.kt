@@ -2,14 +2,18 @@ package uk.whitecrescent.timemanagementsystem.code
 
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.Random
 
 class Task(var title: String) {
+
     private var state = DEFAULT_TASK_STATE
-    var isFailable = DEFAULT_FAILABLE
-    var isKillable = DEFAULT_KILLABLE
+    var isFailable = false
+    var isKillable = true
+    val taskID = Math.abs(Random().nextLong())
+    fun taskCode() = Math.abs(LocalDateTime.now().hashCode())
 
     // Task Properties, all initially set to default values
-    //TODO maybe put these in the primary constructor? Depends on the order of creation and setting
+
     var time: Property<LocalDateTime> = DEFAULT_TIME_PROPERTY
     var duration: Property<Duration> = DEFAULT_DURATION_PROPERTY
     var priority: Property<Priority> = DEFAULT_PRIORITY_PROPERTY
@@ -20,11 +24,9 @@ class Task(var title: String) {
     var deadline: Property<LocalDateTime> = DEFAULT_DEADLINE_PROPERTY
     var target: Property<String> = DEFAULT_TARGET_PROPERTY
 
-    // Task Constraints
-    var before = DEFAULT_BEFORE_CONSTRAINT
-    var after = DEFAULT_AFTER_CONSTRAINT
-    //TODO Change these to become Properties initially! These are a cause for many problems :(
-
+    // TODO make before and after use something other than Tasks, like TaskID, using Tasks causes infinite loops
+    // var before: Property<Task?> = DEFAULT_BEFORE_PROPERTY
+    // var after: Property<Task?> = DEFAULT_AFTER_PROPERTY
 
     private fun getAllProperties() = listOf(
             time,
@@ -37,12 +39,113 @@ class Task(var title: String) {
             deadline,
             target)
 
-    private fun getAllConstraints() = listOf<Constraint<*>>(before, after) + getAllProperties().filter { it is Constraint }
+    private fun getAllConstraints() = getAllProperties().filter { it is Constraint }
+
+    fun getAllShowingProperties() =
+            getAllProperties().filter { it.isVisible }
+
+    fun getAllShowingConstraints() =
+            getAllConstraints().filter { it.isVisible }
+
+    fun getAllUnmetAndShowingConstraints() =
+            getAllConstraints().filter { !(it as Constraint).isMet && it.isVisible }
 
     private fun isNotConstraint(property: Property<*>) = property !is Constraint
 
+    // For chaining
+
+    fun setTimeProperty(timeProperty: Property<LocalDateTime>): Task {
+        this.time = timeProperty
+        return this
+    }
+
+    fun setTimeValue(time: LocalDateTime): Task {
+        this.time = Property(SHOWING, time)
+        return this
+    }
+
+    fun setDurationProperty(durationProperty: Property<Duration>): Task {
+        this.duration = durationProperty
+        return this
+    }
+
+    fun setDurationValue(duration: Duration): Task {
+        this.duration = Property(SHOWING, duration)
+        return this
+    }
+
+    fun setPriorityProperty(priorityProperty: Property<Priority>): Task {
+        this.priority = priorityProperty
+        return this
+    }
+
+    fun setPriorityValue(priority: Priority): Task {
+        this.priority = Property(SHOWING, priority)
+        return this
+    }
+
+    fun setLabelProperty(labelProperty: Property<Label>): Task {
+        this.label = labelProperty
+        return this
+    }
+
+    fun setLabelValue(label: Label): Task {
+        this.label = Property(SHOWING, label)
+        return this
+    }
+
+    fun setOptionalProperty(optionalProperty: Property<Boolean>): Task {
+        this.optional = optionalProperty
+        return this
+    }
+
+    fun setOptionalValue(optional: Boolean): Task {
+        this.optional = Property(SHOWING, optional)
+        return this
+    }
+
+    fun setDescriptionProperty(descriptionProperty: Property<StringBuilder>): Task {
+        this.description = descriptionProperty
+        return this
+    }
+
+    fun setDescriptionValue(description: StringBuilder): Task {
+        this.description = Property(SHOWING, description)
+        return this
+    }
+
+    fun setChecklistProperty(checkListProperty: Property<CheckList>): Task {
+        this.checkList = checkListProperty
+        return this
+    }
+
+    fun setChecklistValue(checkList: CheckList): Task {
+        this.checkList = Property(SHOWING, checkList)
+        return this
+    }
+
+    fun setDeadlineProperty(deadlineProperty: Property<LocalDateTime>): Task {
+        this.deadline = deadlineProperty
+        return this
+    }
+
+    fun setDeadlineValue(deadline: LocalDateTime): Task {
+        this.deadline = Property(SHOWING, deadline)
+        return this
+    }
+
+    fun setTargetProperty(targetProperty: Property<String>): Task {
+        this.target = targetProperty
+        return this
+    }
+
+    fun setTargetValue(target: String): Task {
+        this.target = Property(SHOWING, target)
+        return this
+    }
 
     // Hide Properties functions, sets them to default values if they are not Constraints
+
     fun hideTime() {
         if (isNotConstraint(time)) {
             time = DEFAULT_TIME_PROPERTY
@@ -97,24 +200,18 @@ class Task(var title: String) {
         } else throw IllegalStateException("Cannot hide, target is Constraint")
     }
 
-    fun getAllShowingProperties() =
-            getAllProperties().filter { it.isVisible }
-
-    fun getAllShowingConstraints() =
-            getAllConstraints().filter { it.isVisible }
-
-    fun getAllUnmetAndVisibleConstraints() =
-            getAllConstraints().filter { !(it as Constraint).isMet && it.isVisible }
+    // Task lifecycle
 
     fun getTaskState() = this.state
 
     fun canKill() =
             state != TaskState.KILLED &&
                     isKillable &&
-                    getAllUnmetAndVisibleConstraints().isEmpty()
+                    getAllUnmetAndShowingConstraints().isEmpty()
 
     fun canFail() =
-            state != TaskState.FAILED && isFailable
+            state != TaskState.FAILED &&
+                    isFailable
 
 
     //TODO Failing is still a problem since what decides if we can fail it?? Actually it's because was killable and now no longer killable
@@ -136,7 +233,7 @@ class Task(var title: String) {
         if (!isKillable) {
             throw IllegalStateException("Kill unsuccessful, $this is not Killable")
         }
-        if (!getAllUnmetAndVisibleConstraints().isEmpty()) {
+        if (!getAllUnmetAndShowingConstraints().isEmpty()) {
             throw IllegalStateException("Kill unsuccessful, $this has unmet Constraints")
         } else if (canKill()) {
             state = TaskState.KILLED
@@ -158,8 +255,6 @@ class Task(var title: String) {
 
         getAllShowingProperties().forEach { s.append("$it \n") }
 
-        if (before.isVisible) s.append("before: ${before.value?.title}\n")
-        if (after.isVisible) s.append("after: ${after.value?.title}\n")
         s.append("state = $state\n\n")
 
         return s.toString()

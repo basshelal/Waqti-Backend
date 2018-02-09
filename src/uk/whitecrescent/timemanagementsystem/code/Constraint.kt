@@ -4,7 +4,6 @@ class Constraint<V>(override var isVisible: Boolean, override val value: V, var 
 
     companion object {
         fun <T> toProperty(constraint: Constraint<T>) = Property(constraint.isVisible, constraint.value)
-        //TODO maybe a check to see if Constraint is met before converting to Property?
     }
 
     fun toProperty() = Constraint.toProperty(this)

@@ -19,10 +19,13 @@ class Label private constructor(var name: String) {
                 throw IllegalArgumentException("Does not exist!")
             } else return allLabels.find { it.name.equals(name) }!!
         }
+
+        fun deleteLabel(name: String) {
+            allLabels.remove(getLabelByName(name))
+        }
     }
 
-    override fun hashCode() =
-            name.hashCode()
+    override fun hashCode() = name.hashCode()
 
     override fun equals(other: Any?) =
             other is Label && other.name.equals(this.name)

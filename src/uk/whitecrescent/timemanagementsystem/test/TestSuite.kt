@@ -13,31 +13,10 @@ class TestSuite {
     @DisplayName("Runner")
     @Test
     fun runner() {
-        val task22 = Task("Task2")
-        task22.optional = Property(SHOWING, true)
-        task22.priority = Property(SHOWING, Priority.createNewPriority("HIGH"))
-        val tuple = Tuple(Task("Task1"), task22, Task("Task3"))
-
-        val tasks = tuple.tasks
-        val task1 = tasks[0]
-        val task2 = tasks[1]
-        val task3 = tasks[2]
-
-        assertNull(task1.before.value)
-
-        assertEquals(task1, task2.before.value)
-        assertEquals(task2, task1.after.value)
-
-        assertEquals(task2, task3.before.value)
-        assertEquals(task3, task2.after.value)
-
-        assertNull(task3.after.value)
-
-        println(tasks)
 
     }
 
-    @DisplayName("Task")
+    @DisplayName("Task Tests")
     @Nested
     inner class TaskTests {
 
@@ -65,6 +44,96 @@ class TestSuite {
             assertFalse(task.time is Constraint)
             assertThrows(ClassCastException::class.java, { (task.time as Constraint).isMet })
         }
+
+        @DisplayName("Task creation using chaining by Values")
+        @Test
+        fun testTaskCreationUsingChainingByValues() {
+            val task = Task("My Task")
+                    .setTimeValue(LocalDateTime.of(1970, 1, 1, 1, 1))
+                    .setDurationValue(Duration.ofSeconds(15))
+                    .setPriorityValue(Priority.createNewPriority("High"))
+                    .setLabelValue(Label.createNewLabel("Label1"))
+                    .setOptionalValue(true)
+                    .setDescriptionValue(StringBuilder("Description"))
+                    .setChecklistValue(CheckList("1", "2", "3"))
+                    .setDeadlineValue(LocalDateTime.of(1970, 1, 1, 1, 1))
+                    .setTargetValue("Target!")
+
+            assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
+            assertTrue(task.time.isVisible)
+
+            assertEquals(Duration.ofSeconds(15), task.duration.value)
+            assertTrue(task.duration.isVisible)
+
+            assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+            assertTrue(task.priority.isVisible)
+
+            assertEquals(Label.getLabelByName("Label1"), task.label.value)
+            assertTrue(task.label.isVisible)
+
+            assertEquals(true, task.optional.value)
+            assertTrue(task.optional.value)
+
+            assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
+            assertTrue(task.description.isVisible)
+
+            assertEquals(CheckList("1", "2", "3"), task.checkList.value)
+            assertTrue(task.checkList.isVisible)
+
+            assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
+            assertTrue(task.checkList.isVisible)
+
+            assertEquals("Target!", task.target.value)
+            assertTrue(task.target.isVisible)
+
+            assertTrue(task.getAllShowingConstraints().isEmpty())
+        }
+
+        @DisplayName("Task creation using chaining by Properties")
+        @Test
+        fun testTaskCreationUsingChainingByProperties() {
+            val task = Task("My Task")
+                    .setTimeProperty(Property(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1)))
+                    .setDurationProperty(Property(SHOWING, Duration.ofSeconds(15)))
+                    .setPriorityProperty(Property(SHOWING, Priority.createNewPriority("High")))
+                    .setLabelProperty(Property(SHOWING, Label.createNewLabel("Label1")))
+                    .setOptionalProperty(Property(SHOWING, true))
+                    .setDescriptionProperty(Property(SHOWING, StringBuilder("Description")))
+                    .setChecklistProperty(Property(SHOWING, CheckList("1", "2", "3")))
+                    .setDeadlineProperty(Property(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1)))
+                    .setTargetProperty(Property(SHOWING, "Target!"))
+
+            assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
+            assertTrue(task.time.isVisible)
+
+            assertEquals(Duration.ofSeconds(15), task.duration.value)
+            assertTrue(task.duration.isVisible)
+
+            assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+            assertTrue(task.priority.isVisible)
+
+            assertEquals(Label.getLabelByName("Label1"), task.label.value)
+            assertTrue(task.label.isVisible)
+
+            assertEquals(true, task.optional.value)
+            assertTrue(task.optional.value)
+
+            assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
+            assertTrue(task.description.isVisible)
+
+            assertEquals(CheckList("1", "2", "3"), task.checkList.value)
+            assertTrue(task.checkList.isVisible)
+
+            assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
+            assertTrue(task.checkList.isVisible)
+
+            assertEquals("Target!", task.target.value)
+            assertTrue(task.target.isVisible)
+
+            assertTrue(task.getAllShowingConstraints().isEmpty())
+        }
+
+        // Task Properties
 
         @DisplayName("Task time Property")
         @Test
@@ -110,7 +179,7 @@ class TestSuite {
             assertTrue((task.time as Constraint).isMet)
 
             // Try to hide time when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideTime()})
+            assertThrows(IllegalStateException::class.java, { task.hideTime() })
             assertTrue(task.time is Constraint)
         }
 
@@ -159,7 +228,7 @@ class TestSuite {
             assertTrue((task.duration as Constraint).isMet)
 
             // Try to hide duration when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideDuration()})
+            assertThrows(IllegalStateException::class.java, { task.hideDuration() })
             assertTrue(task.duration is Constraint)
         }
 
@@ -207,7 +276,7 @@ class TestSuite {
             assertTrue((task.priority as Constraint).isMet)
 
             // Try to hide priority when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hidePriority()})
+            assertThrows(IllegalStateException::class.java, { task.hidePriority() })
             assertTrue(task.priority is Constraint)
         }
 
@@ -255,7 +324,7 @@ class TestSuite {
             assertTrue((task.label as Constraint).isMet)
 
             // Try to label time when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideLabel()})
+            assertThrows(IllegalStateException::class.java, { task.hideLabel() })
             assertTrue(task.label is Constraint)
         }
 
@@ -303,7 +372,7 @@ class TestSuite {
             assertTrue((task.optional as Constraint).isMet)
 
             // Try to hide optional when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideOptional()})
+            assertThrows(IllegalStateException::class.java, { task.hideOptional() })
             assertTrue(task.optional is Constraint)
         }
 
@@ -351,7 +420,7 @@ class TestSuite {
             assertTrue((task.description as Constraint).isMet)
 
             // Try to hide description when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideDescription()})
+            assertThrows(IllegalStateException::class.java, { task.hideDescription() })
             assertTrue(task.description is Constraint)
         }
 
@@ -399,7 +468,7 @@ class TestSuite {
             assertTrue((task.checkList as Constraint).isMet)
 
             // Try to hide checklist when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideChecklist()})
+            assertThrows(IllegalStateException::class.java, { task.hideChecklist() })
             assertTrue(task.checkList is Constraint)
         }
 
@@ -447,7 +516,7 @@ class TestSuite {
             assertTrue((task.deadline as Constraint).isMet)
 
             // Try to hide deadline when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideDeadline()})
+            assertThrows(IllegalStateException::class.java, { task.hideDeadline() })
             assertTrue(task.deadline is Constraint)
         }
 
@@ -495,25 +564,11 @@ class TestSuite {
             assertTrue((task.target as Constraint).isMet)
 
             // Try to hide target when it is a Constraint
-            assertThrows(IllegalStateException::class.java, {task.hideTarget()})
+            assertThrows(IllegalStateException::class.java, { task.hideTarget() })
             assertTrue(task.target is Constraint)
         }
 
-        @DisplayName("Task Before Constraint")
-        @Test
-        fun testTaskBeforeConstraint() {
-            val task = Task("My Task")
-            assertNull(task.before.value)
-
-            val beforeTask = Task("Before Task")
-
-            task.before = Constraint(SHOWING, beforeTask, UNMET)
-            assertNotNull(task.before.value)
-            assertEquals(beforeTask, task.before.value)
-            assertTrue(task.before.isVisible)
-            assertFalse(task.before.isMet)
-
-        }
+        // Task Lifecycle
 
         @DisplayName("Task kill with non met Constraints")
         @Test
@@ -523,17 +578,52 @@ class TestSuite {
             task.checkList = task.checkList.toConstraint()
             task.duration = Property(SHOWING, Duration.ofHours(2))
             task.duration = task.duration.toConstraint()
-            assertEquals(2, task.getAllUnmetAndVisibleConstraints().size)
+            assertEquals(2, task.getAllUnmetAndShowingConstraints().size)
             assertTrue(task.isKillable)
             assertThrows(IllegalStateException::class.java, { task.kill() })
 
             (task.checkList as Constraint).isMet = MET
             (task.duration as Constraint).isMet = MET
-            assertTrue(task.getAllUnmetAndVisibleConstraints().isEmpty())
+            assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
             task.kill()
             assertEquals(TaskState.KILLED, task.getTaskState())
             assertFalse(task.canKill())
         }
+    }
+
+    @DisplayName("Checklist")
+    @Test
+    fun testChecklist() {
+        val checkList = CheckList("Zero", "One", "Two", "Three", "Four")
+        assertEquals(5, checkList.size())
+
+        checkList.addItem("Five")
+        assertEquals(6, checkList.size())
+
+        checkList.checkItem(5)
+        assertTrue(checkList[5].isChecked)
+        assertEquals(6, checkList.size())
+
+        checkList.deleteItem(5)
+        assertEquals(5, checkList.size())
+
+        checkList.addItem(ListItem("FiveAgain", true))
+        assertEquals(6, checkList.size())
+
+        checkList.uncheckItem(5)
+        assertFalse(checkList[5].isChecked)
+
+        val checklist2 = CheckList("Zero","One", "Two", "Three")
+        println(checklist2)
+        checklist2[0] = "ZEROOOOOO!"
+        println(checklist2)
+
+    }
+
+    @DisplayName("Checklist Tests")
+    @Nested
+    inner class ChecklistTests {
+
     }
 
 }

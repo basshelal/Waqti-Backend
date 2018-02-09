@@ -1,6 +1,6 @@
 # TODO
 
-* Everything should be a Property initially with the option to switch to a Constraint and back
+* When all else works well, do before and after by using something other than Tasks, like Task ID
 
 * Make sure all Task Properties are working perfectly
 

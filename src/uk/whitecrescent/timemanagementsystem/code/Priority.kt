@@ -19,10 +19,13 @@ class Priority private constructor(var name: String) {
                 throw IllegalArgumentException("Does not exist!")
             } else return allPriorities.find { it.name.equals(name) }!!
         }
+
+        fun deletePriority(name: String) {
+            allPriorities.remove(getPriorityByName(name))
+        }
     }
 
-    override fun hashCode() =
-            name.hashCode()
+    override fun hashCode() = name.hashCode()
 
     override fun equals(other: Any?) =
             other is Priority && other.name.equals(this.name)

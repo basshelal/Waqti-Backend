@@ -8,21 +8,25 @@ class CheckList(vararg itemValues: String) {
         addAll(*itemValues)
     }
 
-    fun size(): Int {
-        return list.size
-    }
+    operator fun get(index: Int) =
+            this.list[index]
 
-    fun addItem(listItem: ListItem) {
-        this.list.add(listItem)
-    }
+    operator fun set(index: Int, listItem: ListItem) =
+            run { this.list[index] = listItem }
 
-    fun addItem(listItemValue: String) {
-        this.list.add(ListItem(listItemValue))
-    }
+    operator fun set(index: Int, string: String) =
+            run { this.list[index] = ListItem(string) }
 
-    fun addAll(vararg listItems: ListItem) {
-        this.list.addAll(listItems)
-    }
+    operator fun contains(listItem: ListItem) =
+            this.list.contains(listItem)
+
+    fun size() = list.size
+
+    fun addItem(listItem: ListItem) = this.list.add(listItem)
+
+    fun addItem(listItemValue: String) = this.list.add(ListItem(listItemValue))
+
+    fun addAll(vararg listItems: ListItem) = this.list.addAll(listItems)
 
     fun addAll(vararg listItemValues: String) {
         for (itemValue in listItemValues) {
@@ -30,13 +34,7 @@ class CheckList(vararg itemValues: String) {
         }
     }
 
-    fun asList(): List<ListItem> {
-        return this.list
-    }
-
-    fun get(index: Int): ListItem {
-        return this.list[index]
-    }
+    fun asList(): List<ListItem> = this.list
 
     fun moveItem(fromIndex: Int, toIndex: Int) {
         if (toIndex > size() || toIndex < 0 || fromIndex > size() || fromIndex < 0) {
@@ -82,13 +80,21 @@ class CheckList(vararg itemValues: String) {
         getItemByReference(item)?.isChecked = false
     }
 
+    fun deleteItem(index: Int) = this.list.removeAt(index)
+
+    fun deleteItem(item: ListItem) = this.list.remove(getItemByReference(item))
+
     private fun getItemByReference(item: ListItem) = this.list.find { element -> item.equals(element) }
 
     private fun getItemByContents(value: String) = this.list.find { element -> element.value.equals(value) }
 
-    private fun getAllCheckedItems() = this.list.filter { it.isChecked }
+    fun getAllCheckedItems() = this.list.filter { it.isChecked }
 
-    private fun getAllUncheckedItems() = this.list.filterNot { it.isChecked }
+    fun checkedItemsSize() = getAllCheckedItems().size
+
+    fun getAllUncheckedItems() = this.list.filter { !it.isChecked }
+
+    fun uncheckedItemsSize() = getAllUncheckedItems().size
 
     override fun hashCode() = list.hashCode()
 
