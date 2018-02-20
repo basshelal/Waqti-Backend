@@ -1,10 +1,10 @@
-package uk.whitecrescent.timemanagementsystem.test
+package uk.whitecrescent.waqti.test
 
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.timemanagementsystem.code.*
+import uk.whitecrescent.waqti.code.*
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -613,16 +613,10 @@ class TestSuite {
         checkList.uncheckItem(5)
         assertFalse(checkList[5].isChecked)
 
-        val checklist2 = CheckList("Zero","One", "Two", "Three")
+        val checklist2 = CheckList("Zero", "One", "Two", "Three")
         println(checklist2)
         checklist2[0] = "ZEROOOOOO!"
         println(checklist2)
-
-    }
-
-    @DisplayName("Checklist Tests")
-    @Nested
-    inner class ChecklistTests {
 
     }
 

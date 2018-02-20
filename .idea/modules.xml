@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/TimeManagementSystem.iml" filepath="$PROJECT_DIR$/TimeManagementSystem.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Waqti.iml" filepath="$PROJECT_DIR$/Waqti.iml" />
     </modules>
   </component>
 </project>

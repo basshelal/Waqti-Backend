@@ -1,4 +1,4 @@
-package uk.whitecrescent.timemanagementsystem.code
+package uk.whitecrescent.waqti.code
 
 class Label private constructor(var name: String) {
 

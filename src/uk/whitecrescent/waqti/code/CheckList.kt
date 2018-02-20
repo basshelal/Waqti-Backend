@@ -1,4 +1,4 @@
-package uk.whitecrescent.timemanagementsystem.code
+package uk.whitecrescent.waqti.code
 
 class CheckList(vararg itemValues: String) {
 
@@ -10,6 +10,12 @@ class CheckList(vararg itemValues: String) {
 
     operator fun get(index: Int) =
             this.list[index]
+
+    operator fun get(listItem: ListItem) =
+            getItemByReference(listItem)
+
+    operator fun get(string: String) =
+            getItemByContents(string)
 
     operator fun set(index: Int, listItem: ListItem) =
             run { this.list[index] = listItem }

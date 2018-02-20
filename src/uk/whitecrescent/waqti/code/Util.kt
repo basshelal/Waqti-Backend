@@ -1,4 +1,4 @@
-package uk.whitecrescent.timemanagementsystem.code
+package uk.whitecrescent.waqti.code
 
 import com.google.gson.Gson
 
@@ -9,3 +9,5 @@ class Util private constructor() {
     }
 
 }
+
+//extension functions go here for universal access

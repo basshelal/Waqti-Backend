@@ -1,4 +1,4 @@
-package uk.whitecrescent.timemanagementsystem.code
+package uk.whitecrescent.waqti.code
 
 import java.time.Duration
 import java.time.LocalDateTime
@@ -6,11 +6,11 @@ import java.util.Random
 
 class Task(var title: String) {
 
-    private var state = DEFAULT_TASK_STATE
+    private var state = DEFAULT_TASK_STATE // Existing
     var isFailable = false
-    var isKillable = true
+    var isKillable = true // not can kill now, more like is it possible to ever be killed, doesn't apply to Templates
     val taskID = Math.abs(Random().nextLong())
-    fun taskCode() = Math.abs(LocalDateTime.now().hashCode())
+    val taskCode = Math.abs(LocalDateTime.now().hashCode())
 
     // Task Properties, all initially set to default values
 
@@ -201,45 +201,54 @@ class Task(var title: String) {
     }
 
     // Task lifecycle
+    //TODO Tue-20-Feb-18 For now we'll have only 2 states working, EXISTING and KILLED
 
-    fun getTaskState() = this.state
+    fun getTaskState() = state
 
-    fun canKill() =
-            state != TaskState.KILLED &&
-                    isKillable &&
-                    getAllUnmetAndShowingConstraints().isEmpty()
+    private fun isExisting() = state == TaskState.EXISTING
 
-    fun canFail() =
-            state != TaskState.FAILED &&
-                    isFailable
+    fun canKill() = isKillable &&
+            isExisting() &&
+            getAllUnmetAndShowingConstraints().isEmpty()
 
+    /*
+//    // Tue-20-Feb-18 Let's leave this for now
+//    fun canFail() = isFailable &&
+//            state != TaskState.FAILED
+//
+//
+//    // TODO Failing is still a problem since what decides if we can fail it?? Actually it's because was killable and now no longer killable
+//    // Tue-20-Feb-18 Let's leave this for now
+//    fun fail() {
+//        if (state == TaskState.FAILED) {
+//            throw IllegalStateException("Fail unsuccessful, $this is already Failed!")
+//        }
+//        if (!isFailable) {
+//            throw IllegalStateException("Fail unsuccessful, $this is not Failable")
+//        } else if (canFail()) {
+//            state = TaskState.FAILED
+//        }
+//    }
+    */
 
-    //TODO Failing is still a problem since what decides if we can fail it?? Actually it's because was killable and now no longer killable
-    fun fail() {
-        if (state == TaskState.FAILED) {
-            throw IllegalStateException("Fail unsuccessful, $this is already Failed!")
-        }
-        if (!isFailable) {
-            throw IllegalStateException("Fail unsuccessful, $this is not Failable")
-        } else if (canFail()) {
-            state = TaskState.FAILED
-        }
-    }
-
+    // If a Task is killed it can be modified because it doesn't matter at all, after killed there is no other State.
     fun kill() {
         if (state == TaskState.KILLED) {
-            throw IllegalStateException("Kill unsuccessful, $this is already Killed!")
+            throw TaskStateException("Kill unsuccessful, ${this.title} is already Killed!", getTaskState())
         }
         if (!isKillable) {
-            throw IllegalStateException("Kill unsuccessful, $this is not Killable")
+            throw TaskStateException("Kill unsuccessful, ${this.title} is not Killable", getTaskState())
         }
         if (!getAllUnmetAndShowingConstraints().isEmpty()) {
-            throw IllegalStateException("Kill unsuccessful, $this has unmet Constraints")
+            throw TaskStateException("Kill unsuccessful, ${this.title} has unmet Constraints", getTaskState())
         } else if (canKill()) {
             state = TaskState.KILLED
+        } else {
+            throw TaskStateException("Kill unsuccessful, unknown reason, only EXISTING tasks can be killed!", getTaskState())
         }
     }
 
+    // Overriden from kotlin.Any
 
     override fun hashCode() =
             title.hashCode() + getAllShowingProperties().hashCode()
@@ -262,12 +271,12 @@ class Task(var title: String) {
 }
 
 enum class TaskState {
-    UNBORN,
+    UNBORN, // Not yet relevant
     EXISTING,
     FAILED,
-    SLEEPING,
+    SLEEPING, // Waiting to be relevant once again, after being failed
     KILLED,
-    IMMORTAL
+    IMMORTAL // Template
 }
 
 

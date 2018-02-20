@@ -1,4 +1,4 @@
-package uk.whitecrescent.timemanagementsystem.test
+package uk.whitecrescent.waqti.test
 
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
