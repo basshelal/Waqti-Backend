@@ -2,15 +2,13 @@ package uk.whitecrescent.waqti.code
 
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.Random
 
 class Task(var title: String) {
 
     private var state = DEFAULT_TASK_STATE // Existing
     var isFailable = false
     var isKillable = true // not can kill now, more like is it possible to ever be killed, doesn't apply to Templates
-    val taskID = Math.abs(Random().nextLong())
-    val taskCode = Math.abs(LocalDateTime.now().hashCode())
+    var taskID = GSON.newID()
 
     // Task Properties, all initially set to default values
 
@@ -211,25 +209,22 @@ class Task(var title: String) {
             isExisting() &&
             getAllUnmetAndShowingConstraints().isEmpty()
 
-    /*
-//    // Tue-20-Feb-18 Let's leave this for now
-//    fun canFail() = isFailable &&
-//            state != TaskState.FAILED
-//
-//
-//    // TODO Failing is still a problem since what decides if we can fail it?? Actually it's because was killable and now no longer killable
-//    // Tue-20-Feb-18 Let's leave this for now
-//    fun fail() {
-//        if (state == TaskState.FAILED) {
-//            throw IllegalStateException("Fail unsuccessful, $this is already Failed!")
-//        }
-//        if (!isFailable) {
-//            throw IllegalStateException("Fail unsuccessful, $this is not Failable")
-//        } else if (canFail()) {
-//            state = TaskState.FAILED
-//        }
-//    }
-    */
+
+    fun canFail() = isFailable &&
+            isExisting()
+
+    // Tue-20-Feb-18 Let's leave this for now
+    fun fail() {
+        if (state == TaskState.FAILED) {
+            throw TaskStateException("Fail unsuccessful, ${this.title} is already Failed!", getTaskState())
+        }
+        if (!isFailable) {
+            throw TaskStateException("Fail unsuccessful, ${this.title} is not Failable", getTaskState())
+        } else if (canFail()) {
+            state = TaskState.FAILED
+        }
+    }
+
 
     // If a Task is killed it can be modified because it doesn't matter at all, after killed there is no other State.
     fun kill() {
@@ -244,8 +239,48 @@ class Task(var title: String) {
         } else if (canKill()) {
             state = TaskState.KILLED
         } else {
-            throw TaskStateException("Kill unsuccessful, unknown reason, only EXISTING tasks can be killed!", getTaskState())
+            throw TaskStateException("Kill unsuccessful, unknown reason, remember only EXISTING tasks can be killed!", getTaskState())
         }
+    }
+
+    // Database stuff
+
+    fun saveToJSON(): Task {
+        GSON.saveTask(this)
+        return this
+    }
+
+    // Used by JSON only!
+    constructor(
+            state: TaskState,
+            isFailable: Boolean,
+            isKillable: Boolean,
+            taskID: Long,
+            time: Property<LocalDateTime>,
+            duration: Property<Duration>,
+            priority: Property<Priority>,
+            label: Property<Label>,
+            optional: Property<Boolean>,
+            description: Property<StringBuilder>,
+            checkList: Property<CheckList>,
+            deadline: Property<LocalDateTime>,
+            target: Property<String>,
+            title: String
+    ) : this(title) {
+        this.state = state
+        this.isFailable = isFailable
+        this.isKillable = isKillable
+        this.taskID = taskID
+        this.time = time
+        this.duration = duration
+        this.priority = priority
+        this.label = label
+        this.optional = optional
+        this.description = description
+        this.checkList = checkList
+        this.deadline = deadline
+        this.target = target
+
     }
 
     // Overriden from kotlin.Any
@@ -271,10 +306,9 @@ class Task(var title: String) {
 }
 
 enum class TaskState {
-    UNBORN, // Not yet relevant
+    WAITING, // Not yet relevant or Waiting to be relevant once again, after being failed
     EXISTING,
     FAILED,
-    SLEEPING, // Waiting to be relevant once again, after being failed
     KILLED,
     IMMORTAL // Template
 }
