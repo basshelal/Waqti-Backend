@@ -7,7 +7,6 @@ import java.util.Random
 object GSON {
 
     private val gson = Gson()
-    //    private val TASK_ID_FILE = "C:\\Users\\bassh\\GitHub Repositories\\Waqti\\src\\uk\\whitecrescent\\waqti\\persistence\\taskid.json"
     private val TASK_ID_FILE = "database/taskid.json"
     private val TASKS_FILE = "database/tasks.json"
 
@@ -99,6 +98,8 @@ object GSON {
                 task.checkList,
                 task.deadline,
                 task.target,
+                task.before,
+                task.after,
                 task.title)
         val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
         gson.toJson(arrayOf(*allTasks.toArray()), fileWriter)

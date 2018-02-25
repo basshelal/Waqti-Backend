@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.*
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.Arrays
 
 class TestSuite {
 
@@ -15,15 +14,10 @@ class TestSuite {
     @Test
     fun runner() {
 
-        GSON.clearTaskIDFile()
-        GSON.clearTasksFile()
-
-        GSON.saveTask(Task("0"), Task("1"), Task("2"), Task("3"), Task("4"))
-
-        println(GSON.readAllIDs().reversedArray()[0])
-        println(GSON.readIDsFromTasks()[0])
-
-        assertTrue(Arrays.equals(GSON.readAllIDs().reversedArray(), GSON.readIDsFromTasks()))
+//        GSON.clearTaskIDFile()
+//        GSON.clearTasksFile()
+//
+//        GSON.saveTask(Task("0"), Task("1"), Task("2"), Task("3"), Task("4"))
 
 
     }
