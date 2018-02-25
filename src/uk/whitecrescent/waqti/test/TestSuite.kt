@@ -1,5 +1,6 @@
 package uk.whitecrescent.waqti.test
 
+import io.reactivex.rxkotlin.toObservable
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
@@ -18,6 +19,9 @@ class TestSuite {
 //        GSON.clearTasksFile()
 //
 //        GSON.saveTask(Task("0"), Task("1"), Task("2"), Task("3"), Task("4"))
+
+        listOf(Task("My Task")).toObservable().subscribe { println(it) }
+
 
 
     }

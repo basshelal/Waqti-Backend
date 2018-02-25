@@ -1,12 +1,20 @@
 # TODO
 
-* When Task is given a Constraint we must change it to being failable automatically
+**Sun-25-Feb Currently the focus is `Task` we need to make sure this thing works perfectly and does everything we need it to, rewriting this thing will be a mess so we must try and make sure it works well, it's the core of this whole project, everything else in this project relies on the assumption that Task is perfect.**
 
-* Concurrent Constraint checking to transition between states in the lifecycle
+* When Task is given a Constraint we must change it to being failable automatically (this may also require Rx)
 
-* Based on Concurrent stuff, check which state we make the default, WAITING should be the default
+* Concurrent Constraint checking to transition between states in the lifecycle, meaning for example if deadline is a Constraint then there must be something that constantly checks the time to compare the current time with the deadline time and when they are equal to act accordingly, in this case to fail the task.
+
+* Based on Concurrent stuff, check which state we make the default, WAITING should be the default since a Task is waiting to be relevant, however this can be an option? Maybe we make Task be EXISTING and then if Time is set then it can change to WAITING, then when that time passes it will be EXISTING, so the default state does not matter as much as having effective concurrent checking of Task's state (as in condition) in time.
 
 * Documentation (A good way of better understanding the codebase and allowing for easy returning)
+
+* Make sure to have Unit tests that cover 100% of Task class when it is near completion
+
+* Try to make Integration tests for Task as well since basically it's the basic unit and the core of everything in this project
+
+* Update the Documentation Files as necessary
 
 * Make sure all Task Properties are working perfectly
 
