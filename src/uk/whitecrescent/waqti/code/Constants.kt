@@ -2,8 +2,12 @@ package uk.whitecrescent.waqti.code
 
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.concurrent.TimeUnit
 
 const val NUMBER_OF_PROPERTIES = 10
+
+const val TIME_CHECKING_PERIOD = 1L
+val TIME_CHECKING_UNIT = TimeUnit.SECONDS
 
 const val HIDDEN = false
 const val SHOWING = true

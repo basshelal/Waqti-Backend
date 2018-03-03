@@ -48,23 +48,26 @@ class Task(var title: String) {
 
     //region Task Properties
 
-    //TODO there has to be a better way to do this man!
+    /*TODO there is a better way to do this, we use pvt setters and have the programmer set using functions, this is good because we can have composable setting like RXJava does, meaning no assignments just functions*/
+    //TODO this is scheduled time, we should change the name
     var time: Property<LocalDateTime> = DEFAULT_TIME_PROPERTY
-        set(time) {
+        set(time) {// we can use pvt setter
             field = time
-            makeFailable(time)
+            makeFailableIfConstraint(time)
+            // Start the time checking!
+            // if the time is after now then state is SLEEPING until the times match
         }
     var duration: Property<Duration> = DEFAULT_DURATION_PROPERTY
         set(duration) {
             field = duration
-            makeFailable(duration)
+            makeFailableIfConstraint(duration)
         }
     var priority: Property<Priority> = DEFAULT_PRIORITY_PROPERTY
     var label: Property<Label> = DEFAULT_LABEL_PROPERTY
     var optional: Property<Boolean> = DEFAULT_OPTIONAL_PROPERTY
     var description: Property<StringBuilder> = DEFAULT_DESCRIPTION_PROPERTY
     var checkList: Property<CheckList> = DEFAULT_CHECKLIST_PROPERTY
-    var deadline: Property<LocalDateTime> = DEFAULT_DEADLINE_PROPERTY
+    var deadline: Property<LocalDateTime> = DEFAULT_DEADLINE_PROPERTY // do the time checking here as well
     var target: Property<String> = DEFAULT_TARGET_PROPERTY
     var before: Property<Long> = DEFAULT_BEFORE_PROPERTY
     var after: Property<Long> = DEFAULT_AFTER_PROPERTY
@@ -73,7 +76,7 @@ class Task(var title: String) {
 
     //region Task Properties Functions
 
-    private fun makeFailable(property: Property<*>) {
+    private fun makeFailableIfConstraint(property: Property<*>) {
         if (!this.isFailable && property is Constraint) {
             this.isFailable = true
         }
@@ -374,8 +377,33 @@ class Task(var title: String) {
         return this
     }
 
-    // Used by JSON only!
-    constructor(
+    companion object {
+        // Used by JSON only to create Tasks in memory from the database, does not write them to database, since
+        // they're already written in the database
+        fun createTaskFromJSON(state: TaskState,
+                               isFailable: Boolean,
+                               isKillable: Boolean,
+                               taskID: Long,
+                               time: Property<LocalDateTime>,
+                               duration: Property<Duration>,
+                               priority: Property<Priority>,
+                               label: Property<Label>,
+                               optional: Property<Boolean>,
+                               description: Property<StringBuilder>,
+                               checkList: Property<CheckList>,
+                               deadline: Property<LocalDateTime>,
+                               target: Property<String>,
+                               before: Property<Long>,
+                               after: Property<Long>,
+                               title: String
+        ) = Task(state, isFailable, isKillable, taskID, time,
+                duration, priority, label, optional, description,
+                checkList, deadline, target, before, after, title)
+
+    }
+
+
+    private constructor(
             state: TaskState,
             isFailable: Boolean,
             isKillable: Boolean,
@@ -435,14 +463,6 @@ class Task(var title: String) {
     }
 
     //endregion
-}
-
-enum class TaskState {
-    SLEEPING, // Not yet relevant or Waiting to be relevant once again, after being failed
-    EXISTING,
-    FAILED,
-    KILLED,
-    IMMORTAL // Template
 }
 
 

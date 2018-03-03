@@ -1,8 +1,14 @@
 package uk.whitecrescent.waqti.code
 
 import com.google.gson.Gson
-import java.io.*
+import io.reactivex.Observable
+import io.reactivex.schedulers.Schedulers
+import java.io.BufferedReader
+import java.io.BufferedWriter
+import java.io.FileReader
+import java.io.FileWriter
 import java.util.Random
+import java.util.concurrent.TimeUnit
 
 object GSON {
 
@@ -84,7 +90,7 @@ object GSON {
     fun updateTaskAt(index: Int, task: Task) {
         val allTasks = readAllTasks()
         val taskID = allTasks[index].taskID
-        allTasks[index] = Task(
+        allTasks[index] = Task.createTaskFromJSON(
                 task.getTaskState(),
                 task.isFailable,
                 task.isKillable,
@@ -159,10 +165,37 @@ object GSON {
         fileWriter.close()
     }
 
-
 }
 
 object Concurrent {
+
+    val timeCheckingThread = Schedulers.newThread()
+
+    /**
+     * An Observable that emits every so often on the time checking Thread.
+     * This is useful for having a single Observable for repeating every certain time period, since
+     * having many can be computationally expensive.
+     * You can add multiple different kinds of Observers to this and hence the power and efficiency of it.
+     * The emitting repeats indefinitely which can be very useful for constant concurrent checking.
+     */
+    val timeCheckerObservable =
+            Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                    .subscribeOn(timeCheckingThread)
+
+    fun taskStateCheckingObservable(task: Task): Observable<TaskState> {
+        return Observable.just(task.getTaskState()).subscribeOn(timeCheckingThread)
+    }
+
+    fun <T> repeatAndGetEvery(func: () -> T, period: Long, timeUnit: TimeUnit) {
+        Observable.interval(period, timeUnit)
+                .subscribeOn(timeCheckingThread)
+                .subscribe(
+                        { func.invoke() },
+                        {},
+                        { throw IllegalStateException("Could not complete concurrent operation") },
+                        {}
+                )
+    }
 
 }
 

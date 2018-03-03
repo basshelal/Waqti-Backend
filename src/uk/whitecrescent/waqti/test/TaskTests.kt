@@ -1,0 +1,645 @@
+package uk.whitecrescent.waqti.test
+
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Nested
+import org.junit.jupiter.api.Test
+import uk.whitecrescent.waqti.code.*
+import java.time.Duration
+import java.time.LocalDateTime
+
+@DisplayName("Task Tests")
+@Nested
+class TaskTests {
+
+    //region Task Properties and Constraints
+
+    //region Time
+
+    @DisplayName("Task time Property")
+    @Test
+    fun testTaskTimeProperty() {
+        // Initial Task time Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.time is Constraint)
+        Assertions.assertEquals(DEFAULT_TIME, task.time.value)
+        Assertions.assertFalse(task.time.isVisible)
+
+        // Change time Property and check it is visible and still not a Constraint
+        task.time = Property(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1))
+        Assertions.assertFalse(task.time is Constraint)
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
+        Assertions.assertTrue(task.time.isVisible)
+
+        // Hide time and check that it resets to default values
+        task.hideTime()
+        Assertions.assertFalse(task.time is Constraint)
+        Assertions.assertEquals(DEFAULT_TIME, task.time.value)
+        Assertions.assertFalse(task.time.isVisible)
+    }
+
+    @DisplayName("Task time Constraint")
+    @Test
+    fun testTaskTimeConstraint() {
+        // Initial Task time Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.time is Constraint)
+        Assertions.assertEquals(DEFAULT_TIME, task.time.value)
+        Assertions.assertFalse(task.time.isVisible)
+
+        // Change time Property to a Constraint and check it matches default Constraint values
+        task.time = task.time.toConstraint()
+        Assertions.assertEquals(DEFAULT_TIME, task.time.value)
+        Assertions.assertFalse(task.time.isVisible)
+        Assertions.assertFalse((task.time as Constraint).isMet)
+
+        // Change time Constraint to some values and check
+        task.time = Constraint(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1), MET)
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
+        Assertions.assertTrue(task.time.isVisible)
+        Assertions.assertTrue((task.time as Constraint).isMet)
+
+        // Try to hide time when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideTime() })
+        Assertions.assertTrue(task.time is Constraint)
+    }
+
+    //endregion
+
+    //region Duration
+
+    @DisplayName("Task duration Property")
+    @Test
+    fun testTaskDurationProperty() {
+        // Initial Task duration Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.duration is Constraint)
+        Assertions.assertEquals(DEFAULT_DURATION, task.duration.value)
+        Assertions.assertFalse(task.duration.isVisible)
+
+        // Change duration Property and check it is visible and still not a Constraint
+        task.duration = Property(SHOWING, Duration.ofSeconds(15))
+        Assertions.assertFalse(task.duration is Constraint)
+        Assertions.assertEquals(Duration.ofSeconds(15), task.duration.value)
+        Assertions.assertTrue(task.duration.isVisible)
+
+        // Hide duration and check that it resets to default values
+        task.hideDuration()
+        Assertions.assertFalse(task.duration is Constraint)
+        Assertions.assertEquals(DEFAULT_DURATION, task.duration.value)
+        Assertions.assertFalse(task.duration.isVisible)
+
+    }
+
+    @DisplayName("Task duration Constraint")
+    @Test
+    fun testTaskDurationConstraint() {
+        // Initial Task duration Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.duration is Constraint)
+        Assertions.assertEquals(DEFAULT_DURATION, task.duration.value)
+        Assertions.assertFalse(task.duration.isVisible)
+
+        // Change duration Property to a Constraint and check it matches default Constraint values
+        task.duration = task.duration.toConstraint()
+        Assertions.assertEquals(DEFAULT_DURATION, task.duration.value)
+        Assertions.assertFalse(task.duration.isVisible)
+        Assertions.assertFalse((task.duration as Constraint).isMet)
+
+        // Change duration Constraint to some values and check
+        task.duration = Constraint(SHOWING, Duration.ofSeconds(15), MET)
+        Assertions.assertEquals(Duration.ofSeconds(15), task.duration.value)
+        Assertions.assertTrue(task.duration.isVisible)
+        Assertions.assertTrue((task.duration as Constraint).isMet)
+
+        // Try to hide duration when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideDuration() })
+        Assertions.assertTrue(task.duration is Constraint)
+    }
+
+    //endregion
+
+    //region Priority
+
+    @DisplayName("Task priority Property")
+    @Test
+    fun testTaskPriorityProperty() {
+        // Initial Task priority Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.priority is Constraint)
+        Assertions.assertEquals(DEFAULT_PRIORITY, task.priority.value)
+        Assertions.assertFalse(task.priority.isVisible)
+
+        // Change priority Property and check it is visible and still not a Constraint
+        task.priority = Property(SHOWING, Priority.createNewPriority("High"))
+        Assertions.assertFalse(task.priority is Constraint)
+        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        Assertions.assertTrue(task.priority.isVisible)
+
+        // Hide priority and check that it resets to default values
+        task.hidePriority()
+        Assertions.assertFalse(task.priority is Constraint)
+        Assertions.assertEquals(DEFAULT_PRIORITY, task.priority.value)
+        Assertions.assertFalse(task.priority.isVisible)
+    }
+
+    @DisplayName("Task priority Constraint")
+    @Test
+    fun testTaskPriorityConstraint() {
+        // Initial Task priority Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.priority is Constraint)
+        Assertions.assertEquals(DEFAULT_PRIORITY, task.priority.value)
+        Assertions.assertFalse(task.priority.isVisible)
+
+        // Change priority Property to a Constraint and check it matches default Constraint values
+        task.priority = task.priority.toConstraint()
+        Assertions.assertEquals(DEFAULT_PRIORITY, task.priority.value)
+        Assertions.assertFalse(task.priority.isVisible)
+        Assertions.assertFalse((task.priority as Constraint).isMet)
+
+        // Change priority Constraint to some values and check
+        task.priority = Constraint(SHOWING, Priority.createNewPriority("High"), MET)
+        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        Assertions.assertTrue(task.priority.isVisible)
+        Assertions.assertTrue((task.priority as Constraint).isMet)
+
+        // Try to hide priority when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hidePriority() })
+        Assertions.assertTrue(task.priority is Constraint)
+    }
+
+    //endregion
+
+    //region Label
+
+    @DisplayName("Task label Property")
+    @Test
+    fun testTaskLabelProperty() {
+        // Initial Task label Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.label is Constraint)
+        Assertions.assertEquals(DEFAULT_LABEL, task.label.value)
+        Assertions.assertFalse(task.label.isVisible)
+
+        // Change label Property and check it is visible and still not a Constraint
+        task.label = Property(SHOWING, Label.createNewLabel("Label1"))
+        Assertions.assertFalse(task.label is Constraint)
+        Assertions.assertEquals(Label.getLabelByName("Label1"), task.label.value)
+        Assertions.assertTrue(task.label.isVisible)
+
+        // Hide label and check that it resets to default values
+        task.hideLabel()
+        Assertions.assertFalse(task.label is Constraint)
+        Assertions.assertEquals(DEFAULT_LABEL, task.label.value)
+        Assertions.assertFalse(task.label.isVisible)
+    }
+
+    @DisplayName("Task label Constraint")
+    @Test
+    fun testTaskLabelConstraint() {
+        // Initial Task label Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.label is Constraint)
+        Assertions.assertEquals(DEFAULT_LABEL, task.label.value)
+        Assertions.assertFalse(task.label.isVisible)
+
+        // Change label Property to a Constraint and check it matches default Constraint values
+        task.label = task.label.toConstraint()
+        Assertions.assertEquals(DEFAULT_LABEL, task.label.value)
+        Assertions.assertFalse(task.label.isVisible)
+        Assertions.assertFalse((task.label as Constraint).isMet)
+
+        // Change label Constraint to some values and check
+        task.label = Constraint(SHOWING, Label.createNewLabel("Label1"), MET)
+        Assertions.assertEquals(Label.getLabelByName("Label1"), task.label.value)
+        Assertions.assertTrue(task.label.isVisible)
+        Assertions.assertTrue((task.label as Constraint).isMet)
+
+        // Try to label time when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideLabel() })
+        Assertions.assertTrue(task.label is Constraint)
+    }
+
+    //endregion
+
+    //region Optional
+
+    @DisplayName("Task optional Property")
+    @Test
+    fun testTaskOptionalProperty() {
+        // Initial Task optional Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.optional is Constraint)
+        Assertions.assertEquals(DEFAULT_OPTIONAL, task.optional.value)
+        Assertions.assertFalse(task.optional.isVisible)
+
+        // Change optional Property and check it is visible and still not a Constraint
+        task.optional = Property(SHOWING, true)
+        Assertions.assertFalse(task.optional is Constraint)
+        Assertions.assertEquals(true, task.optional.value)
+        Assertions.assertTrue(task.optional.isVisible)
+
+        // Hide optional and check that it resets to default values
+        task.hideOptional()
+        Assertions.assertFalse(task.optional is Constraint)
+        Assertions.assertEquals(DEFAULT_OPTIONAL, task.optional.value)
+        Assertions.assertFalse(task.optional.isVisible)
+    }
+
+    @DisplayName("Task optional Constraint")
+    @Test
+    fun testTaskOptionalConstraint() {
+        // Initial Task optional Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.optional is Constraint)
+        Assertions.assertEquals(DEFAULT_OPTIONAL, task.optional.value)
+        Assertions.assertFalse(task.optional.isVisible)
+
+        // Change optional Property to a Constraint and check it matches default Constraint values
+        task.optional = task.optional.toConstraint()
+        Assertions.assertEquals(DEFAULT_OPTIONAL, task.optional.value)
+        Assertions.assertFalse(task.optional.isVisible)
+        Assertions.assertFalse((task.optional as Constraint).isMet)
+
+        // Change optional Constraint to some values and check
+        task.optional = Constraint(SHOWING, true, MET)
+        Assertions.assertEquals(true, task.optional.value)
+        Assertions.assertTrue(task.optional.isVisible)
+        Assertions.assertTrue((task.optional as Constraint).isMet)
+
+        // Try to hide optional when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideOptional() })
+        Assertions.assertTrue(task.optional is Constraint)
+    }
+
+    //endregion
+
+    //region Description
+
+    @DisplayName("Task description Property")
+    @Test
+    fun testTaskDescriptionProperty() {
+        // Initial Task description Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.description is Constraint)
+        Assertions.assertEquals(DEFAULT_DESCRIPTION, task.description.value)
+        Assertions.assertFalse(task.description.isVisible)
+
+        // Change description Property and check it is visible and still not a Constraint
+        task.description = Property(SHOWING, StringBuilder("Description"))
+        Assertions.assertFalse(task.description is Constraint)
+        Assertions.assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
+        Assertions.assertTrue(task.description.isVisible)
+
+        // Hide description and check that it resets to default values
+        task.hideDescription()
+        Assertions.assertFalse(task.description is Constraint)
+        Assertions.assertEquals(DEFAULT_DESCRIPTION, task.description.value)
+        Assertions.assertFalse(task.description.isVisible)
+    }
+
+    @DisplayName("Task description Constraint")
+    @Test
+    fun testTaskDescriptionConstraint() {
+        // Initial Task description Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.description is Constraint)
+        Assertions.assertEquals(DEFAULT_DESCRIPTION, task.description.value)
+        Assertions.assertFalse(task.description.isVisible)
+
+        // Change description Property to a Constraint and check it matches default Constraint values
+        task.description = task.description.toConstraint()
+        Assertions.assertEquals(DEFAULT_DESCRIPTION, task.description.value)
+        Assertions.assertFalse(task.description.isVisible)
+        Assertions.assertFalse((task.description as Constraint).isMet)
+
+        // Change description Constraint to some values and check
+        task.description = Constraint(SHOWING, StringBuilder("Description"), MET)
+        Assertions.assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
+        Assertions.assertTrue(task.description.isVisible)
+        Assertions.assertTrue((task.description as Constraint).isMet)
+
+        // Try to hide description when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideDescription() })
+        Assertions.assertTrue(task.description is Constraint)
+    }
+
+    //endregion
+
+    //region Checklist
+
+    @DisplayName("Task checklist Property")
+    @Test
+    fun testTaskCheckListProperty() {
+        // Initial Task checkList Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.checkList is Constraint)
+        Assertions.assertEquals(DEFAULT_CHECKLIST, task.checkList.value)
+        Assertions.assertFalse(task.checkList.isVisible)
+
+        // Change checkList Property and check it is visible and still not a Constraint
+        task.checkList = Property(SHOWING, CheckList("1", "2", "3"))
+        Assertions.assertFalse(task.checkList is Constraint)
+        Assertions.assertEquals(CheckList("1", "2", "3"), task.checkList.value)
+        Assertions.assertTrue(task.checkList.isVisible)
+
+        // Hide checklist and check that it resets to default values
+        task.hideChecklist()
+        Assertions.assertFalse(task.checkList is Constraint)
+        Assertions.assertEquals(DEFAULT_CHECKLIST, task.checkList.value)
+        Assertions.assertFalse(task.checkList.isVisible)
+    }
+
+    @DisplayName("Task checklist Constraint")
+    @Test
+    fun testTaskCheckListConstraint() {
+        // Initial Task checkList Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.checkList is Constraint)
+        Assertions.assertEquals(DEFAULT_CHECKLIST, task.checkList.value)
+        Assertions.assertFalse(task.checkList.isVisible)
+
+        // Change checkList Property to a Constraint and check it matches default Constraint values
+        task.checkList = task.checkList.toConstraint()
+        Assertions.assertEquals(DEFAULT_CHECKLIST, task.checkList.value)
+        Assertions.assertFalse(task.checkList.isVisible)
+        Assertions.assertFalse((task.checkList as Constraint).isMet)
+
+        // Change checkList Constraint to some values and check
+        task.checkList = Constraint(SHOWING, CheckList("1", "2", "3"), MET)
+        Assertions.assertEquals(CheckList("1", "2", "3"), task.checkList.value)
+        Assertions.assertTrue(task.checkList.isVisible)
+        Assertions.assertTrue((task.checkList as Constraint).isMet)
+
+        // Try to hide checklist when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideChecklist() })
+        Assertions.assertTrue(task.checkList is Constraint)
+    }
+
+    //endregion
+
+    //region Deadline
+
+    @DisplayName("Task deadline Property")
+    @Test
+    fun testTaskDeadlineProperty() {
+        // Initial Task deadline Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.deadline is Constraint)
+        Assertions.assertEquals(DEFAULT_DEADLINE, task.deadline.value)
+        Assertions.assertFalse(task.deadline.isVisible)
+
+        // Change deadline Property and check it is visible and still not a Constraint
+        task.deadline = Property(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1))
+        Assertions.assertFalse(task.deadline is Constraint)
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
+        Assertions.assertTrue(task.deadline.isVisible)
+
+        // Hide deadline and check that it resets to default values
+        task.hideDeadline()
+        Assertions.assertFalse(task.deadline is Constraint)
+        Assertions.assertEquals(DEFAULT_DEADLINE, task.deadline.value)
+        Assertions.assertFalse(task.deadline.isVisible)
+    }
+
+    @DisplayName("Task deadline Constraint")
+    @Test
+    fun testTaskDeadlineConstraint() {
+        // Initial Task deadline Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.deadline is Constraint)
+        Assertions.assertEquals(DEFAULT_DEADLINE, task.deadline.value)
+        Assertions.assertFalse(task.deadline.isVisible)
+
+        // Change deadline Property to a Constraint and check it matches default Constraint values
+        task.deadline = task.deadline.toConstraint()
+        Assertions.assertEquals(DEFAULT_DEADLINE, task.deadline.value)
+        Assertions.assertFalse(task.deadline.isVisible)
+        Assertions.assertFalse((task.deadline as Constraint).isMet)
+
+        // Change deadline Constraint to some values and check
+        task.deadline = Constraint(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1), MET)
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
+        Assertions.assertTrue(task.deadline.isVisible)
+        Assertions.assertTrue((task.deadline as Constraint).isMet)
+
+        // Try to hide deadline when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideDeadline() })
+        Assertions.assertTrue(task.deadline is Constraint)
+    }
+
+    //endregion
+
+    //region Target
+
+    @DisplayName("Task target Property")
+    @Test
+    fun testTaskTargetProperty() {
+        // Initial Task target Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.target is Constraint)
+        Assertions.assertEquals(DEFAULT_TARGET, task.target.value)
+        Assertions.assertFalse(task.target.isVisible)
+
+        // Change target Property and check it is visible and still not a Constraint
+        task.target = Property(SHOWING, "Target!")
+        Assertions.assertFalse(task.target is Constraint)
+        Assertions.assertEquals("Target!", task.target.value)
+        Assertions.assertTrue(task.target.isVisible)
+
+        // Hide target and check that it resets to default values
+        task.hideTarget()
+        Assertions.assertFalse(task.target is Constraint)
+        Assertions.assertEquals(DEFAULT_TARGET, task.target.value)
+        Assertions.assertFalse(task.target.isVisible)
+    }
+
+    @DisplayName("Task target Constraint")
+    @Test
+    fun testTaskTargetConstraint() {
+        // Initial Task target Property values
+        val task = Task("My Task")
+        Assertions.assertFalse(task.target is Constraint)
+        Assertions.assertEquals(DEFAULT_TARGET, task.target.value)
+        Assertions.assertFalse(task.target.isVisible)
+
+        // Change target Property to a Constraint and check it matches default Constraint values
+        task.target = task.target.toConstraint()
+        Assertions.assertEquals(DEFAULT_TARGET, task.target.value)
+        Assertions.assertFalse(task.target.isVisible)
+        Assertions.assertFalse((task.target as Constraint).isMet)
+
+        // Change target Constraint to some values and check
+        task.target = Constraint(SHOWING, "Target!", MET)
+        Assertions.assertEquals("Target!", task.target.value)
+        Assertions.assertTrue(task.target.isVisible)
+        Assertions.assertTrue((task.target as Constraint).isMet)
+
+        // Try to hide target when it is a Constraint
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideTarget() })
+        Assertions.assertTrue(task.target is Constraint)
+    }
+
+    //endregion
+
+    //endregion
+
+    //region Task Lifecycle
+
+    @DisplayName("Task State EXISTING to KILLED")
+    @Test
+    fun testTaskStateExisting() {
+        val task = Task("My Task")
+        Assertions.assertEquals(TaskState.EXISTING, task.getTaskState())
+        task.kill()
+        Assertions.assertEquals(TaskState.KILLED, task.getTaskState())
+        Assertions.assertThrows(TaskStateException::class.java, { task.kill() })
+
+        task.deadline = Property(SHOWING, LocalDateTime.now())
+        task.deadline = task.deadline.toConstraint()
+        Assertions.assertEquals(TaskState.KILLED, task.getTaskState())
+        Assertions.assertEquals(1, task.getAllUnmetAndShowingConstraints().size)
+        Assertions.assertFalse(task.canKill())
+    }
+
+    @DisplayName("Task kill with non met Constraints")
+    @Test
+    fun testTaskKillWithNonMetConstraints() {
+        val task = Task("My Task")
+        task.checkList = Property(SHOWING, CheckList("1", "2", "3"))
+        task.checkList = task.checkList.toConstraint()
+        task.duration = Property(SHOWING, Duration.ofHours(2))
+        task.duration = task.duration.toConstraint()
+        Assertions.assertEquals(2, task.getAllUnmetAndShowingConstraints().size)
+        Assertions.assertTrue(task.isKillable)
+        Assertions.assertFalse(task.canKill())
+        Assertions.assertThrows(TaskStateException::class.java, { task.kill() })
+
+        (task.checkList as Constraint).isMet = MET
+        (task.duration as Constraint).isMet = MET
+        Assertions.assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        task.kill()
+        Assertions.assertEquals(TaskState.KILLED, task.getTaskState())
+        Assertions.assertFalse(task.canKill())
+    }
+
+    //endregion
+
+    //region Other
+
+    @DisplayName("Task title")
+    @Test
+    fun testTaskTitle() {
+        val task = Task("My Task")
+        Assertions.assertEquals("My Task", task.title)
+        task.title = "My Task modified"
+        Assertions.assertEquals("My Task modified", task.title)
+    }
+
+    @DisplayName("Property and Constraint switching")
+    @Test
+    fun testPropertyAndConstraintSwitching() {
+        val task = Task("My Task")
+        Assertions.assertFalse(task.time is Constraint)
+
+        // Change time Property to Constraint and check
+        task.time = task.time.toConstraint()
+        Assertions.assertTrue(task.time is Constraint)
+
+        // Change time Constraint back to a Property
+        task.time = (task.time as Constraint).toProperty()
+        Assertions.assertFalse(task.time is Constraint)
+        Assertions.assertThrows(ClassCastException::class.java, { (task.time as Constraint).isMet })
+    }
+
+    @DisplayName("Task creation using chaining by Values")
+    @Test
+    fun testTaskCreationUsingChainingByValues() {
+        val task = Task("My Task")
+                .setTimeValue(LocalDateTime.of(1970, 1, 1, 1, 1))
+                .setDurationValue(Duration.ofSeconds(15))
+                .setPriorityValue(Priority.createNewPriority("High"))
+                .setLabelValue(Label.createNewLabel("Label1"))
+                .setOptionalValue(true)
+                .setDescriptionValue(StringBuilder("Description"))
+                .setChecklistValue(CheckList("1", "2", "3"))
+                .setDeadlineValue(LocalDateTime.of(1970, 1, 1, 1, 1))
+                .setTargetValue("Target!")
+
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
+        Assertions.assertTrue(task.time.isVisible)
+
+        Assertions.assertEquals(Duration.ofSeconds(15), task.duration.value)
+        Assertions.assertTrue(task.duration.isVisible)
+
+        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        Assertions.assertTrue(task.priority.isVisible)
+
+        Assertions.assertEquals(Label.getLabelByName("Label1"), task.label.value)
+        Assertions.assertTrue(task.label.isVisible)
+
+        Assertions.assertEquals(true, task.optional.value)
+        Assertions.assertTrue(task.optional.value)
+
+        Assertions.assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
+        Assertions.assertTrue(task.description.isVisible)
+
+        Assertions.assertEquals(CheckList("1", "2", "3"), task.checkList.value)
+        Assertions.assertTrue(task.checkList.isVisible)
+
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
+        Assertions.assertTrue(task.checkList.isVisible)
+
+        Assertions.assertEquals("Target!", task.target.value)
+        Assertions.assertTrue(task.target.isVisible)
+
+        Assertions.assertTrue(task.getAllShowingConstraints().isEmpty())
+    }
+
+    @DisplayName("Task creation using chaining by Properties")
+    @Test
+    fun testTaskCreationUsingChainingByProperties() {
+        val task = Task("My Task")
+                .setTimeProperty(Property(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1)))
+                .setDurationProperty(Property(SHOWING, Duration.ofSeconds(15)))
+                .setPriorityProperty(Property(SHOWING, Priority.createNewPriority("High")))
+                .setLabelProperty(Property(SHOWING, Label.createNewLabel("Label1")))
+                .setOptionalProperty(Property(SHOWING, true))
+                .setDescriptionProperty(Property(SHOWING, StringBuilder("Description")))
+                .setChecklistProperty(Property(SHOWING, CheckList("1", "2", "3")))
+                .setDeadlineProperty(Property(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1)))
+                .setTargetProperty(Property(SHOWING, "Target!"))
+
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.time.value)
+        Assertions.assertTrue(task.time.isVisible)
+
+        Assertions.assertEquals(Duration.ofSeconds(15), task.duration.value)
+        Assertions.assertTrue(task.duration.isVisible)
+
+        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        Assertions.assertTrue(task.priority.isVisible)
+
+        Assertions.assertEquals(Label.getLabelByName("Label1"), task.label.value)
+        Assertions.assertTrue(task.label.isVisible)
+
+        Assertions.assertEquals(true, task.optional.value)
+        Assertions.assertTrue(task.optional.value)
+
+        Assertions.assertEquals(StringBuilder("Description").toString(), task.description.value.toString())
+        Assertions.assertTrue(task.description.isVisible)
+
+        Assertions.assertEquals(CheckList("1", "2", "3"), task.checkList.value)
+        Assertions.assertTrue(task.checkList.isVisible)
+
+        Assertions.assertEquals(LocalDateTime.of(1970, 1, 1, 1, 1), task.deadline.value)
+        Assertions.assertTrue(task.checkList.isVisible)
+
+        Assertions.assertEquals("Target!", task.target.value)
+        Assertions.assertTrue(task.target.isVisible)
+
+        Assertions.assertTrue(task.getAllShowingConstraints().isEmpty())
+    }
+
+    //endregion
+}
