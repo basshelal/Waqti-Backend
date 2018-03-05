@@ -7,6 +7,7 @@ import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.FileReader
 import java.io.FileWriter
+import java.time.LocalDateTime
 import java.util.Random
 import java.util.concurrent.TimeUnit
 
@@ -101,7 +102,7 @@ object GSON {
                 task.label,
                 task.optional,
                 task.description,
-                task.checkList,
+                task.checklist,
                 task.deadline,
                 task.target,
                 task.before,
@@ -171,6 +172,8 @@ object Concurrent {
 
     val timeCheckingThread = Schedulers.newThread()
 
+    val stateCheckingThread = Schedulers.newThread()
+
     /**
      * An Observable that emits every so often on the time checking Thread.
      * This is useful for having a single Observable for repeating every certain time period, since
@@ -199,5 +202,18 @@ object Concurrent {
 
 }
 
+fun now() = LocalDateTime.now()
 
-//extension functions go here for universal access
+fun sleep(millis: Long) = Thread.sleep(millis)
+
+fun <T> logD(t: T) {
+    println("DEBUG: ${t.toString()}")
+}
+
+fun <T> logI(t: T) {
+    println("INFO: ${t.toString()}")
+}
+
+fun <T> logE(t: T) {
+    error("ERROR: ${t.toString()}")
+}

@@ -4,7 +4,7 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.CheckList
+import uk.whitecrescent.waqti.code.Checklist
 import uk.whitecrescent.waqti.code.ListItem
 
 @DisplayName("Properties Tests")
@@ -16,7 +16,7 @@ class PropertiesTests {
     @DisplayName("Checklist")
     @Test
     fun testChecklist() {
-        val checkList = CheckList("Zero", "One", "Two", "Three", "Four")
+        val checkList = Checklist("Zero", "One", "Two", "Three", "Four")
         Assertions.assertEquals(5, checkList.size())
 
         checkList.addItem("Five")

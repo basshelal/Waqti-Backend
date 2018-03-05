@@ -1,9 +1,8 @@
 package uk.whitecrescent.waqti.code
 
 enum class TaskState {
-    SLEEPING, // Not yet relevant or Waiting to be relevant once again, after being failed
+    SLEEPING,
     EXISTING,
     FAILED,
-    KILLED,
-    IMMORTAL // Template
+    KILLED
 }

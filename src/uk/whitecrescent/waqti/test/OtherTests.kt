@@ -6,16 +6,33 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.*
 import java.time.LocalDateTime
-import java.util.Random
 
 class OtherTests {
+
+    @DisplayName("Test")
+    @Test
+    fun test() {
+        val tuple = Tuple(Task("My Task").setDescriptionValue(Description("Description")).setLabelValue(Label
+                .createNewLabel("Label")), Task("My Other Task"))
+        println(tuple.tasks[0])
+        println(tuple.tasks[0].after)
+        println(tuple.tasks[1])
+
+        println(DEFAULT_SUB_TASKS_PROPERTY.value.size)
+    }
 
     @DisplayName("Runner")
     @Test
     fun runner() {
-        val task = Task("Task")
-        task.time
+        val task = Task("Task").setDeadlineConstraint(Constraint(SHOWING, now().plusSeconds(10), UNMET))
+        logI(task.isFailable)
+        logI(task.getTaskState())
+        logI(task.getAllUnmetAndShowingConstraints())
 
+        sleep(15000)
+
+        logI(task.getTaskState())
+        logI(task.getAllUnmetAndShowingConstraints())
 
     }
 
@@ -74,11 +91,6 @@ class OtherTests {
 
         val printTime = {
             println("Time: ${LocalDateTime.now().hour}:${LocalDateTime.now().minute}:${LocalDateTime.now().second}")
-        }
-
-        val printRandom = {
-            val r = Random().nextInt(6)
-            println(r + 1)
         }
 
         Concurrent.timeCheckerObservable.subscribe(

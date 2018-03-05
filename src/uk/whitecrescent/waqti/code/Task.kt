@@ -1,5 +1,6 @@
 package uk.whitecrescent.waqti.code
 
+import io.reactivex.Observable
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -7,7 +8,6 @@ class Task(var title: String) {
 
     //region Class Properties
 
-    //TODO maybe we make default state be SLEEPING, since we have to wait to be EXISTING
     /**
      * The Task State is the state in which the task is in at this point in time.
      * By default this is set to EXISTING.
@@ -24,7 +24,6 @@ class Task(var title: String) {
      * @see Constraint
      */
     var isFailable = false
-    //TODO fix this so that it becomes failable when it has a Constraint given to it
 
     /**
      * Boolean value representing whether it is possible for this Task to be killed at any arbitrary point in time.
@@ -44,33 +43,83 @@ class Task(var title: String) {
      */
     var taskID = GSON.newID()
 
+    // A Task ages when it is failed
+    var age = 0
+
+    // The time a task is failed
+    var failedTime = Time.MIN
+
+    // The time a task is killed
+    var killedTime = Time.MIN
+
     //endregion
 
     //region Task Properties
 
-    /*TODO there is a better way to do this, we use pvt setters and have the programmer set using functions, this is good because we can have composable setting like RXJava does, meaning no assignments just functions*/
-    //TODO this is scheduled time, we should change the name
-    var time: Property<LocalDateTime> = DEFAULT_TIME_PROPERTY
-        set(time) {// we can use pvt setter
+    var time: Property<Time> = DEFAULT_TIME_PROPERTY
+        private set(time) {
             field = time
-            makeFailableIfConstraint(time)
-            // Start the time checking!
-            // if the time is after now then state is SLEEPING until the times match
         }
+
     var duration: Property<Duration> = DEFAULT_DURATION_PROPERTY
-        set(duration) {
+        private set(duration) {
             field = duration
-            makeFailableIfConstraint(duration)
         }
+
     var priority: Property<Priority> = DEFAULT_PRIORITY_PROPERTY
+        private set(priority) {
+            field = priority
+        }
+
+    //TODO this should be many labels, not 1 ! So an ArrayList of Labels
     var label: Property<Label> = DEFAULT_LABEL_PROPERTY
-    var optional: Property<Boolean> = DEFAULT_OPTIONAL_PROPERTY
-    var description: Property<StringBuilder> = DEFAULT_DESCRIPTION_PROPERTY
-    var checkList: Property<CheckList> = DEFAULT_CHECKLIST_PROPERTY
-    var deadline: Property<LocalDateTime> = DEFAULT_DEADLINE_PROPERTY // do the time checking here as well
+        private set(label) {
+            field = label
+        }
+
+    var optional: Property<Optional> = DEFAULT_OPTIONAL_PROPERTY
+        private set(optional) {
+            field = optional
+        }
+
+    var description: Property<Description> = DEFAULT_DESCRIPTION_PROPERTY
+        private set(description) {
+            field = description
+        }
+
+    var checklist: Property<Checklist> = DEFAULT_CHECKLIST_PROPERTY
+        private set(checklist) {
+            field = checklist
+        }
+
+    var deadline: Property<Time> = DEFAULT_DEADLINE_PROPERTY
+        private set(deadline) {
+            field = deadline
+        }
+
     var target: Property<String> = DEFAULT_TARGET_PROPERTY
-    var before: Property<Long> = DEFAULT_BEFORE_PROPERTY
-    var after: Property<Long> = DEFAULT_AFTER_PROPERTY
+        private set(target) {
+            field = target
+        }
+
+    // The Task before this
+    var before: Property<TaskID> = DEFAULT_BEFORE_PROPERTY
+        private set(before) {
+            field = before
+        }
+
+    // The Task after this
+    var after: Property<TaskID> = DEFAULT_AFTER_PROPERTY
+        private set(after) {
+            field = after
+        }
+
+    //TODO Implement this guy everywhere please but define him in the .md
+    var subTasks: Property<ArrayList<TaskID>> = DEFAULT_SUB_TASKS_PROPERTY
+        private set(subTasks) {
+            field = subTasks
+        }
+
 
     //endregion
 
@@ -89,11 +138,12 @@ class Task(var title: String) {
             label,
             optional,
             description,
-            checkList,
+            checklist,
             deadline,
             target,
             before,
-            after)
+            after
+    )
 
     private fun getAllConstraints() = getAllProperties().filter { it is Constraint }
 
@@ -114,122 +164,180 @@ class Task(var title: String) {
 
     fun setTimeProperty(timeProperty: Property<LocalDateTime>): Task {
         this.time = timeProperty
+        makeFailableIfConstraint(timeProperty)
+        if (timeProperty.value.isAfter(now())) {
+            this.state = TaskState.SLEEPING
+            concurrentStateCheckingForTime()
+        }
         return this
     }
 
+    fun setTimeConstraint(timeConstraint: Constraint<LocalDateTime>): Task {
+        return setTimeProperty(timeConstraint)
+    }
+
     fun setTimeValue(time: LocalDateTime): Task {
-        this.time = Property(SHOWING, time)
-        return this
+        return setTimeProperty(Property(SHOWING, time))
     }
 
     fun setDurationProperty(durationProperty: Property<Duration>): Task {
         this.duration = durationProperty
+        makeFailableIfConstraint(durationProperty)
         return this
     }
 
+    fun setDurationConstraint(durationConstraint: Constraint<Duration>): Task {
+        return setDurationProperty(durationConstraint)
+    }
+
     fun setDurationValue(duration: Duration): Task {
-        this.duration = Property(SHOWING, duration)
-        return this
+        return setDurationProperty(Property(SHOWING, duration))
     }
 
     fun setPriorityProperty(priorityProperty: Property<Priority>): Task {
         this.priority = priorityProperty
+        makeFailableIfConstraint(priorityProperty)
         return this
     }
 
+    fun setPriorityConstraint(priorityConstraint: Constraint<Priority>): Task {
+        return setPriorityProperty(priorityConstraint)
+    }
+
     fun setPriorityValue(priority: Priority): Task {
-        this.priority = Property(SHOWING, priority)
-        return this
+        return setPriorityProperty(Property(SHOWING, priority))
     }
 
     fun setLabelProperty(labelProperty: Property<Label>): Task {
         this.label = labelProperty
+        makeFailableIfConstraint(labelProperty)
         return this
     }
 
+    fun setLabelConstraint(labelConstraint: Constraint<Label>): Task {
+        return setLabelProperty(labelConstraint)
+    }
+
     fun setLabelValue(label: Label): Task {
-        this.label = Property(SHOWING, label)
-        return this
+        return setLabelProperty(Property(SHOWING, label))
     }
 
     fun setOptionalProperty(optionalProperty: Property<Boolean>): Task {
         this.optional = optionalProperty
+        makeFailableIfConstraint(optionalProperty)
         return this
     }
 
+    fun setOptionalConstraint(optionalConstraint: Constraint<Boolean>): Task {
+        return setOptionalProperty(optionalConstraint)
+    }
+
     fun setOptionalValue(optional: Boolean): Task {
-        this.optional = Property(SHOWING, optional)
-        return this
+        return setOptionalProperty(Property(SHOWING, optional))
     }
 
     fun setDescriptionProperty(descriptionProperty: Property<StringBuilder>): Task {
         this.description = descriptionProperty
+        makeFailableIfConstraint(descriptionProperty)
         return this
+    }
+
+    fun setDescriptionConstraint(descriptionConstraint: Constraint<StringBuilder>): Task {
+        return setDescriptionProperty(descriptionConstraint)
     }
 
     fun setDescriptionValue(description: StringBuilder): Task {
-        this.description = Property(SHOWING, description)
+        return setDescriptionProperty(Property(SHOWING, description))
+    }
+
+    fun setChecklistProperty(checklistProperty: Property<Checklist>): Task {
+        this.checklist = checklistProperty
+        makeFailableIfConstraint(checklistProperty)
         return this
     }
 
-    fun setChecklistProperty(checkListProperty: Property<CheckList>): Task {
-        this.checkList = checkListProperty
-        return this
+    fun setChecklistConstraint(checklistConstraint: Constraint<Checklist>): Task {
+        return setChecklistProperty(checklistConstraint)
     }
 
-    fun setChecklistValue(checkList: CheckList): Task {
-        this.checkList = Property(SHOWING, checkList)
-        return this
+    fun setChecklistValue(checklist: Checklist): Task {
+        return setChecklistProperty(Property(SHOWING, checklist))
+
     }
 
     fun setDeadlineProperty(deadlineProperty: Property<LocalDateTime>): Task {
         this.deadline = deadlineProperty
+        if (deadlineProperty is Constraint) {
+            concurrentTimeCheckingForDeadlineConstraint()
+        }
+        makeFailableIfConstraint(deadlineProperty)
         return this
     }
 
+    fun setDeadlineConstraint(deadlineConstraint: Constraint<LocalDateTime>): Task {
+        return setDeadlineProperty(deadlineConstraint)
+    }
+
     fun setDeadlineValue(deadline: LocalDateTime): Task {
-        this.deadline = Property(SHOWING, deadline)
-        return this
+        return setDeadlineProperty(Property(SHOWING, deadline))
     }
 
     fun setTargetProperty(targetProperty: Property<String>): Task {
         this.target = targetProperty
+        makeFailableIfConstraint(targetProperty)
         return this
     }
 
+    fun setTargetConstraint(targetConstraint: Constraint<String>): Task {
+        return setTargetProperty(targetConstraint)
+    }
+
     fun setTargetValue(target: String): Task {
-        this.target = Property(SHOWING, target)
-        return this
+        return setTargetProperty(Property(SHOWING, target))
     }
 
     fun setBeforeProperty(beforeProperty: Property<Long>): Task {
         this.before = beforeProperty
+        makeFailableIfConstraint(beforeProperty)
         return this
     }
 
     fun setBeforeProperty(beforeTask: Task): Task {
-        this.before = Property(SHOWING, beforeTask.taskID)
-        return this
+        return setBeforeProperty(Property(SHOWING, beforeTask.taskID))
+    }
+
+    fun setBeforeConstraint(beforeConstraint: Constraint<Long>): Task {
+        return setBeforeProperty(beforeConstraint)
+    }
+
+    fun setBeforeConstraint(beforeTask: Task): Task {
+        return setBeforeProperty(Constraint(SHOWING, beforeTask.taskID, UNMET))
     }
 
     fun setBeforeValue(before: Long): Task {
-        this.before = Property(SHOWING, before)
-        return this
+        return setBeforeProperty(Property(SHOWING, before))
     }
 
     fun setAfterProperty(afterProperty: Property<Long>): Task {
         this.after = afterProperty
+        makeFailableIfConstraint(afterProperty)
         return this
     }
 
     fun setAfterProperty(afterTask: Task): Task {
-        this.after = Property(SHOWING, afterTask.taskID)
-        return this
+        return setAfterProperty(Property(SHOWING, afterTask.taskID))
+    }
+
+    fun setAfterConstraint(afterConstraint: Constraint<Long>): Task {
+        return setAfterProperty(afterConstraint)
+    }
+
+    fun setAfterConstraint(afterTask: Task): Task {
+        return setAfterProperty(Constraint(SHOWING, afterTask.taskID, UNMET))
     }
 
     fun setAfterValue(after: Long): Task {
-        this.after = Property(SHOWING, after)
-        return this
+        return setAfterProperty(Property(SHOWING, after))
     }
 
     //endregion
@@ -273,8 +381,8 @@ class Task(var title: String) {
     }
 
     fun hideChecklist() {
-        if (isNotConstraint(checkList)) {
-            checkList = DEFAULT_CHECKLIST_PROPERTY
+        if (isNotConstraint(checklist)) {
+            checklist = DEFAULT_CHECKLIST_PROPERTY
         } else throw IllegalStateException("Cannot hide, checklist is Constraint")
     }
 
@@ -318,8 +426,7 @@ class Task(var title: String) {
     fun canFail() = isFailable &&
             isExisting()
 
-    //Every Task is Wait-able
-    fun canWait() = getTaskState() == TaskState.FAILED
+    fun canSleep() = getTaskState() == TaskState.FAILED
 
     fun fail() {
         if (state == TaskState.FAILED) {
@@ -329,6 +436,8 @@ class Task(var title: String) {
             throw TaskStateException("Fail unsuccessful, ${this.title} is not Failable", getTaskState())
         } else if (canFail()) {
             state = TaskState.FAILED
+            age++
+            failedTime = now()
         } else {
             throw TaskStateException("Fail unsuccessful, unknown reason, remember only EXISTING tasks can be failed!", getTaskState())
         }
@@ -343,15 +452,21 @@ class Task(var title: String) {
         }
         if (state == TaskState.EXISTING) {
             throw TaskStateException("Sleep unsuccessful, ${this.title} is Existing!", getTaskState())
-        } else if (canWait()) {
+        } else if (canSleep()) {
             state = TaskState.SLEEPING
         } else {
             throw TaskStateException("Sleep unsuccessful, unknown reason, remember only FAILED tasks can be slept!", getTaskState())
         }
     }
 
+    // Send this tasks info to create a template from it
+    fun sendToTemplate() {
+
+    }
+
 
     // If a Task is killed it can be modified because it doesn't matter at all, after killed there is no other State.
+    //TODO This isn't entirely true! We need to do something to make sure that Killed Tasks can't be meddled with much
     fun kill() {
         if (state == TaskState.KILLED) {
             throw TaskStateException("Kill unsuccessful, ${this.title} is already Killed!", getTaskState())
@@ -363,9 +478,69 @@ class Task(var title: String) {
             throw TaskStateException("Kill unsuccessful, ${this.title} has unmet Constraints", getTaskState())
         } else if (canKill()) {
             state = TaskState.KILLED
+            killedTime = now()
         } else {
             throw TaskStateException("Kill unsuccessful, unknown reason, remember only EXISTING tasks can be killed!", getTaskState())
         }
+    }
+
+    //endregion
+
+    //region Concurrency
+
+    // This is both computationally cheap and terminates
+    private fun concurrentStateCheckingForTime() {
+
+        /*
+         * Runs every 1 second as long as this state is SLEEPING
+         * And every 1 second it will compare the time now to the scheduled time and if
+         * the scheduled time has passed, will change the state to EXISTING, thus ending the session and completing
+         */
+        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                .takeWhile { this.state == TaskState.SLEEPING }
+                .subscribeOn(Concurrent.stateCheckingThread)
+                .subscribe(
+                        {
+                            if (this.time.value.isAfter(now())) {
+                                this.state = TaskState.EXISTING
+                            }
+                        },
+                        {
+                            logE("Concurrent state checking for time failed!")
+                            it.printStackTrace()
+                        },
+                        {
+                            logI("Concurrent state checking for time completed!")
+                        },
+                        {
+                            logI("Concurrent state checking for time started")
+                        }
+                )
+    }
+
+    private fun concurrentTimeCheckingForDeadlineConstraint() {
+
+        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                .takeWhile { this.deadline.value.plusSeconds(1).isAfter(now()) }
+                .subscribeOn(Concurrent.timeCheckingThread)
+                .subscribe(
+                        {
+                            if (now().isAfter(this.deadline.value)) {
+                                this.fail()
+                            }
+                        },
+                        {
+                            logE("Concurrent time checking for deadline failed!")
+                            it.printStackTrace()
+                        },
+                        {
+                            logI("Concurrent time checking for deadline completed!")
+                        },
+                        {
+                            logI("Concurrent time checking for deadline started")
+                        }
+                )
+
     }
 
     //endregion
@@ -390,7 +565,7 @@ class Task(var title: String) {
                                label: Property<Label>,
                                optional: Property<Boolean>,
                                description: Property<StringBuilder>,
-                               checkList: Property<CheckList>,
+                               checklist: Property<Checklist>,
                                deadline: Property<LocalDateTime>,
                                target: Property<String>,
                                before: Property<Long>,
@@ -398,7 +573,7 @@ class Task(var title: String) {
                                title: String
         ) = Task(state, isFailable, isKillable, taskID, time,
                 duration, priority, label, optional, description,
-                checkList, deadline, target, before, after, title)
+                checklist, deadline, target, before, after, title)
 
     }
 
@@ -414,7 +589,7 @@ class Task(var title: String) {
             label: Property<Label>,
             optional: Property<Boolean>,
             description: Property<StringBuilder>,
-            checkList: Property<CheckList>,
+            checklist: Property<Checklist>,
             deadline: Property<LocalDateTime>,
             target: Property<String>,
             before: Property<Long>,
@@ -431,7 +606,7 @@ class Task(var title: String) {
         this.label = label
         this.optional = optional
         this.description = description
-        this.checkList = checkList
+        this.checklist = checklist
         this.deadline = deadline
         this.target = target
         this.before = before
@@ -453,13 +628,18 @@ class Task(var title: String) {
                     other.getAllShowingProperties().equals(this.getAllShowingProperties())
 
     override fun toString(): String {
-        val s = StringBuilder("Task: title = $title\n")
+        val result = StringBuilder("$title\n")
+        result.append("ID: ${this.taskID} isKillable: ${isKillable} isFailable: ${isFailable} state: ${state}\n")
 
-        getAllShowingProperties().forEach { s.append("$it \n") }
+        result.append("\tP:\n")
 
-        s.append("state = $state\n\n")
+        getAllShowingProperties().filter { it !is Constraint }.forEach { result.append("\t\t$it\n") }
 
-        return s.toString()
+        result.append("\tC:\n")
+
+        getAllShowingConstraints().forEach { result.append("\t\t$it\n") }
+
+        return result.toString()
     }
 
     //endregion

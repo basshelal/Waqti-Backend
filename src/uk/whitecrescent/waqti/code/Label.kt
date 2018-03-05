@@ -1,5 +1,7 @@
 package uk.whitecrescent.waqti.code
 
+// Consider sub-labels, labels within labels like Work which contains Software Dev and University
+// but nothing can be labelled as Work, rather one of its sub-labels
 class Label private constructor(var name: String) {
 
     companion object {

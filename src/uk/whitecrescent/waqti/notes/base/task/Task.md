@@ -1,135 +1,152 @@
 # Task
 
-A Task is the smallest, ***independent*** unit in the Time Management System.
+A Task is the smallest, ***independent*** unit in the Waqti Time Management System.
 
-A Task may have Properties that add information to it, an example Property would be the duration Property that describes
- the duration of time of the Task. All Properties are optional.
+A Task has Properties and a lifecycle.
+
+Properties add detail and information to the Task, Properties can be set and modified by the user as well as by time.
+
+The Task lifecycle shows which state the Task is currently in which affects its behavior.
+
+A Task's state can only be modified by 2 actors, the user and time.
+
+Properties can be Constraints which are a special type of Property that can modify the Task's lifecycle.
+
+Although Constraints can modify the Task's state, they cannot do this alone, they do this as a result of either and 
+action or lack of action from either time or the user or both.
 
 ## The Task Lifecycle
 
-All Tasks have a lifecycle. A Task may be in only one of the of the following lifecycle states at a given point in time.
+Tasks have a lifecycle. A Task may be in only one of the of the following lifecycle states at a given point in time.
 
-### Unborn
+    -> S -> E -> K
+       ^   /
+        \ v
+         F 
 
-A Task is said to be in the Unborn state if it has been created but is not yet killable, we say then that it is not yet relevant,
- this often applies to Tasks with a Property bound to a scheduled time.
+### SLEEPING
 
-The Unborn state is attributed to a Task that is not yet killable.
+A Task is said to be in the SLEEPING state if it is not relevant, this means it is not EXISTING and cannot be killed 
+nor failed, it is waiting to become EXISTING or relevant again.
 
-An example of this would be the following Task:
+This can happen as a consequence of two possible scenarios:
 
-    Title: Prepare tomorrow's breakfast
-    Properties:
-        Scheduled Time: Friday 10th November 16:00
-        Duration: 60 minutes
+* The Task has a Scheduled Time and that time is in the future, so the Task is waiting to be EXISTING
 
-This task is only relevant and active at 16:00 on Friday 10th November, before that time it is not killable, this is because it has
- a scheduled time Property, so _before_ that time the Task is in the Unborn state.
+* The Task has been failed and has been delegated and given a new Scheduled Time to be EXISTING again after that time
 
-However if a Task does not have such a Property then it is never in the Unborn state and immediately jumps to the next state, the Existing state.
+The SLEEPING state can lead to the EXISTING state only and can come from the FAILED state or the initial point of 
+the Task's creation. In the Task Life-cycle it is the initial state.
 
-### Existing
+The SLEEPING state is attributed to a Task that is not currently relevant and is waiting to become so, relevant 
+meaning EXISTING and can be killed and or can be failed.
 
-A Task is said to be in the Existing state if it is currently killable, and so it is relevant at this current time.
+An example of a SLEEPING Task would be the following:
 
-A Task with a Property bound to a scheduled time is killable after that time has passed, if it also has a Property bound to
- duration then it is killable during that time window (from scheduled time until scheduled time plus duration plus possible grace period).
+    "Prepare tomorrow's breakfast"
+    id    !failable    killable    SLEEPING
+        C:
+            time: Friday 10th November 16:00
+            
+This Task is only relevant and EXISTING at 16:00 on Friday 10th November, before this time it is not EXISTING nor 
+killable, this is because of the time Property. Before that time, the Task is SLEEPING.
 
-A Task with a Constraint that has not yet been met is still in the Existing state despite not being killable.
+A Task without a time Property however cannot be SLEEPING and so it either goes to the EXISTING state or remains in 
+the FAILED state, if that is where it is.
 
-The Existing state is attributed to a Task that is currently killable ignoring any met or unmet Constraints. we say the Task is currently relevant.
+### EXISTING
 
-An example of this would be the following Task:
+A Task is said to be in the EXISTING state if it is relevant, meaning it can be killed and or failed. It is currently
+ in its time of importance or use to the user.
+ 
+If a Task has no means of failing or being killed then it will be EXISTING indefinitely until any of those is 
+performed.
+ 
+The EXISTING state can lead to the KILLED state if the Task is killed, or the FAILED state if the Task is failed. 
+The EXISTING state can only come from the SLEEPING state after the SLEEPING state has ended as a result of the 
+scheduled time passing.
+ 
+The EXISTING state is attributed to a Task that is currently killable and or failable at this point in time.
+ 
+An example of an EXISTING Task would be the following:
 
-    Title: Tidy up office space
-    Properties:
-        Scheduled Time: Friday 10th November 18:00
-        Duration: 30 minutes
+    "Tidy up office space"  
+    id    failable    killable    EXISTING
+        C:
+            time: Friday 10th November 18:00
+            deadline: Friday 10th November 20:00
+            
+This Task becomes EXISTING at Friday 10th November 18:00, before that time it is SLEEPING and after Friday 10th 
+November 20:00 plus the grace period then it is no longer EXISTING.
+            
+ If the Task had no Constraints defining time then it is possible for it to exist in the EXISTING state indefinitely 
+ until the user takes some action on it.
 
-This task becomes Existing at 18:00 on Friday 10th November, before that time it is in the Unborn state, at 18:00 on Friday 
-10th November it becomes Existing and so it is killable. It remains in the Existing state until 18:00 + 30 minutes + possible grace period 
-(nothing for this example) and so at 18:30 it ends existence.
+### FAILED
 
-If a Task did not have a duration Property then it would remain in the Existing state until it would be killed.
-
-If a Task had no Properties describing scheduled time or duration then it would be in the Existing state indefinitely.
-
-### Failed
-
-A Task is said to be in the Failed state if it is was at some point killable and is now longer killable, we say this Task is a 
-failable Task because it is possible for it to be in the Failed state.
+A Task is said to be in the FAILED state if it was at some point prior EXISTING and could be killed and now is no 
+longer EXISTING and can no longer be killed, this is usually as a result of some unmet Constraint. A Task that allows
+failing is said to be failable. If a Task is not failable then this state is impossible.
 
 A Task with a Constraint that can be at some point no longer possible is a Task that can be failed since the Constraint can no longer
- be met and so it is no longer killable, so it is Failed.
+be met and so it is no longer killable, so it is Failed.
 
-The Failed state is attributed to a Task that was killable at some point and now is no longer killable. This state does not exist 
-for Tasks that are not failable.
+The FAILED state can only lead to the SLEEPING sate and can only come from the EXISTING state.
 
-An example of this would be the following Task:
+The FAILED state is attributed to a Task that was able to be killed previously and now can no longer be killed.
 
-    Title: Buy mushrooms for tomorrow's lunch
-    Properties:
-        Scheduled Time: Friday 10th November 13:00
-        Duration: 60 minutes
-        Failed Time: Friday 10th November 17:00
+An example of a FAILED Task would be the following:
 
-This task is failable by the Failed Time Property, the Task is failed if it is not in the Killed state by Friday 10th November 17:00, 
-at which point it can no longer be achieved since in this example the stores close at that time and so if the user did not achieve that
- Task by that time it is failed.
+    "Buy mushrooms for tomorrow's lunch"
+    id    failable    killable    FAILED
+        P:
+            description: "Get mushrooms before Tesco closes at 17:00"
+        C:
+            time: Friday 10th November 13:00
+            deadline: Friday 10th November 17:00
+            
+This Task is failable, since it has a deadline Constraint, after which plus the grace period the Task will be FAILED 
+and can no longer be killed. The Task can be re-scheduled or delegated at which point it will be SLEEPING to become 
+EXISTING and killable again at some point.
 
-### Sleeping
+### KILLED
 
-A Task is said to be in the Sleeping state if it has been delegated, meaning it was at some point or currently is Existing and has been 
-given a new point in time to be Existing. This could also be in conjunction with being failable and is often used for that purpose, 
-specifically a failable Task is realized by the user to be unable to be accomplished so to avoid having a Failed Task the Task will be 
-delegated to another time. In between the current time and the new delegation time, the Task is in the Sleeping State. After a Task has
- been delegated, ie is currently in the Sleeping state, we say the Task has aged.
+A Task is said to be in the KILLED state if it was at some point prior EXISTING and is no longer so, it could be 
+killed before and now is not. This corresponds to a Task being done hence the only way a Task can be killed is by the
+user. If a Task is not killable then this state is impossible.
+ 
+In order for a Task to be killed its Constraints must be met.
 
-The Sleeping state is attributed to a Task that is or was Existing and is no longer Existing but has been delegated to be Existing 
-at another point in time. In between both points in time it is in the Sleeping state. The Sleeping state strongly relates to Task aging.
+The KILLED state cannot lead to any other state, it is the final state in a Task's lifecycle. The KILLED state can 
+only come from the EXISTING state, only an EXISTING Task can be killed.
 
-An example of this would be the following Task:
+The KILLED state is attributed to a Task that was EXISTING and could be killed and is now no longer EXISTING and can 
+no longer be killed. A Task is no longer relevant after being killed.
 
-    Title: See Dr. Tam during his office hours
-    Properties:
-        Scheduled Time: Friday 10th November 10:00
-        Failed Time: Friday 10th November 11:00
-        Delegated Time: Friday 17th November 10:00
-        Delegated Fail Time: Friday 17th November 11:00
-        Age: 1
+An example of a KILLED Task is the following:
 
-This task is in the Sleeping state between the time the user delegated it, say 10:45 when they realized it cannot be done, 
-to the time that it will Exist again, also known as being Reborn. Delegating the Task will automatically add to its Age.
+    "Eat Breakfast"
+    id    failable    killable    KILLED
+        C:
+            time: Friday 10th November 09:00
+            
+This task is in the KILLED state since it was able to be killed and has met all its Constraints and was killed by the 
+user signifying that it has been completed and is no longer relevant.
 
-### Killed
+---------------------------------------------------------------------------------------------------------------------------
 
-A Task is said to be in the Killed state if it was at some point in the Existing state and is no longer in that state because of the user killing it. 
-This corresponds to a user checking off the Task that it is done.
-
-A Task can be in the Killed state only if it is killable, a Task cannot enter the Killed state if it has Constraints that are not met.
-
-The Killed state is attributed to a Task that was killable and has been checked off by the user as done. A Task becomes no longer relevant after being killed.
-
-An example of this would be the following Task:
-
-    Title: Have breakfast
-    Properties:
-        Scheduled Time: Friday 10th November 9:00
-        Duration: 30 minutes
-        Killed Time: Friday 10th November 9:28
-
-This task is in the Killed state since it was killable and has met all its Constraints and was killed by the user signifying that it has been accomplished.
+# Old Notes
 
 ### Immortal
 
-A Task is said to be in the Immortal state if it is a special kind of Task called the Blueprint Task, a Task that exists solely 
-to create copies of itself which are actual Tasks.
+A Task is said to be in the Immortal state if it is a special kind of Task called the Template Task, a Task that 
+exists solely to create copies of itself which are actual Tasks that have life-cycles of their own.
 
-The Immortal state is attributed to a Blueprint Task, which is a Task that has no Existing time and is not failable nor killable.
+The Immortal state is attributed to a Template Task, which is a Task that has no Existing time and is not failable nor 
+killable.
 
 An example of this would be the following Task:
 
-    Title: Shower
     Properties:
         Duration: 30 minutes
         Blueprint: True
@@ -142,10 +159,10 @@ Its sole purpose is to create copies of itself that are regular Tasks.
 * If a SuperTask has been killed then its SubTasks are all killed as well, provided all Constraints are met. Constraints of SubTasks
  should by definition be Constraints of the SuperTask (this should be a selectable option, to Constrain the SuperTask to its SubTasks,
   if not Constrained and the SuperTask is killed the SubTasks will be either independent Tasks or killed as well)
-* A Task becomes killable when it is in the Existing state and all its Constraints are met. If there exists a Constraint 
-of the Task that is not met then the task is not killable despite being Existing.
 
 ## Other Task Notes
+
+There's a difference between killable and can be killed, and failable and can be failed.
 
 ### Killable
 

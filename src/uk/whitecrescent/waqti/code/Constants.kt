@@ -4,17 +4,30 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
-const val NUMBER_OF_PROPERTIES = 10
+typealias Description = StringBuilder
+typealias Optional = Boolean
+typealias Target = String
+typealias Time = LocalDateTime
+typealias TaskID = Long
+
+const val NUMBER_OF_PROPERTIES = 11
 
 const val TIME_CHECKING_PERIOD = 1L
 val TIME_CHECKING_UNIT = TimeUnit.SECONDS
 
+// Used for Properties and Constraints
 const val HIDDEN = false
 const val SHOWING = true
 
+// Used for Constraints
 const val MET = true
 const val UNMET = false
 
+// Used for Optionals
+const val OPTIONAL = true
+const val MANDATORY = false
+
+// Used for Tasks
 const val DEFAULT_FAILABLE = false
 const val DEFAULT_KILLABLE = true
 
@@ -23,9 +36,9 @@ val DEFAULT_TIME = LocalDateTime.MIN!!
 val DEFAULT_DURATION = Duration.ZERO!!
 val DEFAULT_PRIORITY = Priority.createNewPriority("DEFAULT")
 val DEFAULT_LABEL = Label.createNewLabel("DEFAULT")
-val DEFAULT_OPTIONAL = false
+val DEFAULT_OPTIONAL = MANDATORY
 val DEFAULT_DESCRIPTION = StringBuilder("DEFAULT")
-val DEFAULT_CHECKLIST = CheckList()
+val DEFAULT_CHECKLIST = Checklist()
 val DEFAULT_TARGET = "DEFAULT"
 val DEFAULT_DEADLINE = LocalDateTime.MIN!!
 val DEFAULT_TASK_ID: Long = 0L
@@ -41,4 +54,6 @@ val DEFAULT_TARGET_PROPERTY = Property(HIDDEN, DEFAULT_TARGET)
 val DEFAULT_DEADLINE_PROPERTY = Property(HIDDEN, DEFAULT_DEADLINE)
 val DEFAULT_BEFORE_PROPERTY = Property(HIDDEN, DEFAULT_TASK_ID)
 val DEFAULT_AFTER_PROPERTY = Property(HIDDEN, DEFAULT_TASK_ID)
+val DEFAULT_SUB_TASKS_PROPERTY = Property(HIDDEN, arrayListOf<TaskID>())
 
+val GRACE_PERIOD = Duration.ofMinutes(10) //TODO Remember to place this where needed

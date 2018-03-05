@@ -15,5 +15,5 @@ class Constraint<V>(override var isVisible: Boolean, override val value: V, var 
             other is Constraint<*> && this.value!!.equals(other.value) && this.isVisible == other.isVisible && this.isMet == other.isMet
 
     override fun toString() =
-            "Constraint: isVisible = $isVisible value = ${value.toString()} isMet = $isMet"
+            "isVisible = $isVisible value = ${value.toString()} isMet = $isMet"
 }

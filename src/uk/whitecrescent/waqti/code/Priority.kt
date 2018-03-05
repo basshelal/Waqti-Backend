@@ -2,6 +2,8 @@ package uk.whitecrescent.waqti.code
 
 class Priority private constructor(var name: String) {
 
+    //TODO add in the importance level
+
     companion object {
 
         var allPriorities = ArrayList<Priority>()

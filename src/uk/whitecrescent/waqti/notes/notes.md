@@ -16,6 +16,8 @@ For any time we can use the new Java Time API in `java.time.*`
 
 We should have a timer in the app
 
+We can have sub-labels, labels that are part of labels
+
 Tasks can exist in pairs or groups, this would be a Routine or not necessarily
 
 Habit tracking
