@@ -14,10 +14,11 @@ You can think of Properties as descriptors and Constraints as enforcers.
 
 ### Constrainables
 
-* **Time:** The point in natural time after which this Task will be relevant and in the EXISTING state, this can also
-be referred to as scheduled time. If time is a Constraint then the Task cannot be killed until after that time, however 
-if time is not a Constraint then the Task can be killed freely. If time is a Property then it has no rules on killing
-the Task. In both cases however, the Task will always be SLEEPING until the time.
+* **Time:** The point in natural time after which this Task will be relevant, this can also be referred to as 
+scheduled time. If time is a Constraint then the Task cannot be killed until after that time and is in the SLEEPING 
+state during that period, however, if time is not a Constraint then the Task can be killed freely and will be in its
+previous state meaning no lifecycle change will be made. If time is a Property then it has no rules on killing the 
+Task.
 
 * **Duration:** The estimated amount of time that this Task will take, this is defined in any Time Measurement Unit, 
 this can also be referred to as minimum duration.If duration is a Constraint then the Task cannot be killed in the 

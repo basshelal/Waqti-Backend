@@ -1,41 +1,60 @@
 package uk.whitecrescent.waqti.code
 
-//!!Make sure this is unused until we fix the before and after into by ID not Task- I think I fixed this, check ok?!
+// We'll let this implementation constrain all the Tasks to one another, we can create a similar implementation that
+// has them just as Properties
 class Tuple(vararg tasks: Task) {
-    var tasks = ArrayList<Task>(tasks.asList())
+
+    private val tasksList: ArrayList<Task>
+
+    operator fun get(index: Int) = tasksList[index]
+
+    operator fun get(task: Task) = tasksList[tasksList.indexOf(task)]
 
     init {
-        if (tasks.size == 1) {
-            throw IllegalStateException("Tuple cannot be of size 1")
+        tasksList = ArrayList(tasks.asList())
+        if (tasksList.size <= 1) {
+            throw IllegalStateException("Tuple must have more than 1 Task!")
         }
-        for (index in 1..tasks.lastIndex - 1) {
-            tasks[index].setBeforeConstraint(Constraint(SHOWING, tasks[index - 1].taskID, UNMET))
-            tasks[index].setAfterConstraint(Constraint(SHOWING, tasks[index + 1].taskID, UNMET))
+        tasksList[0].setAfterConstraint(Constraint(SHOWING, tasksList[1].taskID, UNMET))
+        for (index in 1..tasksList.lastIndex - 1) {
+            tasksList[index].setBeforeConstraint(Constraint(SHOWING, tasksList[index - 1].taskID, UNMET))
+            tasksList[index].setAfterConstraint(Constraint(SHOWING, tasksList[index + 1].taskID, UNMET))
         }
-        tasks[0].setAfterConstraint(Constraint(SHOWING, tasks[1].taskID, UNMET))
-        tasks[tasks.lastIndex].setBeforeConstraint(Constraint(SHOWING, tasks[tasks.lastIndex - 1].taskID, UNMET))
+        tasksList[tasksList.lastIndex].setBeforeConstraint(Constraint(SHOWING, tasksList[tasksList.lastIndex - 1].taskID, UNMET))
     }
 
-    fun addAndConstrain(index: Int = tasks.size + 1, task: Task) {
-        tasks.last().setAfterConstraint(Constraint(SHOWING, task.taskID, UNMET))
-        task.setBeforeConstraint(Constraint(SHOWING, tasks.last().taskID, UNMET))
-        tasks.add(index, task)
+    // Adds the passed in Task to the end of the Tuple
+    fun addAndConstrain(task: Task) {
+        tasksList.last().setAfterConstraint(Constraint(SHOWING, task.taskID, UNMET))
+        task.setBeforeConstraint(Constraint(SHOWING, tasksList.last().taskID, UNMET))
+        tasksList.add(task)
     }
 
-    // This should be removed since it doesn't constrain
-    fun add(index: Int = tasks.size + 1, task: Task) {
-        tasks.add(index, task)
+    fun addAndConstrainAt(index: Int, task: Task) {
+        tasksList[index - 1].setAfterConstraint(Constraint(SHOWING, task.taskID, UNMET))
+        task.setBeforeConstraint(Constraint(SHOWING, tasksList[index - 1].taskID, UNMET))
+        task.setAfterConstraint(Constraint(SHOWING, tasksList[index + 1].taskID, UNMET))
+        tasksList[index + 1].setBeforeConstraint(Constraint(SHOWING, task.taskID, UNMET))
+        tasksList.add(index, task)
     }
 
     fun killTaskAt(index: Int) {
-        if (tasks[index - 1].getTaskState().equals(TaskState.KILLED)) {
-            tasks[index].kill()
-            tasks[index + 1].setBeforeConstraint(Constraint(HIDDEN, tasks[index].taskID, MET))
+        if (tasksList[index - 1].getTaskState().equals(TaskState.KILLED)) {
+            tasksList[index].kill()
+            tasksList[index + 1].setBeforeConstraint(Constraint(HIDDEN, tasksList[index].taskID, MET))
         }
     }
 
     fun killTask(task: Task) {
-        killTaskAt(tasks.indexOf(task))
+        killTaskAt(tasksList.indexOf(task))
+    }
+
+    fun setBefore(thisTask: Task, thatTask: Task) {
+        thisTask.setBeforeConstraint(Constraint(SHOWING, thatTask.taskID, UNMET))
+    }
+
+    fun setAfter(thisTask: Task, thatTask: Task) {
+        thisTask.setAfterConstraint(Constraint(SHOWING, thatTask.taskID, UNMET))
     }
 
 }

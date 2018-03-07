@@ -171,7 +171,6 @@ object GSON {
 object Concurrent {
 
     val timeCheckingThread = Schedulers.newThread()
-
     val stateCheckingThread = Schedulers.newThread()
 
     /**
@@ -204,7 +203,7 @@ object Concurrent {
 
 fun now() = LocalDateTime.now()
 
-fun sleep(millis: Long) = Thread.sleep(millis)
+fun sleep(seconds: Int) = Thread.sleep((seconds) * 1000L)
 
 fun <T> logD(t: T) {
     println("DEBUG: ${t.toString()}")

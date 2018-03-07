@@ -46,8 +46,8 @@ class Task(var title: String) {
     // A Task ages when it is failed
     var age = 0
 
-    // The time a task is failed
-    var failedTime = Time.MIN
+    // The times a task has been failed
+    var failedTimes = arrayListOf<Time>()
 
     // The time a task is killed
     var killedTime = Time.MIN
@@ -56,6 +56,17 @@ class Task(var title: String) {
 
     //region Task Properties
 
+    /**
+     * The point in natural time after which this Task will be relevant, this can also be referred to as scheduled
+     * time.
+     *
+     * If time is a Constraint then the Task cannot be killed until after that time
+     * and is in the SLEEPING state during that period, however, if time is not a Constraint then the Task can be
+     * killed freely and will be in its previous state meaning no lifecycle change will be made. If time is a
+     * Property then it has no rules on killing the Task.
+     *
+     * @see LocalDateTime
+     */
     var time: Property<Time> = DEFAULT_TIME_PROPERTY
         private set(time) {
             field = time
@@ -162,22 +173,72 @@ class Task(var title: String) {
 
     //region Property setters for chaining
 
-    fun setTimeProperty(timeProperty: Property<LocalDateTime>): Task {
+    /**
+     * Sets this Task's time Property, the passed in Property can be a Constraint.
+     *
+     * Further changes will occur only if the passed in `timeProperty` is after now and it is a Constraint, otherwise
+     * no more changes will occur.
+     *
+     * In the case that the passed in `timeProperty` is a Constraint and it is after now, three things will happen:
+     * <ul>
+     *     <li>This Task's state will become SLEEPING</li>
+     *     <li>This Task will become failable if it wasn't already</li>
+     *     <li>This Task will start checking the time, and will become EXISTING once the time in `timeProperty` has
+     *     passed see #timeConstraintTimeChecking() </li>
+     * </ul>
+     *
+     * If the passed in `timeProperty` is not a Constraint or is not after now then the Task's state will remain the
+     * same.
+     *
+     * @see Task.timeConstraintTimeChecking
+     * @param timeProperty the `Property` of type `Time` that this Task's time will be set to
+     * @return this Task after setting the Task's time Property
+     */
+    fun setTimeProperty(timeProperty: Property<Time>): Task {
         this.time = timeProperty
-        makeFailableIfConstraint(timeProperty)
-        if (timeProperty.value.isAfter(now())) {
+        if (timeProperty.value.isAfter(now()) && timeProperty is Constraint) {
             this.state = TaskState.SLEEPING
-            concurrentStateCheckingForTime()
+            makeFailableIfConstraint(timeProperty)
+            timeConstraintTimeChecking()
         }
         return this
     }
 
-    fun setTimeConstraint(timeConstraint: Constraint<LocalDateTime>): Task {
+    /**
+     * Sets this Task's time Constraint.
+     *
+     * @see Task.setTimeProperty
+     * @param timeConstraint the `Constraint` of type `Time` that this Task's time will be set to
+     * @return this Task after setting the Task's time Constraint
+     */
+    fun setTimeConstraint(timeConstraint: Constraint<Time>): Task {
         return setTimeProperty(timeConstraint)
     }
 
-    fun setTimeValue(time: LocalDateTime): Task {
+    /**
+     * Sets this Task's time Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setTimeProperty(Property(SHOWING, myTime))`.
+     *
+     * @see Task.setTimeProperty
+     * @param time the Time value that this Task's time value will be set to
+     * @return this Task after setting the Task's time Property
+     */
+    fun setTimePropertyValue(time: Time): Task {
         return setTimeProperty(Property(SHOWING, time))
+    }
+
+    /**
+     * Sets this Task's time Constraint with the given value and makes the Constraint showing and unmet.
+     *
+     * This is a shorthand of writing `setTimeConstraint(Constraint(SHOWING, myTime, UNMET))`.
+     *
+     * @see Task.setTimeProperty
+     * @param time the Time value that this Task's time value will be set to
+     * @return this Task after setting the Task's time Constraint
+     */
+    fun setTimeConstraintValue(time: Time): Task {
+        return setTimeProperty(Constraint(SHOWING, time, UNMET))
     }
 
     fun setDurationProperty(durationProperty: Property<Duration>): Task {
@@ -437,7 +498,7 @@ class Task(var title: String) {
         } else if (canFail()) {
             state = TaskState.FAILED
             age++
-            failedTime = now()
+            failedTimes.add(now())
         } else {
             throw TaskStateException("Fail unsuccessful, unknown reason, remember only EXISTING tasks can be failed!", getTaskState())
         }
@@ -484,36 +545,45 @@ class Task(var title: String) {
         }
     }
 
+    private fun killed() = state == TaskState.KILLED
+
     //endregion
 
     //region Concurrency
 
-    // This is both computationally cheap and terminates
-    private fun concurrentStateCheckingForTime() {
-
-        /*
-         * Runs every 1 second as long as this state is SLEEPING
-         * And every 1 second it will compare the time now to the scheduled time and if
-         * the scheduled time has passed, will change the state to EXISTING, thus ending the session and completing
-         */
+    /**
+     * Checks the time on the `stateCheckingThread` to match it with this Task's time Constraint value.
+     *
+     * When the time is past this Task's time Constraint value the state will change to EXISTING and the time
+     * Constraint will be met.
+     *
+     * The Observer performs this check every `TIME_CHECKING_PERIOD` `TIME_CHECKING_UNIT`, see #Util for these values
+     * as they may change for performance reasons.
+     *
+     * This function is only called when `time` is set as a Constraint and the time value is in the future.
+     *
+     * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
+     * is done once every so often, which itself is cheap.
+     *
+     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     */
+    private fun timeConstraintTimeChecking() {
+        var done = false
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
-                .takeWhile { this.state == TaskState.SLEEPING }
+                .takeWhile { !done }
                 .subscribeOn(Concurrent.stateCheckingThread)
                 .subscribe(
                         {
-                            if (this.time.value.isAfter(now())) {
+                            if (now().isAfter(this.time.value)) {
                                 this.state = TaskState.EXISTING
+                                if (this.time is Constraint) {
+                                    (this.time as Constraint).isMet = MET
+                                }
+                                done = true
                             }
                         },
                         {
-                            logE("Concurrent state checking for time failed!")
-                            it.printStackTrace()
-                        },
-                        {
-                            logI("Concurrent state checking for time completed!")
-                        },
-                        {
-                            logI("Concurrent state checking for time started")
+                            throw ConcurrentException("Time Constraint time checking failed!")
                         }
                 )
     }

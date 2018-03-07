@@ -4,7 +4,17 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.*
+import uk.whitecrescent.waqti.code.Concurrent
+import uk.whitecrescent.waqti.code.Constraint
+import uk.whitecrescent.waqti.code.GSON
+import uk.whitecrescent.waqti.code.MET
+import uk.whitecrescent.waqti.code.SHOWING
+import uk.whitecrescent.waqti.code.Task
+import uk.whitecrescent.waqti.code.TaskState
+import uk.whitecrescent.waqti.code.UNMET
+import uk.whitecrescent.waqti.code.logI
+import uk.whitecrescent.waqti.code.now
+import uk.whitecrescent.waqti.code.sleep
 import java.time.LocalDateTime
 
 class OtherTests {
@@ -12,13 +22,6 @@ class OtherTests {
     @DisplayName("Test")
     @Test
     fun test() {
-        val tuple = Tuple(Task("My Task").setDescriptionValue(Description("Description")).setLabelValue(Label
-                .createNewLabel("Label")), Task("My Other Task"))
-        println(tuple.tasks[0])
-        println(tuple.tasks[0].after)
-        println(tuple.tasks[1])
-
-        println(DEFAULT_SUB_TASKS_PROPERTY.value.size)
     }
 
     @DisplayName("Runner")
