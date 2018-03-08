@@ -12,9 +12,6 @@ import uk.whitecrescent.waqti.code.SHOWING
 import uk.whitecrescent.waqti.code.Task
 import uk.whitecrescent.waqti.code.TaskState
 import uk.whitecrescent.waqti.code.UNMET
-import uk.whitecrescent.waqti.code.logI
-import uk.whitecrescent.waqti.code.now
-import uk.whitecrescent.waqti.code.sleep
 import java.time.LocalDateTime
 
 class OtherTests {
@@ -27,15 +24,6 @@ class OtherTests {
     @DisplayName("Runner")
     @Test
     fun runner() {
-        val task = Task("Task").setDeadlineConstraint(Constraint(SHOWING, now().plusSeconds(10), UNMET))
-        logI(task.isFailable)
-        logI(task.getTaskState())
-        logI(task.getAllUnmetAndShowingConstraints())
-
-        sleep(15000)
-
-        logI(task.getTaskState())
-        logI(task.getAllUnmetAndShowingConstraints())
 
     }
 

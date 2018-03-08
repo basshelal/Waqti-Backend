@@ -1,37 +1,41 @@
 package uk.whitecrescent.waqti.code
 
-class Priority private constructor(var name: String) {
-
-    //TODO add in the importance level
+class Priority private constructor(var name: String, var importanceLevel: Int) {
 
     companion object {
 
-        var allPriorities = ArrayList<Priority>()
+        val allPriorities = ArrayList<Priority>()
 
-        fun createNewPriority(name: String): Priority {
-            val newPriority = Priority(name)
-            if (allPriorities.find { it.equals(newPriority) } == null) {
+        fun getOrCreatePriority(name: String, importanceLevel: Int): Priority {
+            val newPriority = Priority(name, importanceLevel)
+            val found = allPriorities.find { it == newPriority }
+
+            if (found == null) {
                 allPriorities.add(newPriority)
                 return newPriority
-            } else return allPriorities.find { it.equals(newPriority) }!!
+            } else return found
         }
 
-        fun getPriorityByName(name: String): Priority {
-            if (allPriorities.find { it.name.equals(name) } == null) {
-                throw IllegalArgumentException("Does not exist!")
-            } else return allPriorities.find { it.name.equals(name) }!!
+        fun getPriority(name: String, importanceLevel: Int): Priority {
+            val newPriority = Priority(name, importanceLevel)
+            val found = allPriorities.find { it == newPriority }
+            if (found == null) {
+                throw IllegalArgumentException("Priority not found")
+            } else return found
         }
 
-        fun deletePriority(name: String) {
-            allPriorities.remove(getPriorityByName(name))
+        fun deletePriority(name: String, importanceLevel: Int) {
+            allPriorities.remove(getPriority(name, importanceLevel))
         }
     }
 
-    override fun hashCode() = name.hashCode()
+    override fun hashCode() = name.hashCode() + importanceLevel
 
     override fun equals(other: Any?) =
-            other is Priority && other.name.equals(this.name)
+            other is Priority &&
+                    other.name == this.name &&
+                    other.importanceLevel == this.importanceLevel
 
-    override fun toString() = name
+    override fun toString() = "$name $importanceLevel"
 
 }

@@ -11,6 +11,7 @@ import uk.whitecrescent.waqti.code.SHOWING
 import uk.whitecrescent.waqti.code.Task
 import java.time.Duration
 
+@DisplayName("Duration Tests")
 class DurationTests {
 
     @DisplayName("Task duration Property")

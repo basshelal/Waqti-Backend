@@ -16,10 +16,11 @@ object GSON {
     private val gson = Gson()
     private val TASK_ID_FILE = "database/taskid.json"
     private val TASKS_FILE = "database/tasks.json"
+    private val PRIORITIES_FILE = "database/priorities.json"
 
     //TODO be careful with the order of insertion (and thus order of reading), do check them!
 
-    // Task ID
+    //region Task ID
 
     fun readAllIDs(): Array<Long> {
         val reader = BufferedReader(FileReader(TASK_ID_FILE))
@@ -58,7 +59,9 @@ object GSON {
 
     }
 
-    // Tasks
+    //endregion
+
+    //region Tasks
 
     // Newest First, Oldest Last
     fun readAllTasks(): ArrayList<Task> {
@@ -165,6 +168,25 @@ object GSON {
         gson.toJson(listOf<Task>(), fileWriter)
         fileWriter.close()
     }
+
+    //endregion
+
+    //region Priorities
+
+    fun readAllPriorities(): ArrayList<Priority> {
+        val reader = BufferedReader(FileReader(PRIORITIES_FILE))
+        return gson.fromJson<ArrayList<Priority>>(reader, ArrayList::class.java)
+    }
+
+    fun savePriority(vararg priorities: Priority) {
+        val allPriorities = readAllPriorities()
+        val fileWriter = BufferedWriter(FileWriter(PRIORITIES_FILE))
+        val array = Array(priorities.size, { priorities[it] })
+        gson.toJson(arrayListOf(*array, *allPriorities.toArray()), fileWriter)
+        fileWriter.close()
+    }
+
+    //endregion
 
 }
 

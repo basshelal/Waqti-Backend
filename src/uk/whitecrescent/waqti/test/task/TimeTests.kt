@@ -18,7 +18,7 @@ import uk.whitecrescent.waqti.code.sleep
 import uk.whitecrescent.waqti.test.TestUtils.getTasks
 import uk.whitecrescent.waqti.test.TestUtils.testTask
 
-@DisplayName("Task Tests")
+@DisplayName("Time Tests")
 class TimeTests {
 
     @DisplayName("Time Default Values")
@@ -168,11 +168,11 @@ class TimeTests {
     @DisplayName("Set Time Constraint after now on many Tasks")
     @Test
     fun testTaskSetTimeConstraintAfterNowOnManyTasks() {
-        val time = now().plusSeconds(8)
+        val time = now().plusSeconds(3)
         val tasks = getTasks(10)
         tasks.forEach { it.setTimeConstraintValue(time) }
 
-        sleep(10)
+        sleep(4)
 
         tasks.forEach { assertTrue(it.getTaskState() == TaskState.EXISTING) }
 

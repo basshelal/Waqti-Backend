@@ -72,6 +72,7 @@ class Task(var title: String) {
             field = time
         }
 
+    //TODO probably change the type of this to `TimeUnit`
     var duration: Property<Duration> = DEFAULT_DURATION_PROPERTY
         private set(duration) {
             field = duration

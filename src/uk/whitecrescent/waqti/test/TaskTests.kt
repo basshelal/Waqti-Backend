@@ -257,9 +257,9 @@ class TaskTests {
         Assertions.assertFalse(task.priority.isVisible)
 
         // Change priority Property and check it is visible and still not a Constraint
-        task.setPriorityProperty(Property(SHOWING, Priority.createNewPriority("High")))
+        task.setPriorityProperty(Property(SHOWING, Priority.getOrCreatePriority("High", 1)))
         Assertions.assertFalse(task.priority is Constraint)
-        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        Assertions.assertEquals(Priority.getPriority("High", 1), task.priority.value)
         Assertions.assertTrue(task.priority.isVisible)
 
         // Hide priority and check that it resets to default values
@@ -285,8 +285,8 @@ class TaskTests {
         Assertions.assertFalse((task.priority as Constraint).isMet)
 
         // Change priority Constraint to some values and check
-        task.setPriorityConstraint(Constraint(SHOWING, Priority.createNewPriority("High"), MET))
-        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        task.setPriorityConstraint(Constraint(SHOWING, Priority.getOrCreatePriority("High", 1), MET))
+        Assertions.assertEquals(Priority.getPriority("High", 1), task.priority.value)
         Assertions.assertTrue(task.priority.isVisible)
         Assertions.assertTrue((task.priority as Constraint).isMet)
 
@@ -685,7 +685,7 @@ class TaskTests {
         val task = Task("My Task")
                 .setTimePropertyValue(LocalDateTime.of(1970, 1, 1, 1, 1))
                 .setDurationValue(Duration.ofSeconds(15))
-                .setPriorityValue(Priority.createNewPriority("High"))
+                .setPriorityValue(Priority.getOrCreatePriority("High", 1))
                 .setLabelValue(Label.createNewLabel("Label1"))
                 .setOptionalValue(true)
                 .setDescriptionValue(StringBuilder("Description"))
@@ -699,7 +699,7 @@ class TaskTests {
         Assertions.assertEquals(Duration.ofSeconds(15), task.duration.value)
         Assertions.assertTrue(task.duration.isVisible)
 
-        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        Assertions.assertEquals(Priority.getPriority("High", 1), task.priority.value)
         Assertions.assertTrue(task.priority.isVisible)
 
         Assertions.assertEquals(Label.getLabelByName("Label1"), task.label.value)
@@ -729,7 +729,7 @@ class TaskTests {
         val task = Task("My Task")
                 .setTimeProperty(Property(SHOWING, LocalDateTime.of(1970, 1, 1, 1, 1)))
                 .setDurationProperty(Property(SHOWING, Duration.ofSeconds(15)))
-                .setPriorityProperty(Property(SHOWING, Priority.createNewPriority("High")))
+                .setPriorityProperty(Property(SHOWING, Priority.getOrCreatePriority("High", 1)))
                 .setLabelProperty(Property(SHOWING, Label.createNewLabel("Label1")))
                 .setOptionalProperty(Property(SHOWING, true))
                 .setDescriptionProperty(Property(SHOWING, StringBuilder("Description")))
@@ -743,7 +743,7 @@ class TaskTests {
         Assertions.assertEquals(Duration.ofSeconds(15), task.duration.value)
         Assertions.assertTrue(task.duration.isVisible)
 
-        Assertions.assertEquals(Priority.getPriorityByName("High"), task.priority.value)
+        Assertions.assertEquals(Priority.getPriority("High", 1), task.priority.value)
         Assertions.assertTrue(task.priority.isVisible)
 
         Assertions.assertEquals(Label.getLabelByName("Label1"), task.label.value)

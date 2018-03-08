@@ -1,5 +1,7 @@
 # TODO
 
+* Stop using JSON!
+
 * Sun-25-Feb Currently the focus is `Task` we need to make sure this thing works perfectly and does everything we 
 need it to,
  rewriting this thing will be a mess so we must try and make sure it works well, it's the core of this whole project,
