@@ -3,10 +3,13 @@ package uk.whitecrescent.waqti.code
 import io.reactivex.Observable
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.Random
 
 class Task(var title: String) {
 
     //region Class Properties
+
+    //TODO update KDoc
 
     /**
      * The Task State is the state in which the task is in at this point in time.
@@ -41,7 +44,9 @@ class Task(var title: String) {
      * @see GSON.newID
      * @see java.util.Random.nextLong
      */
-    var taskID = GSON.newID()
+    var taskID = Math.abs(Random().nextLong())
+
+    private var timeDurationSet = Time.MIN
 
     // A Task ages when it is failed
     var age = 0
@@ -72,7 +77,17 @@ class Task(var title: String) {
             field = time
         }
 
-    //TODO probably change the type of this to `TimeUnit`
+    /**
+     * The estimated amount of time that this Task will take, this can also be referred to as minimum duration.
+     *
+     * This is defined in any Time Measurement Unit, either as a standard Time Unit such as seconds or days etc or
+     * custom Time Units [TimeUnit]. This can also be referred to as minimum duration. If duration is a Constraint
+     * then the Task cannot be killed in the midst of the duration, it can be killed only after it has ended. If
+     * duration is a Property then it has no rules on killing the Task.
+     *
+     * @see Duration
+     * @see TimeUnit
+     */
     var duration: Property<Duration> = DEFAULT_DURATION_PROPERTY
         private set(duration) {
             field = duration
@@ -185,7 +200,8 @@ class Task(var title: String) {
      *     <li>This Task's state will become SLEEPING</li>
      *     <li>This Task will become failable if it wasn't already</li>
      *     <li>This Task will start checking the time, and will become EXISTING once the time in `timeProperty` has
-     *     passed see #timeConstraintTimeChecking() </li>
+     *     passed and will also make the time Constraint MET if it wasn't already see [timeConstraintTimeChecking()]
+     *     </li>
      * </ul>
      *
      * If the passed in `timeProperty` is not a Constraint or is not after now then the Task's state will remain the
@@ -242,18 +258,166 @@ class Task(var title: String) {
         return setTimeProperty(Constraint(SHOWING, time, UNMET))
     }
 
+    /**
+     * Sets this Task's duration Property, the passed in Property can be a Constraint.
+     *
+     * Further changes will occur only if the passed in `durationProperty` is a Constraint.
+     *
+     * In the case that the passed in `durationProperty` is a Constraint, two things will happen:
+     * <ul>
+     *     <li>This Task will become failable if it wasn't already</li>
+     *     <li>This Task will start checking the time and after the duration has passed will make the duration
+     *     Constraint MET if it wasn't already see [durationConstraintTimeChecking()]</li>
+     * </ul>
+     *
+     * If the passed in `durationProperty` is not a Constraint then the Task's state will remain the same.
+     *
+     * @see Task.durationConstraintTimeChecking
+     * @param durationProperty the `Property` of type `java.time.Duration` that this Task's duration will be set to
+     * @return this Task after setting the Task's duration Property
+     */
     fun setDurationProperty(durationProperty: Property<Duration>): Task {
         this.duration = durationProperty
-        makeFailableIfConstraint(durationProperty)
+        timeDurationSet = now()
+        if (durationProperty is Constraint) {
+            makeFailableIfConstraint(durationProperty)
+            durationConstraintTimeChecking()
+        }
         return this
     }
 
+    /**
+     * Gets this Task's duration left until the duration Constraint will be met.
+     *
+     * This is not necessarily only used for Constraints but is more useful for when duration is a Constraint, since
+     * this will return the difference in time between now and the time the duration is due to finish, this does not
+     * require duration to be a Constraint but is of not much interest if duration is not a Constraint.
+     *
+     * @return the Duration left until this Task's duration Constraint is met
+     * @throws IllegalStateException if the Duration has not been set
+     */
+    fun getDurationLeft(): Duration {
+        if (duration.value == DEFAULT_DURATION) {
+            throw IllegalStateException("Duration not set!")
+        } else {
+            val timeDue = timeDurationSet.plus(duration.value)
+            return Duration.between(now(), timeDue)
+        }
+    }
+
+    /**
+     * Sets this Task's duration Constraint.
+     *
+     * @see Task.setDurationProperty
+     * @param durationConstraint the `Constraint` of type `java.time.Duration` that this Task's duration will be set to
+     * @return this Task after setting the Task's duration Constraint
+     */
     fun setDurationConstraint(durationConstraint: Constraint<Duration>): Task {
         return setDurationProperty(durationConstraint)
     }
 
-    fun setDurationValue(duration: Duration): Task {
+    /**
+     * Sets this Task's duration Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setDurationProperty(Property(SHOWING, myDuration))`.
+     *
+     * @see Task.setDurationProperty
+     * @param duration the java.time.Duration value that this Task's duration value will be set to
+     * @return this Task after setting the Task's duration Property
+     */
+    fun setDurationPropertyValue(duration: Duration): Task {
         return setDurationProperty(Property(SHOWING, duration))
+    }
+
+    /**
+     * Sets this Task's duration Constraint with the given value and makes the Constraint showing and unmet.
+     *
+     * This is a shorthand of writing `setDurationConstraint(Constraint(SHOWING, myDuration, UNMET))`.
+     *
+     * @see Task.setDurationProperty
+     * @param duration the java.time.Duration value that this Task's duration value will be set to
+     * @return this Task after setting the Task's duration Constraint
+     */
+    fun setDurationConstraintValue(duration: Duration): Task {
+        return setDurationProperty(Constraint(SHOWING, duration, UNMET))
+    }
+
+    /**
+     * Sets this Task's duration Property with the duration of the TimeUnit multiplied by the `count` as the Property's
+     * value and the `timeUnitProperty`'s `isVisible` value
+     *
+     * This allows to use Custom Time Units for setting the duration.
+     *
+     * @see Task.setDurationProperty
+     * @see TimeUnit
+     * @param timeUnitProperty the Property of type `TimeUnit` that will be used to set this Task's duration
+     * Property's visibility to and set the value to by multiplying by the `count`
+     * @param count the number of times the `TimeUnit` occurs
+     * @return this Task after setting the Task's duration Property
+     */
+    fun setDurationPropertyTimeUnits(timeUnitProperty: Property<TimeUnit>, count: Int): Task {
+        val duration = TimeUnit.toJavaDuration(timeUnitProperty.value, count)
+        if (timeUnitProperty is Constraint) {
+            setDurationProperty(Constraint(timeUnitProperty.isVisible, duration, UNMET))
+        } else setDurationProperty(Property(timeUnitProperty.isVisible, duration))
+
+        return this
+    }
+
+    /**
+     * Sets this Task's duration Constraint with the duration of the TimeUnit multiplied by the `count` as the
+     * Constraint's value and the `timeUnitConstraint`'s Constraint values for this Task's duration Constraint values.
+     *
+     * This allows to use Custom Time Units for setting the duration.
+     *
+     * @see Task.setDurationProperty
+     * @see TimeUnit
+     * @param timeUnitConstraint the Constraint of type `TimeUnit` that will be used to set this Task's duration
+     * Constraint's visibility to and set the value to by multiplying by the `count` and this Task's duration's
+     * `isMet` value to
+     * @param count the number of times the `TimeUnit` occurs
+     * @return this Task after setting the Task's duration Constraint
+     */
+    fun setDurationConstraintTimeUnits(timeUnitConstraint: Constraint<TimeUnit>, count: Int): Task {
+        val duration = TimeUnit.toJavaDuration(timeUnitConstraint.value, count)
+        setDurationProperty(Constraint(timeUnitConstraint.isVisible, duration, timeUnitConstraint.isMet))
+        return this
+    }
+
+    /**
+     * Sets this Task's duration Property with the duration of the TimeUnit multiplied by the `count` as the Property's
+     * value and makes the Property showing.
+     *
+     * This allows to use Custom Time Units for setting the duration and is shorthand for writing
+     * `setDurationPropertyTimeUnits(Property(SHOWING, myTimeUnit), myCount)`
+     *
+     * @see Task.setDurationProperty
+     * @see TimeUnit
+     * @param timeUnit the TimeUnit that will be used to set this Task's duration to by multiplying it by the
+     * `count`
+     * @param count the number of times the `TimeUnit` occurs
+     * @return this Task after setting the Task's duration Property
+     */
+    fun setDurationPropertyTimeUnitsValue(timeUnit: TimeUnit, count: Int): Task {
+        return setDurationProperty(Property(SHOWING, TimeUnit.toJavaDuration(timeUnit, count)))
+    }
+
+    /**
+     * Sets this Task's duration Constraint with the duration of the TimeUnit multiplied by the `count` as the
+     * Constraints's value and makes the Constraint showing and unmet.
+     *
+     * This allows to use Custom Time Units for setting the duration and is shorthand for writing
+     * `setDurationConstraintTimeUnits(Constraint(SHOWING, myTimeUnit, UNMET), myCount)`
+     *
+     * @see Task.setDurationProperty
+     * @see TimeUnit
+     * @param timeUnit the TimeUnit that will be used to set this Task's duration to by multiplying it by the
+     * `count`
+     * @param count the number of times the `TimeUnit` occurs
+     * @return this Task after setting the Task's duration Constraint
+     */
+    fun setDurationConstraintTimeUnitsValue(timeUnit: TimeUnit, count: Int): Task {
+        return setDurationProperty(Constraint(SHOWING, TimeUnit.toJavaDuration(timeUnit, count), UNMET))
     }
 
     fun setPriorityProperty(priorityProperty: Property<Priority>): Task {
@@ -556,10 +720,10 @@ class Task(var title: String) {
      * Checks the time on the `stateCheckingThread` to match it with this Task's time Constraint value.
      *
      * When the time is past this Task's time Constraint value the state will change to EXISTING and the time
-     * Constraint will be met.
+     * Constraint will be met if it wasn't already.
      *
-     * The Observer performs this check every `TIME_CHECKING_PERIOD` `TIME_CHECKING_UNIT`, see #Util for these values
-     * as they may change for performance reasons.
+     * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
+     * values as they may change for performance reasons.
      *
      * This function is only called when `time` is set as a Constraint and the time value is in the future.
      *
@@ -577,7 +741,7 @@ class Task(var title: String) {
                         {
                             if (now().isAfter(this.time.value)) {
                                 this.state = TaskState.EXISTING
-                                if (this.time is Constraint) {
+                                if (this.time is Constraint && (this.time as Constraint).isMet != MET) {
                                     (this.time as Constraint).isMet = MET
                                 }
                                 done = true
@@ -585,6 +749,44 @@ class Task(var title: String) {
                         },
                         {
                             throw ConcurrentException("Time Constraint time checking failed!")
+                        }
+                )
+    }
+
+    /**
+     * Checks the time that this Task's duration will end on the `stateCheckingThread` to match it with this Task's
+     * duration Constraint value
+     *
+     * When the time is past this Task's duration Constraint value the duration Constraint will be met if it wasn't
+     * already.
+     *
+     * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
+     * values as they may change for performance reasons.
+     *
+     * This function is only called when `duration` is set as a Constraint.
+     *
+     * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
+     * is done once every so often, which itself is cheap.
+     *
+     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     */
+    private fun durationConstraintTimeChecking() {
+        var done = false
+        val minimumTime = now().plus(this.duration.value)
+        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                .takeWhile { !done }
+                .subscribeOn(Concurrent.stateCheckingThread)
+                .subscribe(
+                        {
+                            if (now().isAfter(minimumTime)) {
+                                if (this.duration is Constraint && (this.duration as Constraint).isMet != MET) {
+                                    (this.duration as Constraint).isMet = MET
+                                }
+                                done = true
+                            }
+                        },
+                        {
+                            throw ConcurrentException("Duration Constraint time checking failed!")
                         }
                 )
     }
@@ -618,72 +820,42 @@ class Task(var title: String) {
 
     //region Persistence Utilities
 
-    fun saveToJSON(): Task {
-        GSON.saveTask(this)
-        return this
-    }
 
-    companion object {
-        // Used by JSON only to create Tasks in memory from the database, does not write them to database, since
-        // they're already written in the database
-        fun createTaskFromJSON(state: TaskState,
-                               isFailable: Boolean,
-                               isKillable: Boolean,
-                               taskID: Long,
-                               time: Property<LocalDateTime>,
-                               duration: Property<Duration>,
-                               priority: Property<Priority>,
-                               label: Property<Label>,
-                               optional: Property<Boolean>,
-                               description: Property<StringBuilder>,
-                               checklist: Property<Checklist>,
-                               deadline: Property<LocalDateTime>,
-                               target: Property<String>,
-                               before: Property<Long>,
-                               after: Property<Long>,
-                               title: String
-        ) = Task(state, isFailable, isKillable, taskID, time,
-                duration, priority, label, optional, description,
-                checklist, deadline, target, before, after, title)
-
-    }
-
-
-    private constructor(
-            state: TaskState,
-            isFailable: Boolean,
-            isKillable: Boolean,
-            taskID: Long,
-            time: Property<LocalDateTime>,
-            duration: Property<Duration>,
-            priority: Property<Priority>,
-            label: Property<Label>,
-            optional: Property<Boolean>,
-            description: Property<StringBuilder>,
-            checklist: Property<Checklist>,
-            deadline: Property<LocalDateTime>,
-            target: Property<String>,
-            before: Property<Long>,
-            after: Property<Long>,
-            title: String
-    ) : this(title) {
-        this.state = state
-        this.isFailable = isFailable
-        this.isKillable = isKillable
-        this.taskID = taskID
-        this.time = time
-        this.duration = duration
-        this.priority = priority
-        this.label = label
-        this.optional = optional
-        this.description = description
-        this.checklist = checklist
-        this.deadline = deadline
-        this.target = target
-        this.before = before
-        this.after = after
-
-    }
+//    private constructor(
+//            state: TaskState,
+//            isFailable: Boolean,
+//            isKillable: Boolean,
+//            taskID: Long,
+//            time: Property<LocalDateTime>,
+//            duration: Property<Duration>,
+//            priority: Property<Priority>,
+//            label: Property<Label>,
+//            optional: Property<Boolean>,
+//            description: Property<StringBuilder>,
+//            checklist: Property<Checklist>,
+//            deadline: Property<LocalDateTime>,
+//            target: Property<String>,
+//            before: Property<Long>,
+//            after: Property<Long>,
+//            title: String
+//    ) : this(title) {
+//        this.state = state
+//        this.isFailable = isFailable
+//        this.isKillable = isKillable
+//        this.taskID = taskID
+//        this.time = time
+//        this.duration = duration
+//        this.priority = priority
+//        this.label = label
+//        this.optional = optional
+//        this.description = description
+//        this.checklist = checklist
+//        this.deadline = deadline
+//        this.target = target
+//        this.before = before
+//        this.after = after
+//
+//    }
 
     //endregion
 

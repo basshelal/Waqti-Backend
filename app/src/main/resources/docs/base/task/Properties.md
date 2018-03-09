@@ -21,7 +21,7 @@ previous state meaning no lifecycle change will be made. If time is a Property t
 Task.
 
 * **Duration:** The estimated amount of time that this Task will take, this is defined in any Time Measurement Unit, 
-this can also be referred to as minimum duration.If duration is a Constraint then the Task cannot be killed in the 
+this can also be referred to as minimum duration. If duration is a Constraint then the Task cannot be killed in the 
 midst of the duration, only after it has ended. If duration is a Property then it has no rules on killing the Task.
 
 * **Checklist:** A list of checkable items that this Task may have. This is useful if the Task can be broken down into 

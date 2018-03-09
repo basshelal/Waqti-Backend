@@ -19,6 +19,7 @@ import uk.whitecrescent.waqti.code.DEFAULT_TARGET
 import uk.whitecrescent.waqti.code.DEFAULT_TIME
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Label
+import uk.whitecrescent.waqti.code.ListItem
 import uk.whitecrescent.waqti.code.MET
 import uk.whitecrescent.waqti.code.Priority
 import uk.whitecrescent.waqti.code.Property
@@ -39,10 +40,6 @@ class TaskTests {
     @DisplayName("Test")
     @Test
     fun test() {
-        val task = Task("Task")
-                .setTimeProperty(Constraint(SHOWING, now().plusSeconds(3), UNMET))
-
-        task.kill()
 
     }
 
@@ -684,7 +681,7 @@ class TaskTests {
     fun testTaskCreationUsingChainingByValues() {
         val task = Task("My Task")
                 .setTimePropertyValue(LocalDateTime.of(1970, 1, 1, 1, 1))
-                .setDurationValue(Duration.ofSeconds(15))
+                .setDurationPropertyValue(Duration.ofSeconds(15))
                 .setPriorityValue(Priority.getOrCreatePriority("High", 1))
                 .setLabelValue(Label.createNewLabel("Label1"))
                 .setOptionalValue(true)
@@ -768,4 +765,28 @@ class TaskTests {
     }
 
     //endregion
+
+    @DisplayName("Checklist")
+    @Test
+    fun testChecklist() {
+        val checkList = Checklist("Zero", "One", "Two", "Three", "Four")
+        Assertions.assertEquals(5, checkList.size())
+
+        checkList.addItem("Five")
+        Assertions.assertEquals(6, checkList.size())
+
+        checkList.checkItem(5)
+        Assertions.assertTrue(checkList[5].isChecked)
+        Assertions.assertEquals(6, checkList.size())
+
+        checkList.deleteItem(5)
+        Assertions.assertEquals(5, checkList.size())
+
+        checkList.addItem(ListItem("FiveAgain", true))
+        Assertions.assertEquals(6, checkList.size())
+
+        checkList.uncheckItem(5)
+        Assertions.assertFalse(checkList[5].isChecked)
+
+    }
 }

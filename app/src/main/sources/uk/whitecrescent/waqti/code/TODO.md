@@ -2,6 +2,8 @@
 
 * Stop using JSON!
 
+* Priority collisions
+
 * Sun-25-Feb Currently the focus is `Task` we need to make sure this thing works perfectly and does everything we 
 need it to,
  rewriting this thing will be a mess so we must try and make sure it works well, it's the core of this whole project,
@@ -17,21 +19,12 @@ Mapping problem is too great and could cause too many problems I may just try to
 believe this should be less of a problem if we use Room Persistence Library but again, Object Relational Mapping. In 
 the meantime I'll work on translating the design into some Relational form using ER Diagrams.
 
-* When Task is given a Constraint we must change it to being failable automatically (this may also require Rx)
-
 * Figure out a better way to implement Template Tasks, maybe have a function in Task to get this Task's information 
 and save it as a Template Task, using a state just for Template Tasks is a bad idea
-
-* Remember Custom Time Units
 
 * Concurrent Constraint checking to transition between states in the lifecycle,
  meaning for example if deadline is a Constraint then there must be something that constantly checks the time to compare the current time 
  with the deadline time and when they are equal to act accordingly, in this case to fail the task.
-
-* Based on Concurrent stuff, check which state we make the default,
- WAITING should be the default since a Task is waiting to be relevant, however this can be an option?
-  Maybe we make Task be EXISTING and then if Time is set then it can change to WAITING, then when that time passes it will be EXISTING,
-  so the default state does not matter as much as having effective concurrent checking of Task's state (as in condition) in time.
 
 * Documentation (A good way of better understanding the codebase and allowing for easy returning)
 
@@ -52,6 +45,16 @@ and save it as a Template Task, using a state just for Template Tasks is a bad i
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Based on Concurrent stuff, check which state we make the default,
+ WAITING should be the default since a Task is waiting to be relevant, however this can be an option?
+  Maybe we make Task be EXISTING and then if Time is set then it can change to WAITING, then when that time passes it will be EXISTING,
+  so the default state does not matter as much as having effective concurrent checking of Task's state (as in 
+  condition) in time.~~
+
+* ~~When Task is given a Constraint we must change it to being failable automatically (this may also require Rx)~~
+
+* ~~Remember Custom Time Units~~
 
 * ~~Sun-4-Mar Rewrite the Documentation MarkDown files to make sure we can clearly define what we need especially for 
 Task since there are ambiguities with Task Properties and Constraints and how a Task should behave~~

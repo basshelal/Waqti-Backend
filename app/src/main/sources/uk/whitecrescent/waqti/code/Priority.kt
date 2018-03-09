@@ -19,6 +19,7 @@ class Priority private constructor(var name: String, var importanceLevel: Int) {
         fun getPriority(name: String, importanceLevel: Int): Priority {
             val newPriority = Priority(name, importanceLevel)
             val found = allPriorities.find { it == newPriority }
+
             if (found == null) {
                 throw IllegalArgumentException("Priority not found")
             } else return found

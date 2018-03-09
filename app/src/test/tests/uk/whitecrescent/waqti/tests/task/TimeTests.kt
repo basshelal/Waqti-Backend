@@ -169,7 +169,7 @@ class TimeTests {
     @Test
     fun testTaskSetTimeConstraintAfterNowOnManyTasks() {
         val time = now().plusSeconds(3)
-        val tasks = getTasks(10)
+        val tasks = getTasks(100)
         tasks.forEach { it.setTimeConstraintValue(time) }
 
         sleep(4)

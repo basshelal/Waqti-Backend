@@ -91,39 +91,6 @@ object GSON {
         return readAllTasks().filter { it.title == title }
     }
 
-    fun updateTaskAt(index: Int, task: Task) {
-        val allTasks = readAllTasks()
-        val taskID = allTasks[index].taskID
-        allTasks[index] = Task.createTaskFromJSON(
-                task.getTaskState(),
-                task.isFailable,
-                task.isKillable,
-                taskID,
-                task.time,
-                task.duration,
-                task.priority,
-                task.label,
-                task.optional,
-                task.description,
-                task.checklist,
-                task.deadline,
-                task.target,
-                task.before,
-                task.after,
-                task.title)
-        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
-        gson.toJson(arrayOf(*allTasks.toArray()), fileWriter)
-        fileWriter.close()
-    }
-
-    fun updateTaskByID(id: Long, task: Task) {
-        updateTaskAt(readAllTasks().indexOf(getTaskByID(id)), task)
-    }
-
-    fun updateTask(oldTask: Task, newTask: Task) {
-        updateTaskAt(readAllTasks().indexOf(oldTask), newTask)
-    }
-
     fun saveTaskAt(index: Int, task: Task) {
         val allTasksList = readAllTasks().toMutableList()
         allTasksList.add(index, task)
