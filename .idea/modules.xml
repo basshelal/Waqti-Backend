@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Waqti.iml" filepath="$PROJECT_DIR$/Waqti.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app.iml" filepath="$PROJECT_DIR$/.idea/modules/app.iml" group="app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app_main.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app_main.iml" group="app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/app/app_test.iml" filepath="$PROJECT_DIR$/.idea/modules/app/app_test.iml" group="app" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/waqti.iml" filepath="$PROJECT_DIR$/.idea/modules/waqti.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/waqti_main.iml" filepath="$PROJECT_DIR$/.idea/modules/waqti_main.iml" group="waqti" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/waqti_test.iml" filepath="$PROJECT_DIR$/.idea/modules/waqti_test.iml" group="waqti" />
     </modules>
   </component>
 </project>
