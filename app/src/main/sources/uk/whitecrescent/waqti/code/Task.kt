@@ -132,11 +132,20 @@ class Task(var title: String) {
             field = label
         }
 
+    //TODO Optional is a Property as a descriptor and Constraint as an enforcer which will affect the Task's abilities
     var optional: Property<Optional> = DEFAULT_OPTIONAL_PROPERTY
         private set(optional) {
             field = optional
         }
 
+    /**
+     * A textual description of this Task, useful for if the Task is complex or requires further information that the
+     * title cannot provide.
+     *
+     * Description can not be a Constraint.
+     *
+     * @see StringBuilder
+     */
     var description: Property<Description> = DEFAULT_DESCRIPTION_PROPERTY
         private set(description) {
             field = description
@@ -577,31 +586,52 @@ class Task(var title: String) {
         return this
     }
 
-    fun setOptionalProperty(optionalProperty: Property<Boolean>): Task {
+    fun setOptionalProperty(optionalProperty: Property<Optional>): Task {
         this.optional = optionalProperty
-        makeFailableIfConstraint(optionalProperty)
+        if(this.isFailable) {
+            isFailable = false
+        }
         return this
     }
 
-    fun setOptionalConstraint(optionalConstraint: Constraint<Boolean>): Task {
+    fun setOptionalConstraint(optionalConstraint: Constraint<Optional>): Task {
         return setOptionalProperty(optionalConstraint)
     }
 
-    fun setOptionalValue(optional: Boolean): Task {
+    fun setOptionalPropertyValue(optional: Optional): Task {
         return setOptionalProperty(Property(SHOWING, optional))
     }
 
-    fun setDescriptionProperty(descriptionProperty: Property<StringBuilder>): Task {
-        this.description = descriptionProperty
-        makeFailableIfConstraint(descriptionProperty)
+    fun setOptionalConstraintValue(optional: Optional): Task {
+        return setOptionalProperty(Constraint(SHOWING, optional, UNMET))
+    }
+
+    /**
+     * Sets this Task's description Property.
+     *
+     * Description is non-constrain-able and so if a Constraint is passed in it will be ignored as a Constraint and it's
+     * `isVisible` and `value` values will be used to set a Property for description.
+     *
+     * @see StringBuilder
+     * @param descriptionProperty the `Property` containing the description that this Task's description property
+     * will be set to
+     * @return this Task after setting the Task's description Property
+     */
+    fun setDescriptionProperty(descriptionProperty: Property<Description>): Task {
+        this.description = Property(descriptionProperty.isVisible, descriptionProperty.value)
         return this
     }
 
-    fun setDescriptionConstraint(descriptionConstraint: Constraint<StringBuilder>): Task {
-        return setDescriptionProperty(descriptionConstraint)
-    }
-
-    fun setDescriptionValue(description: StringBuilder): Task {
+    /**
+     * Sets this Task's description Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setDescriptionProperty(Property(SHOWING, myDescription))`.
+     *
+     * @see Task.setDescriptionProperty
+     * @param description the description that this Task's description Property will be set to
+     * @return this Task after setting the Task's description Property
+     */
+    fun setDescriptionValue(description: Description): Task {
         return setDescriptionProperty(Property(SHOWING, description))
     }
 
@@ -620,7 +650,7 @@ class Task(var title: String) {
 
     }
 
-    fun setDeadlineProperty(deadlineProperty: Property<LocalDateTime>): Task {
+    fun setDeadlineProperty(deadlineProperty: Property<Time>): Task {
         this.deadline = deadlineProperty
         if (deadlineProperty is Constraint) {
             concurrentTimeCheckingForDeadlineConstraint()
@@ -629,11 +659,11 @@ class Task(var title: String) {
         return this
     }
 
-    fun setDeadlineConstraint(deadlineConstraint: Constraint<LocalDateTime>): Task {
+    fun setDeadlineConstraint(deadlineConstraint: Constraint<Time>): Task {
         return setDeadlineProperty(deadlineConstraint)
     }
 
-    fun setDeadlineValue(deadline: LocalDateTime): Task {
+    fun setDeadlineValue(deadline: Time): Task {
         return setDeadlineProperty(Property(SHOWING, deadline))
     }
 
