@@ -46,7 +46,12 @@ class Task(var title: String) {
      */
     var taskID = Math.abs(Random().nextLong())
 
-    // The point in time at which the duration Property was set, used to calculate duration left
+    /**
+     * The point in time at which the duration Property was set, used to calculate duration left by adding the
+     * duration set to the time it was set to get the time it is due and then getting the duration between now and
+     * the time it is due. This means that duration left is calculated when requested and not ongoing as the duration
+     * decreases.
+     */
     private var timeDurationSet = DEFAULT_TIME
 
     // A Task ages when it is failed
@@ -113,8 +118,17 @@ class Task(var title: String) {
             field = priority
         }
 
-    //TODO this should be many labels, not 1 ! So an ArrayList of Labels
-    var label: Property<Label> = DEFAULT_LABEL_PROPERTY
+    /**
+     * The user defined category(s) that this Task belongs to.
+     *
+     * A Task can belong to or have 0 or many labels. Labels are used as a way of categorizing Tasks and are thus
+     * helpful in filtering and analytics.
+     *
+     * Labels can not be a Constraint.
+     *
+     * @see Label
+     */
+    var labels: Property<ArrayList<Label>> = DEFAULT_LABEL_PROPERTY
         private set(label) {
             field = label
         }
@@ -139,7 +153,7 @@ class Task(var title: String) {
             field = deadline
         }
 
-    var target: Property<String> = DEFAULT_TARGET_PROPERTY
+    var target: Property<Target> = DEFAULT_TARGET_PROPERTY
         private set(target) {
             field = target
         }
@@ -167,17 +181,29 @@ class Task(var title: String) {
 
     //region Task Properties Functions
 
+    /**
+     * Makes this Task failable if the passed in Property is a Constraint and this Task is not currently failable.
+     * @see Property
+     * @see Constraint
+     * @see isFailable
+     * @param property the Property to check for if it is a Constraint
+     */
     private fun makeFailableIfConstraint(property: Property<*>) {
         if (!this.isFailable && property is Constraint) {
             this.isFailable = true
         }
     }
 
+    /**
+     * Gets the list of all the Properties of a Task, does not matter what their values are.
+     * See the Properties.md docs for more.
+     * @return the list of all the Properties of a Task.
+     */
     private fun getAllProperties() = listOf(
             time,
             duration,
             priority,
-            label,
+            labels,
             optional,
             description,
             checklist,
@@ -187,17 +213,50 @@ class Task(var title: String) {
             after
     )
 
-    private fun getAllConstraints() = getAllProperties().filter { it is Constraint }
+    /**
+     * Gets the list of all Constraints of this Task, does not matter what their values are as long as they are
+     * Constraints.
+     * @return the list of all current Constraints of this Task
+     */
+    private fun getAllConstraints() =
+            getAllProperties().filter { it is Constraint }
 
+    /**
+     * Gets the list of all Properties of this Task that are showing. These would usually be the Properties of
+     * interest.
+     * @see Property
+     * @return the list of all showing Properties this Task has
+     */
     fun getAllShowingProperties() =
             getAllProperties().filter { it.isVisible }
 
+    /**
+     * Gets the list of all Constraints of this Task that are showing. The `isMet` value of the Constraints is ignored.
+     * @see Constraint
+     * @return the list of all showing Constraints this Task has
+     */
     fun getAllShowingConstraints() =
             getAllConstraints().filter { it.isVisible }
 
+    /**
+     * Gets the list of all Constraints of this Task that are showing and also unmet. These would usually be the
+     * Constraints of interest and the Constraints that would prevent a Task from being killed.
+     * A Task can only be killed if this list is empty.
+     * @see Constraint
+     * @see canKill
+     * @see kill
+     * @return the list of all showing and unmet Constraints this Task has
+     */
     fun getAllUnmetAndShowingConstraints() =
             getAllConstraints().filter { !(it as Constraint).isMet && it.isVisible }
 
+    /**
+     * Checks whether the passed in Property is a Constraint or not.
+     * @see Property
+     * @see Constraint
+     * @param property the property to check whether it is a Constraint or not
+     * @return true if the Property is a Constraints and false otherwise
+     */
     private fun isNotConstraint(property: Property<*>) = property !is Constraint
 
     //endregion
@@ -463,18 +522,60 @@ class Task(var title: String) {
         return setPriorityProperty(Property(SHOWING, priority))
     }
 
-    fun setLabelProperty(labelProperty: Property<Label>): Task {
-        this.label = labelProperty
-        makeFailableIfConstraint(labelProperty)
+    /**
+     * Sets this Task's labels Property.
+     *
+     * Label is non-constrain-able and so if a Constraint is passed in it will be ignored as a Constraint and it's
+     * `isVisible` and `value` values will be used to set a Property for labels.
+     *
+     * @see Label
+     * @param labelProperty the `Property` containing the list of all labels that this Task's labels property will be
+     * set to
+     * @return this Task after setting the Task's labels Property
+     */
+    fun setLabelProperty(labelProperty: Property<ArrayList<Label>>): Task {
+        this.labels = Property(labelProperty.isVisible, labelProperty.value)
         return this
     }
 
-    fun setLabelConstraint(labelConstraint: Constraint<Label>): Task {
-        return setLabelProperty(labelConstraint)
+    /**
+     * Sets this Task's labels Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setLabelProperty(Property(SHOWING, myLabelList))`.
+     *
+     * @see Task.setLabelProperty
+     * @param labels the list of labels that this Task's labels Property will be set to
+     * @return this Task after setting the Task's labels Property
+     */
+    fun setLabelValue(vararg labels: Label): Task {
+        return setLabelProperty(Property(SHOWING, arrayListOf(*labels)))
     }
 
-    fun setLabelValue(label: Label): Task {
-        return setLabelProperty(Property(SHOWING, label))
+    /**
+     * Adds a label to this Task's labels Property and makes this Task's labels Property showing if it wasn't already.
+     *
+     * @see Label
+     * @param label the label to add to this Task's labels Property
+     * @return this Task after adding the label to the Task's labels Property
+     */
+    fun addLabel(label: Label): Task {
+        if (!this.labels.isVisible) {
+            this.labels.isVisible = SHOWING
+        }
+        this.labels.value.add(label)
+        return this
+    }
+
+    /**
+     * Removes a label from this Task's labels Property.
+     *
+     * @see Label
+     * @param label the label to remove from this Task's labels Property
+     * @return this Task after removing the label from the Task's labels Property
+     */
+    fun removeLabel(label: Label): Task {
+        this.labels.value.remove(label)
+        return this
     }
 
     fun setOptionalProperty(optionalProperty: Property<Boolean>): Task {
@@ -537,17 +638,17 @@ class Task(var title: String) {
         return setDeadlineProperty(Property(SHOWING, deadline))
     }
 
-    fun setTargetProperty(targetProperty: Property<String>): Task {
+    fun setTargetProperty(targetProperty: Property<Target>): Task {
         this.target = targetProperty
         makeFailableIfConstraint(targetProperty)
         return this
     }
 
-    fun setTargetConstraint(targetConstraint: Constraint<String>): Task {
+    fun setTargetConstraint(targetConstraint: Constraint<Target>): Task {
         return setTargetProperty(targetConstraint)
     }
 
-    fun setTargetValue(target: String): Task {
+    fun setTargetValue(target: Target): Task {
         return setTargetProperty(Property(SHOWING, target))
     }
 
@@ -618,9 +719,9 @@ class Task(var title: String) {
     }
 
     fun hideLabel() {
-        if (isNotConstraint(label)) {
-            label = DEFAULT_LABEL_PROPERTY
-        } else throw IllegalStateException("Cannot hide, label is Constraint")
+        if (isNotConstraint(labels)) {
+            labels = DEFAULT_LABEL_PROPERTY
+        } else throw IllegalStateException("Cannot hide, labels is Constraint")
     }
 
     fun hideOptional() {

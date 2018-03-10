@@ -27,6 +27,15 @@ class PriorityTests {
         }
     }
 
+    @DisplayName("Priority Default Values")
+    @Test
+    fun testTaskPriorityDefaultValues() {
+        val task = testTask()
+        assertFalse(task.priority is Constraint)
+        assertEquals(DEFAULT_PRIORITY, task.priority.value)
+        assertFalse(task.priority.isVisible)
+    }
+
     @DisplayName("Set Priority Property using setPriorityProperty")
     @Test
     fun testTaskSetPriorityProperty() {
@@ -42,7 +51,7 @@ class PriorityTests {
         assertEquals(Property(HIDDEN, DEFAULT_PRIORITY), task.priority)
     }
 
-    @DisplayName("Set Priority Property using setDurationValue")
+    @DisplayName("Set Priority Property using setPriorityValue")
     @Test
     fun testTaskSetPriorityValue() {
         val task = testTask()

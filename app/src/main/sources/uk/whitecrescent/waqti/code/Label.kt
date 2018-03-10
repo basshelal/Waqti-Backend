@@ -1,39 +1,52 @@
 package uk.whitecrescent.waqti.code
 
-// Consider sub-labels, labels within labels like Work which contains Software Dev and University
-// but nothing can be labelled as Work, rather one of its sub-labels (this is debatable)
 class Label private constructor(var name: String) {
 
     var children = arrayListOf<Label>()
 
     companion object {
 
-        var allLabels = ArrayList<Label>()
+        val allLabels = ArrayList<Label>()
 
-        fun createNewLabel(name: String): Label {
+
+        fun getOrCreateLabel(name: String): Label {
             val newLabel = Label(name)
-            if (allLabels.find { it.equals(newLabel) } == null) {
-                allLabels.add(newLabel)
+            val found = Label.allLabels.find { it == newLabel }
+
+            if (found == null) {
+                Label.allLabels.add(newLabel)
                 return newLabel
-            } else return allLabels.find { it.equals(newLabel) }!!
+            } else return found
         }
 
-        fun getLabelByName(name: String): Label {
-            if (allLabels.find { it.name.equals(name) } == null) {
-                throw IllegalArgumentException("Does not exist!")
-            } else return allLabels.find { it.name.equals(name) }!!
+        fun getLabel(name: String): Label {
+            val newLabel = Label(name)
+            val found = Label.allLabels.find { it == newLabel }
+
+            if (found == null) {
+                throw IllegalArgumentException("Label not found")
+            } else return found
         }
 
         fun deleteLabel(name: String) {
-            allLabels.remove(getLabelByName(name))
+            for (child in getLabel(name).children){
+                allLabels.remove(child)
+            }
+            allLabels.remove(getLabel(name))
         }
+
     }
 
     override fun hashCode() = name.hashCode()
 
     override fun equals(other: Any?) =
-            other is Label && other.name.equals(this.name)
+            other is Label && other.name == this.name
 
-    override fun toString() = name
-
+    override fun toString(): String {
+        val s = StringBuilder(name)
+        if (children.isNotEmpty()) {
+            s.append("\n\t$children\n")
+        }
+        return s.toString()
+    }
 }
