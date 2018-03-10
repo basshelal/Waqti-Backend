@@ -145,6 +145,35 @@ class LabelTests {
         assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
     }
 
+    @DisplayName("Add Label when not showing")
+    @Test
+    fun testTaskAddLabelNotShowing() {
+        val task = testTask()
+                .setLabelProperty(Property(HIDDEN,
+                        arrayListOf(Label.getLabel("TestLabel_0"), Label.getLabel("TestLabel_1"))
+                ))
+
+        assertFalse(task.labels.isVisible)
+        task.addLabel(Label.getLabel("TestLabel_2"))
+        assertTrue(task.labels.isVisible)
+
+        assertFalse(task.labels is Constraint)
+        assertTrue(task.labels.value.containsAll(
+                arrayListOf(Label.getLabel("TestLabel_0"),
+                        Label.getLabel("TestLabel_1"),
+                        Label.getLabel("TestLabel_2"))
+        ))
+        assertEquals(arrayListOf(
+                Label.getLabel("TestLabel_0"),
+                Label.getLabel("TestLabel_1"),
+                Label.getLabel("TestLabel_2")), task.labels.value)
+        assertTrue(task.labels.isVisible)
+
+
+        task.hideLabel()
+        assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
+    }
+
     @DisplayName("Remove Label")
     @Test
     fun testTaskRemoveLabel() {

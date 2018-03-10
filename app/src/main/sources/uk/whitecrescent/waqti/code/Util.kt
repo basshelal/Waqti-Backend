@@ -1,161 +1,138 @@
 package uk.whitecrescent.waqti.code
 
-import com.google.gson.Gson
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
-import java.io.BufferedReader
-import java.io.BufferedWriter
-import java.io.FileReader
-import java.io.FileWriter
 import java.time.LocalDateTime
-import java.util.Random
 import java.util.concurrent.TimeUnit
 
-object GSON {
-
-    private val gson = Gson()
-    private val TASK_ID_FILE = "C:\\Users\\bassh\\GitHub Repositories\\Waqti\\app\\src\\main\\sources\\database\\taskid.json"
-    private val TASKS_FILE = "C:\\Users\\bassh\\GitHub Repositories\\Waqti\\app\\src\\main\\sources\\database\\tasks.json"
-    private val PRIORITIES_FILE = "C:\\Users\\bassh\\GitHub Repositories\\Waqti\\app\\src\\main\\sources\\database\\priorities.json"
-
-    //TODO be careful with the order of insertion (and thus order of reading), do check them!
-
-    //region Task ID
-
-    fun readAllIDs(): Array<Long> {
-        val reader = BufferedReader(FileReader(TASK_ID_FILE))
-        return gson.fromJson<Array<Long>>(reader, Array<Long>::class.java)
-    }
-
-    fun saveID(vararg ids: Long) {
-        val currentIDs = readAllIDs()
-        val fileWriter = BufferedWriter(FileWriter(TASK_ID_FILE))
-        val array = Array(ids.size, { ids[it] })
-        gson.toJson(arrayOf(*array, *currentIDs), fileWriter)
-        fileWriter.close()
-    }
-
-    fun newID(): Long {
-        var id = Math.abs(Random().nextLong())
-        while (readAllIDs().contains(id)) {
-            id = Math.abs(Random().nextLong())
-        }
-        saveID(id)
-        return id
-    }
-
-    fun clearTaskIDFile() {
-        // Cannot work if the file is completely empty (meaning no brackets even) but this should almost never be the case
-        val fileWriter = BufferedWriter(FileWriter(TASK_ID_FILE))
-        gson.toJson(listOf<Long>(), fileWriter)
-        fileWriter.close()
-    }
-
-    fun readIDsFromTasks(): Array<Long> {
-        val reader = BufferedReader(FileReader(TASKS_FILE))
-        val allTasks = gson.fromJson<Array<Task>>(reader, Array<Task>::class.java)
-
-        return Array<Long>(allTasks.size, { allTasks[it].taskID })
-
-    }
-
-    //endregion
-
-    //region Tasks
-
-    // Newest First, Oldest Last
-    fun readAllTasks(): ArrayList<Task> {
-        val reader = BufferedReader(FileReader(TASKS_FILE))
-        return gson.fromJson<ArrayList<Task>>(reader, ArrayList::class.java)
-    }
-
-    fun getTaskAt(index: Int): Task {
-        return readAllTasks()[index]
-    }
-
-    fun getTask(task: Task): Task {
-        val task0 = readAllTasks().find { it == task }
-        if (task0 == null) {
-            throw IllegalArgumentException("Cannot find")
-        } else return task0
-    }
-
-    fun getTaskByID(id: Long): Task {
-        val task = readAllTasks().find { it.taskID == id }
-        if (task == null) {
-            throw IllegalArgumentException("Cannot find")
-        } else return task
-    }
-
-    fun getTasksByTitle(title: String): List<Task> {
-        return readAllTasks().filter { it.title == title }
-    }
-
-    fun saveTaskAt(index: Int, task: Task) {
-        val allTasksList = readAllTasks().toMutableList()
-        allTasksList.add(index, task)
-        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
-        gson.toJson(allTasksList.toTypedArray(), fileWriter)
-        fileWriter.close()
-    }
-
-    fun deleteTask(task: Task) {
-        val allTasksList = readAllTasks().toMutableList()
-        allTasksList.removeAt(allTasksList.indexOf(task))
-        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
-        gson.toJson(allTasksList.toTypedArray(), fileWriter)
-        fileWriter.close()
-    }
-
-    fun deleteTaskAt(index: Int) {
-        deleteTask(getTaskAt(index))
-    }
-
-    //TODO Trimming to size before re-adding back to JSON is a problem
-
-    fun deleteAll(predicate: (Task) -> Boolean) {
-        val allTasksList = readAllTasks().toMutableList()
-        allTasksList.removeIf(predicate)
-        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
-        gson.toJson(allTasksList.toTypedArray(), fileWriter)
-        fileWriter.close()
-    }
-
-    // To the top of file
-    fun saveTask(vararg tasks: Task) {
-        val allTasks = readAllTasks()
-        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
-        val array = Array(tasks.size, { tasks[it] })
-        gson.toJson(arrayListOf(*array, *allTasks.toArray()), fileWriter)
-        fileWriter.close()
-    }
-
-    fun clearTasksFile() {
-        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
-        gson.toJson(listOf<Task>(), fileWriter)
-        fileWriter.close()
-    }
-
-    //endregion
-
-    //region Priorities
-
-    fun readAllPriorities(): ArrayList<Priority> {
-        val reader = BufferedReader(FileReader(PRIORITIES_FILE))
-        return gson.fromJson<ArrayList<Priority>>(reader, ArrayList::class.java)
-    }
-
-    fun savePriority(vararg priorities: Priority) {
-        val allPriorities = readAllPriorities()
-        val fileWriter = BufferedWriter(FileWriter(PRIORITIES_FILE))
-        val array = Array(priorities.size, { priorities[it] })
-        gson.toJson(arrayListOf(*array, *allPriorities.toArray()), fileWriter)
-        fileWriter.close()
-    }
-
-    //endregion
-
-}
+//object GSON {
+//
+//    private val gson = Gson()
+//    private val TASK_ID_FILE = "C:\\Users\\bassh\\GitHub Repositories\\Waqti\\app\\src\\main\\sources\\database\\taskid.json"
+//    private val TASKS_FILE = "C:\\Users\\bassh\\GitHub Repositories\\Waqti\\app\\src\\main\\sources\\database\\tasks.json"
+//    private val PRIORITIES_FILE = "C:\\Users\\bassh\\GitHub Repositories\\Waqti\\app\\src\\main\\sources\\database\\priorities.json"
+//
+//    //be careful with the order of insertion (and thus order of reading), do check them!
+//
+//    //region Task ID
+//
+//    fun readAllIDs(): Array<Long> {
+//        val reader = BufferedReader(FileReader(TASK_ID_FILE))
+//        return gson.fromJson<Array<Long>>(reader, Array<Long>::class.java)
+//    }
+//
+//    fun saveID(vararg ids: Long) {
+//        val currentIDs = readAllIDs()
+//        val fileWriter = BufferedWriter(FileWriter(TASK_ID_FILE))
+//        val array = Array(ids.size, { ids[it] })
+//        gson.toJson(arrayOf(*array, *currentIDs), fileWriter)
+//        fileWriter.close()
+//    }
+//
+//    fun newID(): Long {
+//        var id = Math.abs(Random().nextLong())
+//        while (readAllIDs().contains(id)) {
+//            id = Math.abs(Random().nextLong())
+//        }
+//        saveID(id)
+//        return id
+//    }
+//
+//    fun clearTaskIDFile() {
+//        // Cannot work if the file is completely empty (meaning no brackets even) but this should almost never be the case
+//        val fileWriter = BufferedWriter(FileWriter(TASK_ID_FILE))
+//        gson.toJson(listOf<Long>(), fileWriter)
+//        fileWriter.close()
+//    }
+//
+//    fun readIDsFromTasks(): Array<Long> {
+//        val reader = BufferedReader(FileReader(TASKS_FILE))
+//        val allTasks = gson.fromJson<Array<Task>>(reader, Array<Task>::class.java)
+//
+//        return Array<Long>(allTasks.size, { allTasks[it].taskID })
+//
+//    }
+//
+//    //endregion
+//
+//    //region Tasks
+//
+//    // Newest First, Oldest Last
+//    fun readAllTasks(): ArrayList<Task> {
+//        val reader = BufferedReader(FileReader(TASKS_FILE))
+//        return gson.fromJson<ArrayList<Task>>(reader, ArrayList::class.java)
+//    }
+//
+//    fun getTaskAt(index: Int): Task {
+//        return readAllTasks()[index]
+//    }
+//
+//    fun getTask(task: Task): Task {
+//        val task0 = readAllTasks().find { it == task }
+//        if (task0 == null) {
+//            throw IllegalArgumentException("Cannot find")
+//        } else return task0
+//    }
+//
+//    fun getTaskByID(id: Long): Task {
+//        val task = readAllTasks().find { it.taskID == id }
+//        if (task == null) {
+//            throw IllegalArgumentException("Cannot find")
+//        } else return task
+//    }
+//
+//    fun getTasksByTitle(title: String): List<Task> {
+//        return readAllTasks().filter { it.title == title }
+//    }
+//
+//    fun saveTaskAt(index: Int, task: Task) {
+//        val allTasksList = readAllTasks().toMutableList()
+//        allTasksList.add(index, task)
+//        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
+//        gson.toJson(allTasksList.toTypedArray(), fileWriter)
+//        fileWriter.close()
+//    }
+//
+//    fun deleteTask(task: Task) {
+//        val allTasksList = readAllTasks().toMutableList()
+//        allTasksList.removeAt(allTasksList.indexOf(task))
+//        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
+//        gson.toJson(allTasksList.toTypedArray(), fileWriter)
+//        fileWriter.close()
+//    }
+//
+//    fun deleteTaskAt(index: Int) {
+//        deleteTask(getTaskAt(index))
+//    }
+//
+//    //Trimming to size before re-adding back to JSON is a problem
+//
+//    fun deleteAll(predicate: (Task) -> Boolean) {
+//        val allTasksList = readAllTasks().toMutableList()
+//        allTasksList.removeIf(predicate)
+//        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
+//        gson.toJson(allTasksList.toTypedArray(), fileWriter)
+//        fileWriter.close()
+//    }
+//
+//    // To the top of file
+//    fun saveTask(vararg tasks: Task) {
+//        val allTasks = readAllTasks()
+//        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
+//        val array = Array(tasks.size, { tasks[it] })
+//        gson.toJson(arrayListOf(*array, *allTasks.toArray()), fileWriter)
+//        fileWriter.close()
+//    }
+//
+//    fun clearTasksFile() {
+//        val fileWriter = BufferedWriter(FileWriter(TASKS_FILE))
+//        gson.toJson(listOf<Task>(), fileWriter)
+//        fileWriter.close()
+//    }
+//
+//    //endregion
+//
+//}
 
 object Concurrent {
 
