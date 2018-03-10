@@ -19,6 +19,7 @@ class OtherTests {
     @DisplayName("Test")
     @Test
     fun test() {
+
     }
 
     @DisplayName("Runner")

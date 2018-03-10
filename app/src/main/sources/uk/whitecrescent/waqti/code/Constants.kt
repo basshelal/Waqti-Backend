@@ -32,15 +32,15 @@ const val DEFAULT_FAILABLE = false
 const val DEFAULT_KILLABLE = true
 
 val DEFAULT_TASK_STATE = TaskState.EXISTING
-val DEFAULT_TIME = LocalDateTime.MIN!!
-val DEFAULT_DURATION = Duration.ZERO!!
-val DEFAULT_PRIORITY = Priority.getOrCreatePriority("DEFAULT", 0)
+val DEFAULT_TIME = LocalDateTime.MIN
+val DEFAULT_DURATION = Duration.ZERO
+val DEFAULT_PRIORITY = Priority.getOrCreatePriority("DEFAULT", -1)
 val DEFAULT_LABEL = Label.createNewLabel("DEFAULT")
 val DEFAULT_OPTIONAL = MANDATORY
 val DEFAULT_DESCRIPTION = StringBuilder("DEFAULT")
 val DEFAULT_CHECKLIST = Checklist()
 val DEFAULT_TARGET = "DEFAULT"
-val DEFAULT_DEADLINE = LocalDateTime.MIN!!
+val DEFAULT_DEADLINE = LocalDateTime.MIN
 val DEFAULT_TASK_ID: Long = 0L
 
 val DEFAULT_TIME_PROPERTY = Property(HIDDEN, DEFAULT_TIME)

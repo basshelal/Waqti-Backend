@@ -1,5 +1,20 @@
 package uk.whitecrescent.waqti.code
 
+/**
+ * The user defined level of importance of a Task represented as a String with a number representing importance
+ * level.
+ *
+ * Priority is particularly useful in solving or mediating Task collisions within collections. A Task collision
+ * occurs when two or more Tasks in a collection share the same time, if they have different priority levels then
+ * the Task with the higher priority level will be shown and a collision warning will be displayed to the user,
+ * this is called a weak collision. If the tasks have equal priority levels then the user must mediate or solve
+ * the collision themselves, this is called a strong collision.
+ *
+ * Priority can not be a Constraint.
+ *
+ * @see Task
+ * @author Bassam Helal
+ */
 class Priority private constructor(var name: String, var importanceLevel: Int) {
 
     companion object {

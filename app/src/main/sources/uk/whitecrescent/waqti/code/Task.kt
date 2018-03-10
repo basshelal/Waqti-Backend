@@ -46,7 +46,8 @@ class Task(var title: String) {
      */
     var taskID = Math.abs(Random().nextLong())
 
-    private var timeDurationSet = Time.MIN
+    // The point in time at which the duration Property was set, used to calculate duration left
+    private var timeDurationSet = DEFAULT_TIME
 
     // A Task ages when it is failed
     var age = 0
@@ -93,6 +94,20 @@ class Task(var title: String) {
             field = duration
         }
 
+    /**
+     * The user defined level of importance of a Task represented as a String with a number representing importance
+     * level.
+     *
+     * Priority is particularly useful in solving or mediating Task collisions within collections. A Task collision
+     * occurs when two or more Tasks in a collection share the same time, if they have different priority levels then
+     * the Task with the higher priority level will be shown and a collision warning will be displayed to the user,
+     * this is called a weak collision. If the tasks have equal priority levels then the user must mediate or solve
+     * the collision themselves, this is called a strong collision.
+     *
+     * Priority can not be a Constraint.
+     *
+     * @see Priority
+     */
     var priority: Property<Priority> = DEFAULT_PRIORITY_PROPERTY
         private set(priority) {
             field = priority
@@ -420,16 +435,30 @@ class Task(var title: String) {
         return setDurationProperty(Constraint(SHOWING, TimeUnit.toJavaDuration(timeUnit, count), UNMET))
     }
 
+    /**
+     * Sets this Task's priority Property.
+     *
+     * Priority is non-constrain-able and so if a Constraint is passed in it will be ignored as a Constraint and it's
+     * `isVisible` and `value` values will be used to set a Property for priority.
+     *
+     * @see Priority
+     * @param priorityProperty the `Property` of type `Priority` that this Task's priority will be set to
+     * @return this Task after setting the Task's priority Property
+     */
     fun setPriorityProperty(priorityProperty: Property<Priority>): Task {
-        this.priority = priorityProperty
-        makeFailableIfConstraint(priorityProperty)
+        this.priority = Property(priorityProperty.isVisible, priorityProperty.value)
         return this
     }
 
-    fun setPriorityConstraint(priorityConstraint: Constraint<Priority>): Task {
-        return setPriorityProperty(priorityConstraint)
-    }
-
+    /**
+     * Sets this Task's priority Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setPriorityProperty(Property(SHOWING, myPriority))`.
+     *
+     * @see Task.setPriorityProperty
+     * @param priority the Priority value that this Task's priority value will be set to
+     * @return this Task after setting the Task's priority Property
+     */
     fun setPriorityValue(priority: Priority): Task {
         return setPriorityProperty(Property(SHOWING, priority))
     }
@@ -818,46 +847,6 @@ class Task(var title: String) {
 
     //endregion
 
-    //region Persistence Utilities
-
-
-//    private constructor(
-//            state: TaskState,
-//            isFailable: Boolean,
-//            isKillable: Boolean,
-//            taskID: Long,
-//            time: Property<LocalDateTime>,
-//            duration: Property<Duration>,
-//            priority: Property<Priority>,
-//            label: Property<Label>,
-//            optional: Property<Boolean>,
-//            description: Property<StringBuilder>,
-//            checklist: Property<Checklist>,
-//            deadline: Property<LocalDateTime>,
-//            target: Property<String>,
-//            before: Property<Long>,
-//            after: Property<Long>,
-//            title: String
-//    ) : this(title) {
-//        this.state = state
-//        this.isFailable = isFailable
-//        this.isKillable = isKillable
-//        this.taskID = taskID
-//        this.time = time
-//        this.duration = duration
-//        this.priority = priority
-//        this.label = label
-//        this.optional = optional
-//        this.description = description
-//        this.checklist = checklist
-//        this.deadline = deadline
-//        this.target = target
-//        this.before = before
-//        this.after = after
-//
-//    }
-
-    //endregion
 
     //region Overriden from kotlin.Any
 

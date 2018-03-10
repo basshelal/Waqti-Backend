@@ -2,8 +2,6 @@
 
 * Stop using JSON!
 
-* Priority collisions
-
 * Sun-25-Feb Currently the focus is `Task` we need to make sure this thing works perfectly and does everything we 
 need it to,
  rewriting this thing will be a mess so we must try and make sure it works well, it's the core of this whole project,
@@ -35,6 +33,9 @@ and save it as a Template Task, using a state just for Template Tasks is a bad i
 * Update the Documentation Files as necessary
 
 * Make sure all Task Properties are working perfectly
+
+* Priority collisions are not done on the Task level, they are done on the List level, specifically TimedLists which 
+will check all their elements and see for collisions
 
 * Make sure before and after Constraints work well with Tuples perfectly
 
