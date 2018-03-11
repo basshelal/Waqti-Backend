@@ -1,6 +1,8 @@
 package uk.whitecrescent.waqti.code
 
-class Checklist(vararg itemValues: String) {
+data class ListItem(val value: String, var isChecked: Boolean = false)
+
+class Checklist(vararg itemValues: String) : Iterable<ListItem> {
 
     private val list = ArrayList<ListItem>()
 
@@ -8,25 +10,9 @@ class Checklist(vararg itemValues: String) {
         addAll(*itemValues)
     }
 
-    operator fun get(index: Int) =
-            this.list[index]
-
-    operator fun get(listItem: ListItem) =
-            getItemByReference(listItem)
-
-    operator fun get(string: String) =
-            getItemByContents(string)
-
-    operator fun set(index: Int, listItem: ListItem) =
-            run { this.list[index] = listItem }
-
-    operator fun set(index: Int, string: String) =
-            run { this.list[index] = ListItem(string) }
-
-    operator fun contains(listItem: ListItem) =
-            this.list.contains(listItem)
-
     fun size() = list.size
+
+    fun asList(): List<ListItem> = this.list
 
     fun addItem(listItem: ListItem) = this.list.add(listItem)
 
@@ -40,10 +26,8 @@ class Checklist(vararg itemValues: String) {
         }
     }
 
-    fun asList(): List<ListItem> = this.list
-
     fun moveItem(fromIndex: Int, toIndex: Int) {
-        if (toIndex > size() || toIndex < 0 || fromIndex > size() || fromIndex < 0) {
+        if (toIndex > size() - 1 || toIndex < 0 || fromIndex > size() - 1 || fromIndex < 0) {
             throw IllegalArgumentException("Index doesn't exist!")
         }
         if (fromIndex == toIndex) {
@@ -53,21 +37,23 @@ class Checklist(vararg itemValues: String) {
         val itemToMove = list[fromIndex]
 
         if (fromIndex < toIndex) {
-            for ((i, element) in list.filter { listItem -> list.indexOf(listItem) in (fromIndex + 1)..toIndex }.withIndex()) {
+
+            for ((i, element) in list.filter { list.indexOf(it) in (fromIndex + 1)..toIndex }.withIndex()) {
                 list[fromIndex + i] = element
             }
             list[toIndex] = itemToMove
+
         } else if (fromIndex > toIndex) {
-            for ((i, element) in list.filter { listItem -> list.indexOf(listItem) in toIndex..(fromIndex - 1) }.asReversed().withIndex()) {
+
+            for ((i, element) in list.filter { list.indexOf(it) in toIndex..(fromIndex - 1) }.asReversed().withIndex()) {
                 list[fromIndex - i] = element
             }
             list[toIndex] = itemToMove
-        }
 
+        }
 
         // everything after fromIndex push left by 1 and everything after toIndex don't move, just like everything before fromIndex
         // basically only manipulate what's between fromIndex and toIndex
-
     }
 
     fun checkItem(index: Int) {
@@ -90,9 +76,9 @@ class Checklist(vararg itemValues: String) {
 
     fun deleteItem(item: ListItem) = this.list.remove(getItemByReference(item))
 
-    private fun getItemByReference(item: ListItem) = this.list.find { element -> item.equals(element) }
+    fun clear() = list.clear()
 
-    private fun getItemByContents(value: String) = this.list.find { element -> element.value.equals(value) }
+    fun isEmpty() = list.isEmpty()
 
     fun getAllCheckedItems() = this.list.filter { it.isChecked }
 
@@ -102,13 +88,46 @@ class Checklist(vararg itemValues: String) {
 
     fun uncheckedItemsSize() = getAllUncheckedItems().size
 
+    private fun getItemByReference(item: ListItem) = this.list.find { it == item }
+
+    private fun getItemByContents(value: String) = this.list.find { it.value == value }
+
+    //region Operators
+
+    operator fun get(index: Int) =
+            this.list[index]
+
+    operator fun get(listItem: ListItem) =
+            getItemByReference(listItem)
+
+    operator fun get(string: String) =
+            getItemByContents(string)
+
+    operator fun set(index: Int, listItem: ListItem) {
+        this.list[index] = listItem
+    }
+
+    operator fun set(index: Int, string: String) {
+        this.list[index] = ListItem(string)
+    }
+
+    operator fun contains(listItem: ListItem) =
+            this.list.contains(listItem)
+
+
+    //endregion Operators
+
+    //region Overridden from kotlin.Any and kotlin.collections.Iterable
+
     override fun hashCode() = list.hashCode()
 
     override fun equals(other: Any?) =
-            other is Checklist && this.toString().equals(other.toString())
+            other is Checklist && this.toString() == other.toString()
 
     override fun toString() = list.toString()
 
-}
+    override fun iterator() =
+            list.iterator()
 
-data class ListItem(val value: String, var isChecked: Boolean = false)
+    //endregion Overridden from kotlin.Any and kotlin.collections.Iterable
+}

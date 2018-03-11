@@ -1,5 +1,9 @@
 # TODO
 
+* Think about when we un-constrain while it's checking the condition, for example if we have duration as a Constraint
+ for a while then before it is met we un-constrain, the checking should end, but I don't think it will, we need to 
+ test this extensively
+
 * Stop using JSON!
 
 * Sun-25-Feb Currently the focus is `Task` we need to make sure this thing works perfectly and does everything we 

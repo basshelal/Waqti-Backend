@@ -2,9 +2,11 @@ package uk.whitecrescent.waqti.code
 
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
+//region Old GSON, will delete soon
 //object GSON {
 //
 //    private val gson = Gson()
@@ -14,7 +16,7 @@ import java.util.concurrent.TimeUnit
 //
 //    //be careful with the order of insertion (and thus order of reading), do check them!
 //
-//    //region Task ID
+//
 //
 //    fun readAllIDs(): Array<Long> {
 //        val reader = BufferedReader(FileReader(TASK_ID_FILE))
@@ -53,9 +55,9 @@ import java.util.concurrent.TimeUnit
 //
 //    }
 //
-//    //endregion
 //
-//    //region Tasks
+//
+//
 //
 //    // Newest First, Oldest Last
 //    fun readAllTasks(): ArrayList<Task> {
@@ -130,9 +132,11 @@ import java.util.concurrent.TimeUnit
 //        fileWriter.close()
 //    }
 //
-//    //endregion
+//
 //
 //}
+
+//endregion Old GSON, will delete soon
 
 object Concurrent {
 
@@ -181,4 +185,8 @@ fun <T> logI(t: T) {
 
 fun <T> logE(t: T) {
     error("ERROR: ${t.toString()}")
+}
+
+fun setGracePeriod(duration: Duration) {
+    GRACE_PERIOD = duration
 }

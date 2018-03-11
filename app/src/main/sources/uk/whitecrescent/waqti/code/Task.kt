@@ -62,7 +62,7 @@ class Task(var title: String) {
     // The time a task is killed
     var killedTime = Time.MIN
 
-    //endregion
+    //endregion Class Properties
 
     //region Task Properties
 
@@ -151,6 +151,22 @@ class Task(var title: String) {
             field = description
         }
 
+    /**
+     * A list of checkable items that this Task may have.
+     *
+     * This is useful if the Task can be broken down into smaller chunks which can be represented as list items in a
+     * checklist. Items in a checklist can be checked or deleted.
+     *
+     * If a checklist is a Constraint then the Task cannot be killed unless every item in the checklist is checked,
+     * more specifically the checklist has no unchecked items. An empty checklist has no unchecked items so it is
+     * important that the implementation be aware of this and differentiate between an empty checklist (which is
+     * possible for good reasons) and a checklist with all its items checked.
+     *
+     * If checklist is a Property then it has no rules on killing the Task.
+     *
+     * @see Checklist
+     * @see ListItem
+     */
     var checklist: Property<Checklist> = DEFAULT_CHECKLIST_PROPERTY
         private set(checklist) {
             field = checklist
@@ -185,7 +201,7 @@ class Task(var title: String) {
         }
 
 
-    //endregion
+    //endregion Task Properties
 
     //region Task Properties Functions
 
@@ -267,7 +283,7 @@ class Task(var title: String) {
      */
     private fun isNotConstraint(property: Property<*>) = property !is Constraint
 
-    //endregion
+    //endregion Task Properties Functions
 
     //region Property setters for chaining
 
@@ -588,7 +604,7 @@ class Task(var title: String) {
 
     fun setOptionalProperty(optionalProperty: Property<Optional>): Task {
         this.optional = optionalProperty
-        if(this.isFailable) {
+        if (this.isFailable) {
             isFailable = false
         }
         return this
@@ -635,19 +651,65 @@ class Task(var title: String) {
         return setDescriptionProperty(Property(SHOWING, description))
     }
 
+    /**
+     * Sets this Task's checklist Property, the passed in Property can be a Constraint.
+     *
+     * If the passed in `checklistProperty` is a Constraint then this Task will become failable if it wasn't already
+     * and will start viewing the checklist to see if all its list items are checked, if they are, the checklist
+     * Constraint is met. This also refers to empty checklists, meaning to this Task, an empty checklist is one that
+     * has all its items checked and so the checklist Constraint is met, thus it is important to differentiate
+     * between the case that the checklist contains unchecked items or is just empty, this is up to the
+     * implementation to deal with.
+     *
+     * @see Task.checklistConstraintChecking
+     * @see Checklist
+     * @param checklistProperty the `Property` of type `Checklist` that this Task's checklist will be set to
+     * @return this Task after setting the Task's checklist Property
+     */
     fun setChecklistProperty(checklistProperty: Property<Checklist>): Task {
         this.checklist = checklistProperty
-        makeFailableIfConstraint(checklistProperty)
+        if (checklistProperty is Constraint) {
+            makeFailableIfConstraint(checklistProperty)
+            checklistConstraintChecking()
+        }
         return this
     }
 
+    /**
+     * Sets this Task's checklist Constraint.
+     *
+     * @see Task.setChecklistProperty
+     * @param checklistConstraint the `Constraint` of type `Checklist` that this Task's checklist will be set to
+     * @return this Task after setting the Task's checklist Constraint
+     */
     fun setChecklistConstraint(checklistConstraint: Constraint<Checklist>): Task {
         return setChecklistProperty(checklistConstraint)
     }
 
-    fun setChecklistValue(checklist: Checklist): Task {
+    /**
+     * Sets this Task's checklist Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setChecklistProperty(Property(SHOWING, myChecklist))`.
+     *
+     * @see Task.setChecklistProperty
+     * @param checklist the Checklist value that this Task's checklist value will be set to
+     * @return this Task after setting the Task's checklist Property
+     */
+    fun setChecklistPropertyValue(checklist: Checklist): Task {
         return setChecklistProperty(Property(SHOWING, checklist))
+    }
 
+    /**
+     * Sets this Task's checklist Constraint with the given value and makes the Constraint showing and unmet.
+     *
+     * This is a shorthand of writing `setChecklistConstraint(Constraint(SHOWING, myChecklist, UNMET))`.
+     *
+     * @see Task.setChecklistProperty
+     * @param checklist the Checklist value that this Task's checklist value will be set to
+     * @return this Task after setting the Task's checklist Constraint
+     */
+    fun setChecklistConstraintValue(checklist: Checklist): Task {
+        return setChecklistProperty(Constraint(SHOWING, checklist, UNMET))
     }
 
     fun setDeadlineProperty(deadlineProperty: Property<Time>): Task {
@@ -725,7 +787,7 @@ class Task(var title: String) {
         return setAfterProperty(Property(SHOWING, after))
     }
 
-    //endregion
+    //endregion Property setters for chaining
 
     //region Hide Properties
 
@@ -795,7 +857,7 @@ class Task(var title: String) {
         } else throw IllegalStateException("Cannot hide, after is Constraint")
     }
 
-    //endregion
+    //endregion Hide Properties
 
     //region Task lifecycle
 
@@ -871,7 +933,7 @@ class Task(var title: String) {
 
     private fun killed() = state == TaskState.KILLED
 
-    //endregion
+    //endregion Task lifecycle
 
     //region Concurrency
 
@@ -879,7 +941,7 @@ class Task(var title: String) {
      * Checks the time on the `stateCheckingThread` to match it with this Task's time Constraint value.
      *
      * When the time is past this Task's time Constraint value the state will change to EXISTING and the time
-     * Constraint will be met if it wasn't already.
+     * Constraint will be met if it wasn't already and the checking ends.
      *
      * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
      * values as they may change for performance reasons.
@@ -917,7 +979,7 @@ class Task(var title: String) {
      * duration Constraint value
      *
      * When the time is past this Task's duration Constraint value the duration Constraint will be met if it wasn't
-     * already.
+     * already and the checking ends.
      *
      * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
      * values as they may change for performance reasons.
@@ -975,7 +1037,41 @@ class Task(var title: String) {
 
     }
 
-    //endregion
+    /**
+     * Checks this Task's checklist Property value (the actual checklist) on the `stateCheckingThread` to see if all
+     * its list items are checked or not.
+     *
+     * When the checklist has no unchecked items this Task's checklist Constraint will be met if it wasn't already
+     * and the checking ends.
+     *
+     * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
+     * values as they may change for performance reasons.
+     *
+     * This function is only called when `checklist` is set as a Constraint.
+     *
+     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     */
+    private fun checklistConstraintChecking() {
+        var done = false
+        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                .takeWhile { !done }
+                .subscribeOn(Concurrent.stateCheckingThread)
+                .subscribe(
+                        {
+                            if (this.checklist.value.getAllUncheckedItems().isEmpty()) {
+                                if (this.checklist is Constraint && (this.checklist as Constraint).isMet != MET) {
+                                    (this.checklist as Constraint).isMet = MET
+                                }
+                                done = true
+                            }
+                        },
+                        {
+                            throw ConcurrentException("Checklist Constraint checking failed")
+                        }
+                )
+    }
+
+    //endregion Concurrency
 
     //region Overriden from kotlin.Any
 
@@ -984,13 +1080,13 @@ class Task(var title: String) {
 
     override fun equals(other: Any?) =
             other is Task &&
-                    other.title.equals(this.title) &&
-                    other.getTaskState().equals(this.state) &&
-                    other.getAllShowingProperties().equals(this.getAllShowingProperties())
+                    other.title == this.title &&
+                    other.getTaskState() == this.state &&
+                    other.getAllShowingProperties() == this.getAllShowingProperties()
 
     override fun toString(): String {
         val result = StringBuilder("$title\n")
-        result.append("ID: ${this.taskID} isKillable: ${isKillable} isFailable: ${isFailable} state: ${state}\n")
+        result.append("ID: $taskID isKillable: $isKillable isFailable: $isFailable state: $state\n")
 
         result.append("\tP:\n")
 
@@ -1003,7 +1099,7 @@ class Task(var title: String) {
         return result.toString()
     }
 
-    //endregion
+    //endregion Overriden from kotlin.Any
 }
 
 

@@ -75,9 +75,9 @@ class DurationTests {
         assertEquals(Property(HIDDEN, DEFAULT_DURATION), task.duration)
     }
 
-    @DisplayName("Set Duration Property using setDurationValue")
+    @DisplayName("Set Duration Property using setDurationPropertyValue")
     @Test
-    fun testTaskSetDurationValue() {
+    fun testTaskSetDurationPropertyValue() {
         val task = testTask()
                 .setDurationPropertyValue(
                         Duration.ofDays(7)
