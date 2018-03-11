@@ -8,7 +8,7 @@ The list of Properties available is subject to change.
 
 Note that Constraints are a special type of Property that can modify the Task's lifecycle.
 
-You can think of Properties as descriptors and Constraints as enforcers.
+Properties are said to be descriptors whereas Constraints are enforcers.
 
 ## Properties List
 
@@ -23,6 +23,12 @@ Task.
 * **Duration:** The estimated amount of time that this Task will take, this is defined in any Time Measurement Unit, 
 this can also be referred to as minimum duration. If duration is a Constraint then the Task cannot be killed in the 
 midst of the duration, only after it has ended. If duration is a Property then it has no rules on killing the Task.
+
+* **Optional:** Shows whether the Task is optional or not. An optional Task is one that is to be done or pursued if 
+there is free time, thus an optional Task has less priority than a non-optional Task (mandatory Task) even if the 
+Task has the lowest priority, this makes optional Tasks the lowest priority of all Tasks. If optional is a Constraint
+then the Task cannot be failable at all, however if optional is not a Constraint then the Task remains the same and 
+optional acts like the lowest priority.
 
 * **Checklist:** A list of checkable items that this Task may have. This is useful if the Task can be broken down into 
 smaller chunks which can be represented as list items in a checklist. Items in a checklist can be checked or deleted. 
@@ -63,12 +69,6 @@ a strong collision. Priority can not be a Constraint.
 * **Labels:** The user defined category(s) that this Task belongs to. A Task can belong to or have 0 or many labels. 
 Labels are used as a way of categorizing Tasks and are thus helpful in filtering and analytics. Labels can not be a
 Constraint.
-
-* **Optional:** Shows whether the Task is optional or not. An optional Task is one that is to be done or pursued if 
-there is free time, thus an optional Task has less priority than a non-optional Task (mandatory Task) even if the 
-Task has the lowest priority, this makes optional Tasks the lowest priority of all Tasks. An optional Task cannot be 
-failable. Optional can not be a Constraint however it does behave similar to a Constraint in that it does modify the 
-Task's life-cycle and overall behavior if it is set to true.
 
 * **Description:** A textual description of this Task, useful for if the Task is complex or requires further 
 information that the title cannot provide. Description can not be a Constraint.

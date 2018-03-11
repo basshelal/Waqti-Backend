@@ -3,8 +3,16 @@
 * Think about when we un-constrain while it's checking the condition, for example if we have duration as a Constraint
  for a while then before it is met we un-constrain, the checking should end, but I don't think it will, we need to 
  test this extensively
+ 
+* Optional is tricky, so if optional is a Constraint then it cannot be failed no matter what, but what if we 
+un-constrain optional, then it should be failable if there was some other constraint happening, this means that we 
+have a background check, or the means by which we un-constrain we can do the operation needed, instead of background 
+checks
 
-* Stop using JSON!
+* Deadline has the problem that if you kill before the deadline then deadline is an unmet Constraint and you can't 
+kill at all! Maybe we disregard deadline from being one of the Constraints to be met before killing. Deadline must be
+constrainable so that it can be a descriptor (show deadline but don't do anything special about it) and an enforcer 
+(show deadline and make sure that the Task behaves accordingly)
 
 * Sun-25-Feb Currently the focus is `Task` we need to make sure this thing works perfectly and does everything we 
 need it to,
@@ -50,6 +58,8 @@ will check all their elements and see for collisions
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Stop using JSON!~~
 
 * ~~Based on Concurrent stuff, check which state we make the default,
  WAITING should be the default since a Task is waiting to be relevant, however this can be an option?

@@ -142,6 +142,7 @@ object Concurrent {
 
     val timeCheckingThread = Schedulers.newThread()
     val stateCheckingThread = Schedulers.newThread()
+    val optionalCheckingThread = Schedulers.newThread()
 
     /**
      * An Observable that emits every so often on the time checking Thread.

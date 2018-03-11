@@ -26,7 +26,7 @@ class Task(var title: String) {
      * @see TaskState
      * @see Constraint
      */
-    var isFailable = false
+    var isFailable = DEFAULT_FAILABLE
 
     /**
      * Boolean value representing whether it is possible for this Task to be killed at any arbitrary point in time.
@@ -34,7 +34,7 @@ class Task(var title: String) {
      * is `false` then it can not be killed at this point in time.
      * @see TaskState
      */
-    var isKillable = true
+    var isKillable = DEFAULT_KILLABLE
 
     /**
      * A Long value representing an ID for a Task.
@@ -132,7 +132,7 @@ class Task(var title: String) {
             field = label
         }
 
-    //TODO Optional is a Property as a descriptor and Constraint as an enforcer which will affect the Task's abilities
+    //TODO if optional is a Constraint then make sure the Task can never become failable, many different ways for this
     var optional: Property<Optional> = DEFAULT_OPTIONAL_PROPERTY
         private set(optional) {
             field = optional
@@ -213,7 +213,7 @@ class Task(var title: String) {
      * @param property the Property to check for if it is a Constraint
      */
     private fun makeFailableIfConstraint(property: Property<*>) {
-        if (!this.isFailable && property is Constraint) {
+        if (!this.isFailable && property is Constraint /* && this.optional.value == false */) {
             this.isFailable = true
         }
     }
@@ -602,9 +602,10 @@ class Task(var title: String) {
         return this
     }
 
+    //TODO come back here!
     fun setOptionalProperty(optionalProperty: Property<Optional>): Task {
         this.optional = optionalProperty
-        if (this.isFailable) {
+        if (optionalProperty is Constraint && optionalProperty.value == true) {
             isFailable = false
         }
         return this
@@ -715,18 +716,25 @@ class Task(var title: String) {
     fun setDeadlineProperty(deadlineProperty: Property<Time>): Task {
         this.deadline = deadlineProperty
         if (deadlineProperty is Constraint) {
-            concurrentTimeCheckingForDeadlineConstraint()
+            makeFailableIfConstraint(deadlineProperty)
+            deadlineConstraintChecking()
         }
-        makeFailableIfConstraint(deadlineProperty)
         return this
     }
+
+    fun getTimeUntilDeadline() =
+            Duration.between(now(), this.deadline.value)
 
     fun setDeadlineConstraint(deadlineConstraint: Constraint<Time>): Task {
         return setDeadlineProperty(deadlineConstraint)
     }
 
-    fun setDeadlineValue(deadline: Time): Task {
+    fun setDeadlinePropertyValue(deadline: Time): Task {
         return setDeadlineProperty(Property(SHOWING, deadline))
+    }
+
+    fun setDeadlineConstraintValue(deadline: Time): Task {
+        return setDeadlineProperty(Constraint(SHOWING, deadline, UNMET))
     }
 
     fun setTargetProperty(targetProperty: Property<Target>): Task {
@@ -921,7 +929,7 @@ class Task(var title: String) {
         if (!isKillable) {
             throw TaskStateException("Kill unsuccessful, ${this.title} is not Killable", getTaskState())
         }
-        if (!getAllUnmetAndShowingConstraints().isEmpty()) {
+        if (!getAllUnmetAndShowingConstraints().isEmpty()) {//TODO everything but deadline!
             throw TaskStateException("Kill unsuccessful, ${this.title} has unmet Constraints", getTaskState())
         } else if (canKill()) {
             state = TaskState.KILLED
@@ -1012,31 +1020,6 @@ class Task(var title: String) {
                 )
     }
 
-    private fun concurrentTimeCheckingForDeadlineConstraint() {
-
-        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
-                .takeWhile { this.deadline.value.plusSeconds(1).isAfter(now()) }
-                .subscribeOn(Concurrent.timeCheckingThread)
-                .subscribe(
-                        {
-                            if (now().isAfter(this.deadline.value)) {
-                                this.fail()
-                            }
-                        },
-                        {
-                            logE("Concurrent time checking for deadline failed!")
-                            it.printStackTrace()
-                        },
-                        {
-                            logI("Concurrent time checking for deadline completed!")
-                        },
-                        {
-                            logI("Concurrent time checking for deadline started")
-                        }
-                )
-
-    }
-
     /**
      * Checks this Task's checklist Property value (the actual checklist) on the `stateCheckingThread` to see if all
      * its list items are checked or not.
@@ -1069,6 +1052,28 @@ class Task(var title: String) {
                             throw ConcurrentException("Checklist Constraint checking failed")
                         }
                 )
+    }
+
+    private fun deadlineConstraintChecking() {
+        var done = false
+        val deadline0 = this.deadline.value.plus(GRACE_PERIOD)
+        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                .takeWhile { !done } // what if un-constrained?
+                .subscribeOn(Concurrent.timeCheckingThread)
+                .subscribe(
+                        {
+                            if (now().isAfter(deadline0)) {
+                                if (canFail()) {
+                                    this.fail()
+                                }
+                                done = true
+                            }
+                        },
+                        {
+                            throw ConcurrentException("Deadline Constraint checking failed!")
+                        }
+                )
+
     }
 
     //endregion Concurrency
