@@ -236,7 +236,7 @@ class DurationTests {
         assertFalse((task.duration as Constraint).isMet)
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        sleep(3)
+        sleep(4)
 
         task.kill()
 

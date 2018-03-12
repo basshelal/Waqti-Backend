@@ -5,11 +5,10 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.Random
 
+//TODO make sure KDoc is up to date
 class Task(var title: String) {
 
     //region Class Properties
-
-    //TODO update KDoc
 
     /**
      * The Task State is the state in which the task is in at this point in time.
@@ -132,7 +131,18 @@ class Task(var title: String) {
             field = label
         }
 
-    //TODO if optional is a Constraint then make sure the Task can never become failable, many different ways for this
+    /**
+     * Shows whether the Task is optional or not.
+     *
+     * An optional Task is one that is to be done or pursued if there is free time, thus an optional Task has less
+     * priority than a non-optional Task (mandatory Task) even if the Task has the lowest priority, this makes
+     * optional Tasks the lowest priority of all Tasks. In many ways the optional Property acts similar to the priority
+     * Property except in that optional is lower priority than the lowest priority.
+     *
+     * Optional can not be a Constraint.
+     *
+     * @see Boolean
+     */
     var optional: Property<Optional> = DEFAULT_OPTIONAL_PROPERTY
         private set(optional) {
             field = optional
@@ -172,6 +182,17 @@ class Task(var title: String) {
             field = checklist
         }
 
+    /**
+     * The point in natural time after which this Task can no longer be killed and thus is FAILED.
+     *
+     * If deadline is a Constraint then after the deadline time passes plus the grace period [GRACE_PERIOD] the Task will be
+     * FAILED and thus no longer can be KILLED.
+     *
+     * If deadline is a Property it has no rules on failing or killing the Task.
+     *
+     * @see LocalDateTime
+     * @see GRACE_PERIOD
+     */
     var deadline: Property<Time> = DEFAULT_DEADLINE_PROPERTY
         private set(deadline) {
             field = deadline
@@ -213,7 +234,7 @@ class Task(var title: String) {
      * @param property the Property to check for if it is a Constraint
      */
     private fun makeFailableIfConstraint(property: Property<*>) {
-        if (!this.isFailable && property is Constraint /* && this.optional.value == false */) {
+        if (!this.isFailable && property is Constraint) {
             this.isFailable = true
         }
     }
@@ -602,25 +623,31 @@ class Task(var title: String) {
         return this
     }
 
-    //TODO come back here!
+    /**
+     * Sets this Task's optional Property.
+     *
+     * Optional is non-constrain-able and so if a Constraint is passed in it will be ignored as a Constraint and it's
+     * `isVisible` and `value` values will be used to set a Property for optional.
+     *
+     * @param optionalProperty the `Property` of type `Optional` that this Task's optional will be set to
+     * @return this Task after setting the Task's optional Property
+     */
     fun setOptionalProperty(optionalProperty: Property<Optional>): Task {
-        this.optional = optionalProperty
-        if (optionalProperty is Constraint && optionalProperty.value == true) {
-            isFailable = false
-        }
+        this.optional = Property(optionalProperty.isVisible, optionalProperty.value)
         return this
     }
 
-    fun setOptionalConstraint(optionalConstraint: Constraint<Optional>): Task {
-        return setOptionalProperty(optionalConstraint)
-    }
-
-    fun setOptionalPropertyValue(optional: Optional): Task {
+    /**
+     * Sets this Task's optional Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setOptionalProperty(Property(SHOWING, myOptional))`.
+     *
+     * @see Task.setOptionalProperty
+     * @param optional the Optional value that this Task's optional value will be set to
+     * @return this Task after setting the Task's optional Property
+     */
+    fun setOptionalValue(optional: Optional): Task {
         return setOptionalProperty(Property(SHOWING, optional))
-    }
-
-    fun setOptionalConstraintValue(optional: Optional): Task {
-        return setOptionalProperty(Constraint(SHOWING, optional, UNMET))
     }
 
     /**
@@ -713,6 +740,30 @@ class Task(var title: String) {
         return setChecklistProperty(Constraint(SHOWING, checklist, UNMET))
     }
 
+    /**
+     * Sets this Task's deadline Property, the passed in Property can be a Constraint.
+     *
+     * Further changes will occur only if the passed in `deadlineProperty` is a Constraint.
+     *
+     * In the case that the passed in `deadlineProperty` is a Constraint, three things will happen:
+     * <ul>
+     *     <li>The deadline Constraint will become met until that deadline time where it will become unmet again,
+     *     this is only in the case that the Task is not killed before the deadline, this is done in order to allow
+     *     the Task to be killed </li>
+     *     <li>This Task will become failable if it wasn't already</li>
+     *     <li>This Task will start checking the time to compare it with the deadline, if the current time is after
+     *     the deadline plus the defined grace period [GRACE_PERIOD] then the Task becomes failed and the deadline
+     *     Constraint becomes unmet. See [deadlineConstraintChecking()].
+     *     </li>
+     * </ul>
+     *
+     * If the passed in `deadlineProperty` is not a Constraint then there will be no further changes and the Task
+     * will not fail automatically.
+     *
+     * @see Task.deadlineConstraintChecking
+     * @param deadlineProperty the `Property` of type `java.time.LocalDateTime` that this Task's deadline will be set to
+     * @return this Task after setting the Task's deadline Property
+     */
     fun setDeadlineProperty(deadlineProperty: Property<Time>): Task {
         this.deadline = deadlineProperty
         if (deadlineProperty is Constraint) {
@@ -722,17 +773,54 @@ class Task(var title: String) {
         return this
     }
 
-    fun getTimeUntilDeadline() =
-            Duration.between(now(), this.deadline.value)
+    /**
+     * Gets the duration left until this Task's deadline will occur, this ignores the grace period.
+     *
+     * @return the Duration left until this Task's deadline occurs, ignores the grace period
+     * @throws IllegalStateException if the deadline has not been set
+     */
+    fun getTimeUntilDeadline(): Duration {
+        if (deadline.value == DEFAULT_DEADLINE) {
+            throw IllegalStateException("Deadline not set!")
+        } else {
+            return Duration.between(now(), this.deadline.value)
+        }
+    }
 
+    /**
+     * Sets this Task's deadline Constraint.
+     *
+     * @see Task.setDeadlineProperty
+     * @param deadlineConstraint the `Constraint` of type `java.time.LocalDateTime` that this Task's deadline will be
+     * set to
+     * @return this Task after setting the Task's deadline Constraint
+     */
     fun setDeadlineConstraint(deadlineConstraint: Constraint<Time>): Task {
         return setDeadlineProperty(deadlineConstraint)
     }
 
+    /**
+     * Sets this Task's deadline Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setDeadlineProperty(Property(SHOWING, myDeadline))`.
+     *
+     * @see Task.setDeadlineProperty
+     * @param deadline the java.time.LocalDateTime value that this Task's deadline value will be set to
+     * @return this Task after setting the Task's deadline Property
+     */
     fun setDeadlinePropertyValue(deadline: Time): Task {
         return setDeadlineProperty(Property(SHOWING, deadline))
     }
 
+    /**
+     * Sets this Task's deadline Constraint with the given value and makes the Constraint showing and unmet.
+     *
+     * This is a shorthand of writing `setDeadlineConstraint(Constraint(SHOWING, myDeadline, UNMET))`.
+     *
+     * @see Task.setDeadlineProperty
+     * @param deadline the java.time.LocalDateTime value that this Task's deadline value will be set to
+     * @return this Task after setting the Task's deadline Constraint
+     */
     fun setDeadlineConstraintValue(deadline: Time): Task {
         return setDeadlineProperty(Constraint(SHOWING, deadline, UNMET))
     }
@@ -929,7 +1017,10 @@ class Task(var title: String) {
         if (!isKillable) {
             throw TaskStateException("Kill unsuccessful, ${this.title} is not Killable", getTaskState())
         }
-        if (!getAllUnmetAndShowingConstraints().isEmpty()) {//TODO everything but deadline!
+        if (state == TaskState.FAILED) {
+            throw TaskStateException("Kill unsuccessful, ${this.title} is FAILED", getTaskState())
+        }
+        if (!getAllUnmetAndShowingConstraints().isEmpty()) {
             throw TaskStateException("Kill unsuccessful, ${this.title} has unmet Constraints", getTaskState())
         } else if (canKill()) {
             state = TaskState.KILLED
@@ -1054,17 +1145,36 @@ class Task(var title: String) {
                 )
     }
 
+    /**
+     * Checks the time on the `stateCheckingThread` to match it with this Task's deadline Constraint value plus the
+     * grace period [GRACE_PERIOD].
+     *
+     * When the time is past this Task's deadline Constraint value plus the grace period, the state will change to
+     * FAILED and the deadline Constraint will be unmet and the checking ends.
+     *
+     * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
+     * values as they may change for performance reasons.
+     *
+     * This function is only called when `deadline` is set as a Constraint.
+     *
+     * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
+     * is done once every so often, which itself is cheap.
+     *
+     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     */
     private fun deadlineConstraintChecking() {
         var done = false
         val deadline0 = this.deadline.value.plus(GRACE_PERIOD)
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
-                .takeWhile { !done } // what if un-constrained?
-                .subscribeOn(Concurrent.timeCheckingThread)
+                .takeWhile { !done }
+                .doOnSubscribe { (deadline as Constraint).isMet = true }
+                .subscribeOn(Concurrent.stateCheckingThread)
                 .subscribe(
                         {
                             if (now().isAfter(deadline0)) {
                                 if (canFail()) {
                                     this.fail()
+                                    (deadline as Constraint).isMet = false
                                 }
                                 done = true
                             }

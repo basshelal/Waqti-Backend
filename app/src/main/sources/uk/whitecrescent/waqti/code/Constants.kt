@@ -59,4 +59,4 @@ val DEFAULT_AFTER_PROPERTY = Property(HIDDEN, DEFAULT_TASK_ID)
 val DEFAULT_SUB_TASKS_PROPERTY = Property(HIDDEN, arrayListOf<TaskID>())
 
 // Used for deadlines
-var GRACE_PERIOD = Duration.ofSeconds(5)
+var GRACE_PERIOD = Duration.ofSeconds(0)

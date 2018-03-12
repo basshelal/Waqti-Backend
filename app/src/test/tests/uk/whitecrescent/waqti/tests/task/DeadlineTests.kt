@@ -1,6 +1,5 @@
 package uk.whitecrescent.waqti.tests.task
 
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -18,7 +17,7 @@ import uk.whitecrescent.waqti.code.Time
 import uk.whitecrescent.waqti.code.UNMET
 import uk.whitecrescent.waqti.code.now
 import uk.whitecrescent.waqti.code.sleep
-import uk.whitecrescent.waqti.tests.TestUtils
+import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 import java.time.Duration
 
@@ -108,7 +107,7 @@ class DeadlineTests {
 
     @DisplayName("Set Deadline Property failable")
     @Test
-    fun testTaskSetDurationPropertyFailable() {
+    fun testTaskSetDeadlinePropertyFailable() {
         val deadline = now().plusSeconds(10)
         val task = testTask()
                 .setDeadlinePropertyValue(deadline)
@@ -132,46 +131,92 @@ class DeadlineTests {
         assertEquals(deadline, task.deadline.value)
         assertTrue(task.deadline.isVisible)
         assertFalse((task.deadline as Constraint).isMet)
-        assertThrows(TaskStateException::class.java, { task.kill() })
 
         sleep(3)
 
+        assertEquals(TaskState.FAILED, task.getTaskState())
+        assertFalse((task.deadline as Constraint).isMet)
+    }
+
+    @DisplayName("Kill with deadline Constraint past")
+    @Test
+    fun testTaskKillDeadlineConstraintPast() {
+        val deadline = now().plusSeconds(2)
+        val task = testTask()
+                .setDeadlineConstraint(Constraint(SHOWING, deadline, UNMET))
+
+        assertTrue(task.isFailable)
+        assertTrue(task.deadline is Constraint)
+        assertEquals(deadline, task.deadline.value)
+        assertTrue(task.deadline.isVisible)
+        assertFalse((task.deadline as Constraint).isMet)
+
+        sleep(4)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+
+        assertEquals(TaskState.FAILED, task.getTaskState())
+        assertFalse((task.deadline as Constraint).isMet)
+
+    }
+
+    @DisplayName("Kill with deadline Constraint later")
+    @Test
+    fun testTaskKillDeadlineConstraintLater() {
+        val deadline = now().plusSeconds(5)
+        val task = testTask()
+                .setDeadlineConstraint(Constraint(SHOWING, deadline, UNMET))
+
+        assertTrue(task.isFailable)
+        assertTrue(task.deadline is Constraint)
+        assertEquals(deadline, task.deadline.value)
+        assertTrue(task.deadline.isVisible)
+        assertFalse((task.deadline as Constraint).isMet)
+
+        sleep(3)
         task.kill()
 
         assertEquals(TaskState.KILLED, task.getTaskState())
         assertTrue((task.deadline as Constraint).isMet)
+
+        sleep(3)
+
+        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertTrue((task.deadline as Constraint).isMet)
+
     }
 
-    @DisplayName("Set Duration Constraint on many Tasks")
+    @DisplayName("Set Deadline Constraint on many Tasks")
     @Test
-    fun testTaskSetDurationConstraintOnManyTasks() {
-        val duration = Duration.ofSeconds(3)
-        val tasks = TestUtils.getTasks(100)
-        tasks.forEach { it.setDurationConstraintValue(duration) }
+    fun testTaskSetDeadlineConstraintOnManyTasks() {
+        val deadline = now().plusSeconds(5)
+        val tasks = getTasks(100)
+        tasks.forEach { it.setDeadlineConstraintValue(deadline) }
 
-        sleep(4)
+        sleep(2)
 
         tasks.forEach { it.kill() }
 
     }
 
-    @DisplayName("Get Duration Left")
+    @DisplayName("Get Time Left until Deadline")
     @Test
-    fun testTaskGetDurationLeft() {
-        val timeDue = now().plusSeconds(3)
+    fun testTaskGetTimeLeftUntilDeadline() {
+        val deadline = now().plusSeconds(3)
+        val task = testTask().setDeadlineConstraintValue(deadline)
 
-        val task = testTask()
-                .setDurationConstraintValue(Duration.ofSeconds(3))
-        sleep(1)
+        sleep(2)
 
-        assertEquals(Duration.between(now(), timeDue).seconds, task.getDurationLeft().seconds)
+        assertEquals(
+                Duration.between(now(), deadline).seconds,
+                task.getTimeUntilDeadline().seconds
+        )
     }
 
     @DisplayName("Get Duration Left Default")
     @Test
     fun testTaskGetDurationLeftDefault() {
         val task = testTask()
-        Assertions.assertThrows(IllegalStateException::class.java, { task.getDurationLeft() })
+        assertThrows(IllegalStateException::class.java, { task.getTimeUntilDeadline() })
     }
 
 }

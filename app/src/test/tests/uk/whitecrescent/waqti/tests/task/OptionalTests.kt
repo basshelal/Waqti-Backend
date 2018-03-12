@@ -8,12 +8,12 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DEFAULT_OPTIONAL
+import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.OPTIONAL
+import uk.whitecrescent.waqti.code.Property
 import uk.whitecrescent.waqti.code.SHOWING
-import uk.whitecrescent.waqti.code.TaskStateException
 import uk.whitecrescent.waqti.code.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
-import java.time.Duration
 
 class OptionalTests {
 
@@ -26,20 +26,48 @@ class OptionalTests {
         assertFalse(task.optional.isVisible)
     }
 
-    @DisplayName("Optional failable")
+    @DisplayName("Set Optional Property using setOptionalProperty")
     @Test
-    fun testTaskOptionalSetAndCheckFailable() {
+    fun testTaskSetOptionalProperty() {
         val task = testTask()
-                .setDurationConstraintValue(Duration.ofSeconds(60))
+                .setOptionalProperty(Property(SHOWING, OPTIONAL))
 
-        assertTrue(task.isFailable)
-        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertFalse(task.optional is Constraint)
+        assertEquals(OPTIONAL, task.optional.value)
+        assertTrue(task.optional.isVisible)
 
-        task.setOptionalConstraint(Constraint(SHOWING, OPTIONAL, UNMET))
 
-        assertFalse(task.isFailable)
-        assertThrows(TaskStateException::class.java, { task.fail() })
+        task.hideOptional()
+        assertEquals(Property(HIDDEN, DEFAULT_OPTIONAL), task.optional)
+    }
 
+    @DisplayName("Set Optional Property using setOptionalValue")
+    @Test
+    fun testTaskSetOptionalValue() {
+        val task = testTask()
+                .setOptionalValue(OPTIONAL)
+
+        assertFalse(task.optional is Constraint)
+        assertEquals(OPTIONAL, task.optional.value)
+        assertTrue(task.optional.isVisible)
+
+        task.hideOptional()
+        assertEquals(Property(HIDDEN, DEFAULT_OPTIONAL), task.optional)
+    }
+
+    @DisplayName("Set Optional Constraint")
+    @Test
+    fun testTaskSetOptionalConstraint() {
+        val task = testTask()
+                .setOptionalProperty(Constraint(SHOWING, OPTIONAL, UNMET))
+
+        assertFalse(task.optional is Constraint)
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        assertEquals(OPTIONAL, task.optional.value)
+        assertTrue(task.optional.isVisible)
+        assertThrows(ClassCastException::class.java,
+                { assertTrue((task.optional as Constraint).isMet == true) })
 
     }
+
 }

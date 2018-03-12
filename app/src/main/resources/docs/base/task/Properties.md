@@ -24,12 +24,6 @@ Task.
 this can also be referred to as minimum duration. If duration is a Constraint then the Task cannot be killed in the 
 midst of the duration, only after it has ended. If duration is a Property then it has no rules on killing the Task.
 
-* **Optional:** Shows whether the Task is optional or not. An optional Task is one that is to be done or pursued if 
-there is free time, thus an optional Task has less priority than a non-optional Task (mandatory Task) even if the 
-Task has the lowest priority, this makes optional Tasks the lowest priority of all Tasks. If optional is a Constraint
-then the Task cannot be failable at all, however if optional is not a Constraint then the Task remains the same and 
-optional acts like the lowest priority.
-
 * **Checklist:** A list of checkable items that this Task may have. This is useful if the Task can be broken down into 
 smaller chunks which can be represented as list items in a checklist. Items in a checklist can be checked or deleted. 
 If a checklist is a Constraint then the Task cannot be killed unless every item in the checklist is checked. If 
@@ -70,6 +64,12 @@ a strong collision. Priority can not be a Constraint.
 Labels are used as a way of categorizing Tasks and are thus helpful in filtering and analytics. Labels can not be a
 Constraint.
 
+* **Optional:** Shows whether the Task is optional or not. An optional Task is one that is to be done or pursued if 
+there is free time, thus an optional Task has less priority than a non-optional Task (mandatory Task) even if the 
+Task has the lowest priority, this makes optional Tasks the lowest priority of all Tasks. Optional can not be a 
+Constraint.In many ways the optional Property acts similar to the priority Property except in that optional is lower 
+priority than the lowest priority.
+                
 * **Description:** A textual description of this Task, useful for if the Task is complex or requires further 
 information that the title cannot provide. Description can not be a Constraint.
 
