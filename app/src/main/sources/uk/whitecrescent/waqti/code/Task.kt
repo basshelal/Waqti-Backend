@@ -131,6 +131,8 @@ class Task(var title: String) {
             field = label
         }
 
+    //TODO I'm still unsure about having Optional be non-constrainable, it would be a good idea to make it
+    // constrainable but it's quite a difficult task
     /**
      * Shows whether the Task is optional or not.
      *
@@ -198,6 +200,15 @@ class Task(var title: String) {
             field = deadline
         }
 
+    /**
+     * The user defined textual representation of a desirable target to be achieved by the user before killing this
+     * Task.
+     *
+     * If target is a Constraint then the Task cannot be killed unless the Target is checked. If target is a Property
+     * then it has no rules on killing the Task and acts very similar to a description.
+     *
+     * @see String
+     */
     var target: Property<Target> = DEFAULT_TARGET_PROPERTY
         private set(target) {
             field = target
@@ -825,18 +836,56 @@ class Task(var title: String) {
         return setDeadlineProperty(Constraint(SHOWING, deadline, UNMET))
     }
 
+    /**
+     * Sets this Task's target Property, the passed in Property can be a Constraint.
+     *
+     * If the passed in `targetProperty` is a Constraint then this Task will become failable if it wasn't already.
+     *
+     * @see Target
+     * @param targetProperty the `Property` of type `Target` that this Task's target will be set to
+     * @return this Task after setting the Task's target Property
+     */
     fun setTargetProperty(targetProperty: Property<Target>): Task {
         this.target = targetProperty
         makeFailableIfConstraint(targetProperty)
         return this
     }
 
+    /**
+     * Sets this Task's target Constraint.
+     *
+     * @see Task.setTargetProperty
+     * @param targetConstraint the `Constraint` of type `Target` that this Task's target will be set to
+     * @return this Task after setting the Task's target Constraint
+     */
     fun setTargetConstraint(targetConstraint: Constraint<Target>): Task {
         return setTargetProperty(targetConstraint)
     }
 
-    fun setTargetValue(target: Target): Task {
+    /**
+     * Sets this Task's target Property with the given value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setTargetProperty(Property(SHOWING, myTarget))`.
+     *
+     * @see Task.setTargetProperty
+     * @param target the Target value that this Task's target value will be set to
+     * @return this Task after setting the Task's target Property
+     */
+    fun setTargetPropertyValue(target: Target): Task {
         return setTargetProperty(Property(SHOWING, target))
+    }
+
+    /**
+     * Sets this Task's target Constraint with the given value and makes the Constraint showing and unmet.
+     *
+     * This is a shorthand of writing `setTargetConstraint(Constraint(SHOWING, myTarget, UNMET))`.
+     *
+     * @see Task.setTargetProperty
+     * @param target the Target value that this Task's checklist value will be set to
+     * @return this Task after setting the Task's checklist Constraint
+     */
+    fun setTargetConstraintValue(target: Target): Task {
+        return setTargetProperty(Constraint(SHOWING, target, UNMET))
     }
 
     fun setBeforeProperty(beforeProperty: Property<Long>): Task {
