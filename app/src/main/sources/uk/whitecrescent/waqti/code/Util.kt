@@ -4,6 +4,7 @@ import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 //region Old GSON, will delete soon
@@ -142,7 +143,7 @@ object Concurrent {
 
     val timeCheckingThread = Schedulers.newThread()
     val stateCheckingThread = Schedulers.newThread()
-    val optionalCheckingThread = Schedulers.newThread()
+    val otherTaskCheckingThread = Schedulers.newThread()
 
     /**
      * An Observable that emits every so often on the time checking Thread.
@@ -191,3 +192,5 @@ fun <T> logE(t: T) {
 fun setGracePeriod(duration: Duration) {
     GRACE_PERIOD = duration
 }
+
+val database = ConcurrentHashMap<Long, Task>(500)

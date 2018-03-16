@@ -34,16 +34,16 @@ const val DEFAULT_FAILABLE = false
 const val DEFAULT_KILLABLE = true
 
 val DEFAULT_TASK_STATE = TaskState.EXISTING
-val DEFAULT_TIME = LocalDateTime.MIN
-val DEFAULT_DURATION = Duration.ZERO
+val DEFAULT_TIME: LocalDateTime = LocalDateTime.MIN
+val DEFAULT_DURATION: Duration = Duration.ZERO
 val DEFAULT_PRIORITY = Priority.getOrCreatePriority("", -1)
 val DEFAULT_LABEL_LIST = arrayListOf<Label>()
-val DEFAULT_OPTIONAL = MANDATORY
+const val DEFAULT_OPTIONAL = MANDATORY
 val DEFAULT_DESCRIPTION = StringBuilder("")
 val DEFAULT_CHECKLIST = Checklist()
-val DEFAULT_TARGET = ""
-val DEFAULT_DEADLINE = LocalDateTime.MAX
-val DEFAULT_TASK_ID: Long = 0L
+const val DEFAULT_TARGET = ""
+val DEFAULT_DEADLINE: LocalDateTime = LocalDateTime.MAX
+const val DEFAULT_TASK_ID: Long = 0L
 
 val DEFAULT_TIME_PROPERTY = Property(HIDDEN, DEFAULT_TIME)
 val DEFAULT_DURATION_PROPERTY = Property(HIDDEN, DEFAULT_DURATION)
@@ -59,4 +59,4 @@ val DEFAULT_AFTER_PROPERTY = Property(HIDDEN, DEFAULT_TASK_ID)
 val DEFAULT_SUB_TASKS_PROPERTY = Property(HIDDEN, arrayListOf<TaskID>())
 
 // Used for deadlines
-var GRACE_PERIOD = Duration.ofSeconds(0)
+var GRACE_PERIOD: Duration = Duration.ofSeconds(0)

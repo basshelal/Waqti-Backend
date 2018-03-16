@@ -54,12 +54,22 @@ class Task(var title: String) {
 
     // A Task ages when it is failed
     var age = 0
+        private set(age) {
+            field = age
+        }
 
     // The times a task has been failed
     var failedTimes = arrayListOf<Time>()
 
     // The time a task is killed
-    var killedTime = Time.MIN
+    var killedTime = DEFAULT_TIME
+
+    init {
+        while (database.containsKey(this.taskID)) {
+            this.taskID = Math.abs(Random().nextLong())
+        }
+        database.put(this.taskID, this)
+    }
 
     //endregion Class Properties
 
@@ -214,7 +224,18 @@ class Task(var title: String) {
             field = target
         }
 
-    // The Task before this
+    /**
+     * The Task that occurs before this Task.
+     *
+     * If before is a Constraint then this Task cannot be killed unless the before Task is killed, and if the before
+     * Task is FAILED then this Task will also be FAILED if it can be since this Task will have a dependence on the
+     * state of the before Task.
+     *
+     * If before is a Property then it has no rules on killing or failing the Task, it will just be a description of
+     * the Task that comes before this one, good for ordering Tasks but not enforcing any ordering of completion.
+     *
+     * @see Long
+     */
     var before: Property<TaskID> = DEFAULT_BEFORE_PROPERTY
         private set(before) {
             field = before
@@ -888,48 +909,127 @@ class Task(var title: String) {
         return setTargetProperty(Constraint(SHOWING, target, UNMET))
     }
 
-    fun setBeforeProperty(beforeProperty: Property<Long>): Task {
+    /**
+     * Sets this Task's before Property, the passed in Property can be a Constraint.
+     *
+     * Further changes will occur only if the passed in `beforeProperty` is a Constraint, otherwise no more changes
+     * will occur.
+     *
+     * In the case that the passed in `beforeProperty` is a Constraint, two things will happen:
+     * <ul>
+     *     <li>This Task will become failable if it wasn't already</li>
+     *     <li>This Task will start checking the state of task the before value refers to using the database, and
+     *     will make the before Constraint met only when the before Task is killed</li>
+     * </ul>
+     *
+     * If the passed in `beforeProperty` is not a Constraint then the Task's state will remain the same.
+     *
+     * @see Task.beforeConstraintChecking
+     * @param beforeProperty the `Property` of type `TaskID` that this Task's before property will be set to, this is
+     * the before Task's TaskID
+     * @return this Task after setting the Task's before Property
+     */
+    fun setBeforeProperty(beforeProperty: Property<TaskID>): Task {
         this.before = beforeProperty
-        makeFailableIfConstraint(beforeProperty)
+        if (beforeProperty is Constraint) {
+            makeFailableIfConstraint(beforeProperty)
+            beforeConstraintChecking()
+        }
         return this
     }
 
-    fun setBeforeProperty(beforeTask: Task): Task {
-        return setBeforeProperty(Property(SHOWING, beforeTask.taskID))
-    }
-
-    fun setBeforeConstraint(beforeConstraint: Constraint<Long>): Task {
+    /**
+     * Sets this Task's before Constraint.
+     *
+     * @see Task.setBeforeProperty
+     * @param beforeConstraint the `Constraint` of type `TaskID` that this Task's before will be set to
+     * @return this Task after setting the Task's before Constraint
+     */
+    fun setBeforeConstraint(beforeConstraint: Constraint<TaskID>): Task {
         return setBeforeProperty(beforeConstraint)
     }
 
-    fun setBeforeConstraint(beforeTask: Task): Task {
+    /**
+     * Sets this Task's before Property with the given TaskID value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setBeforeProperty(Property(SHOWING, myBefore))`.
+     *
+     * @see Task.setBeforeProperty
+     * @param beforeTaskID the TaskID of the Task that is before this one that this Task's before value will be set to
+     * @return this Task after setting the Task's before Property
+     */
+    fun setBeforePropertyValue(beforeTaskID: TaskID): Task {
+        return setBeforeProperty(Property(SHOWING, beforeTaskID))
+    }
+
+    /**
+     * Sets this Task's before Constraint with the given TaskID value and makes the Constraint showing and unmet.
+     *
+     * This is a shorthand of writing `setBeforeConstraint(Constraint(SHOWING, myBefore, UNMET))`.
+     *
+     * @see Task.setBeforeProperty
+     * @param beforeTaskID the TaskID of the Task that is before this one that this Task's before value will be set to
+     * @return this Task after setting the Task's before Constraint
+     */
+    fun setBeforeConstraintValue(beforeTaskID: TaskID): Task {
+        return setBeforeProperty(Constraint(SHOWING, beforeTaskID, UNMET))
+    }
+
+    /**
+     * Sets this Task's before Property with the given Task value and makes the Property showing.
+     *
+     * This is a shorthand of writing `setBeforeProperty(Property(SHOWING, myBefore))`.
+     *
+     * @see Task.setBeforeProperty
+     * @param beforeTask the Task that is before this one that this Task's before value will be set to
+     * @return this Task after setting the Task's before Property
+     */
+    fun setBeforePropertyValue(beforeTask: Task): Task {
+        return setBeforeProperty(Property(SHOWING, beforeTask.taskID))
+    }
+
+    /**
+     * Sets this Task's before Constraint with the given Task value and makes the Constraint showing and unmet.
+     *
+     * This is a shorthand of writing `setBeforeConstraint(Constraint(SHOWING, myBefore, UNMET))`.
+     *
+     * @see Task.setBeforeProperty
+     * @param beforeTask the Task that is before this one that this Task's before value will be set to
+     * @return this Task after setting the Task's before Constraint
+     */
+    fun setBeforeConstraintValue(beforeTask: Task): Task {
         return setBeforeProperty(Constraint(SHOWING, beforeTask.taskID, UNMET))
     }
 
-    fun setBeforeValue(before: Long): Task {
-        return setBeforeProperty(Property(SHOWING, before))
-    }
+    //-------------------------------------------------------------------------------------------------------------
 
-    fun setAfterProperty(afterProperty: Property<Long>): Task {
+    fun setAfterProperty(afterProperty: Property<TaskID>): Task {
         this.after = afterProperty
-        makeFailableIfConstraint(afterProperty)
+        if (afterProperty is Constraint) {
+            makeFailableIfConstraint(afterProperty)
+            //afterConstraintChecking()
+        }
         return this
     }
 
-    fun setAfterProperty(afterTask: Task): Task {
-        return setAfterProperty(Property(SHOWING, afterTask.taskID))
-    }
-
-    fun setAfterConstraint(afterConstraint: Constraint<Long>): Task {
+    fun setAfterConstraint(afterConstraint: Constraint<TaskID>): Task {
         return setAfterProperty(afterConstraint)
     }
 
-    fun setAfterConstraint(afterTask: Task): Task {
-        return setAfterProperty(Constraint(SHOWING, afterTask.taskID, UNMET))
+    fun setAfterPropertyValue(afterTaskID: TaskID): Task {
+        return setAfterProperty(Property(SHOWING, afterTaskID))
     }
 
-    fun setAfterValue(after: Long): Task {
-        return setAfterProperty(Property(SHOWING, after))
+    fun setAfterConstraintValue(afterTaskID: TaskID): Task {
+        return setAfterProperty(Constraint(SHOWING, afterTaskID, UNMET))
+    }
+
+    fun setAfterPropertyValue(afterTask: Task): Task {
+        return setAfterProperty(Property(SHOWING, afterTask.taskID))
+    }
+
+    fun setAfterConstraintValue(afterTask: Task): Task {
+        return setAfterProperty(Constraint(SHOWING, afterTask.taskID, UNMET))
     }
 
     //endregion Property setters for chaining
@@ -1070,7 +1170,9 @@ class Task(var title: String) {
             throw TaskStateException("Kill unsuccessful, ${this.title} is FAILED", getTaskState())
         }
         if (!getAllUnmetAndShowingConstraints().isEmpty()) {
-            throw TaskStateException("Kill unsuccessful, ${this.title} has unmet Constraints", getTaskState())
+            throw TaskStateException(
+                    "Kill unsuccessful, ${this.title} has unmet Constraints ${this.getAllUnmetAndShowingConstraints()}",
+                    getTaskState())
         } else if (canKill()) {
             state = TaskState.KILLED
             killedTime = now()
@@ -1233,6 +1335,50 @@ class Task(var title: String) {
                         }
                 )
 
+    }
+
+    /**
+     * Checks the state of the Task before this one on the `otherTaskCheckingThread`. If it is failed then this Task
+     * will fail if it can, if it is killed then the before Constraint is met.
+     *
+     * If the before Task's state is FAILED then this Task will fail if it can [canFail].
+     *
+     * If the before Task's state is KILLED then this Task's before Constraint will be met.
+     *
+     * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
+     * values as they may change for performance reasons.
+     *
+     * This function is only called when `before` is set as a Constraint.
+     *
+     * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
+     * is done once every so often, which itself is cheap.
+     *
+     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     */
+    private fun beforeConstraintChecking() {
+        var done = false
+        val beforeTask = database.get(this.before.value)
+        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                .takeWhile { !done }
+                .subscribeOn(Concurrent.otherTaskCheckingThread)
+                .subscribe(
+                        {
+                            if (beforeTask == null) {
+                                throw ConcurrentException("Before Constraint checking failed! Before is null in " +
+                                        "database")
+                            } else if (beforeTask.getTaskState() == TaskState.KILLED) {
+                                (this.before as Constraint).isMet = true
+                                done = true
+                            } else if (beforeTask.getTaskState() == TaskState.FAILED) {
+                                (this.before as Constraint).isMet = false
+                                if (canFail()) fail()
+                                done = true
+                            }
+                        },
+                        {
+                            throw ConcurrentException("Before Constraint checking failed!")
+                        }
+                )
     }
 
     //endregion Concurrency
