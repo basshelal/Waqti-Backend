@@ -44,12 +44,12 @@ still kill it at any point.
  this Task will have a dependence on the state of the before Task. If before is a Property then it has no rules on 
  killing or failing the Task, it will just be a description of the Task that comes before this one, good for ordering
  Tasks but not enforcing any ordering of completion.
-
-* **After:** The Task that occurs after this Task. If after is a Constraint then it does not actually affect this 
-Task, rather it affects the Task that comes after this, it will make that Task's before be this Task and the rules of
-the before Constraint will apply to that Task, specifically that it cannot be killed before this Task and if this 
-Task fails then so does it. If after is a Property then it will only be a before Property on the other Task, this is 
-good for ordering Tasks but not enforcing any ordering of completion.
+ 
+* **SubTasks:** The list of sub-Tasks this Task has, a Task can have zero to potentially many sub-Tasks but has zero by
+default. If SubTasks is a Constraint then the state of the sub-Tasks is shared upwards to the parent, meaning if this
+Task's sub-Tasks contains a FAILED Task then this Task is FAILED, if this Task's sub-Tasks contains a non-killed 
+non-optional Task then this Task cannot be killed. If SubTasks is a Property then it has no rules on killing or 
+failing the Task, the sub-Tasks' states will make no difference to this Task.
 
 ### Non-Constrainables
 
@@ -72,9 +72,3 @@ priority than the lowest priority.
                 
 * **Description:** A textual description of this Task, useful for if the Task is complex or requires further 
 information that the title cannot provide. Description can not be a Constraint.
-
--------------------------------------------------------------------------------------------------------------------------------------
-
-* **SubTasks:** This Property would be the list of SubTasks that this Task has, by default the Task has zero SubTasks.
- The relation between the SuperTask and the SubTask(s) is one that is not necessarily strong, however Constraints are shared upwards,
-  meaning the SuperTask cannot be killed unless the SubTask(s)'s Constraints are met, unless said SubTask(s) is optional.

@@ -193,4 +193,21 @@ fun setGracePeriod(duration: Duration) {
     GRACE_PERIOD = duration
 }
 
-val database = ConcurrentHashMap<Long, Task>(500)
+fun tasksToTaskIDs(tasks: List<Task>): List<TaskID> {
+    val ids = ArrayList<TaskID>(tasks.size)
+    tasks.forEach { ids.add(it.taskID) }
+    return ids
+}
+
+fun taskIDsToTasks(taskIDs: List<TaskID>): List<Task> {
+    val tasks = ArrayList<Task>(taskIDs.size)
+    for (id in taskIDs) {
+        val task = database.get(id)
+        if (task != null) {
+            tasks.add(task)
+        }
+    }
+    return tasks
+}
+
+val database = ConcurrentHashMap<Long, Task>(5000)

@@ -11,7 +11,7 @@ typealias Target = String
 typealias Time = LocalDateTime
 typealias TaskID = Long
 
-const val NUMBER_OF_PROPERTIES = 12
+const val NUMBER_OF_PROPERTIES = 11
 
 // Used for how often will Observers check stuff on the background threads
 const val TIME_CHECKING_PERIOD = 1L
@@ -44,6 +44,7 @@ val DEFAULT_CHECKLIST = Checklist()
 const val DEFAULT_TARGET = ""
 val DEFAULT_DEADLINE: LocalDateTime = LocalDateTime.MAX
 const val DEFAULT_TASK_ID: Long = 0L
+val DEFAULT_SUB_TASKS = arrayListOf<TaskID>()
 
 val DEFAULT_TIME_PROPERTY = Property(HIDDEN, DEFAULT_TIME)
 val DEFAULT_DURATION_PROPERTY = Property(HIDDEN, DEFAULT_DURATION)
@@ -55,8 +56,7 @@ val DEFAULT_CHECKLIST_PROPERTY = Property(HIDDEN, DEFAULT_CHECKLIST)
 val DEFAULT_TARGET_PROPERTY = Property(HIDDEN, DEFAULT_TARGET)
 val DEFAULT_DEADLINE_PROPERTY = Property(HIDDEN, DEFAULT_DEADLINE)
 val DEFAULT_BEFORE_PROPERTY = Property(HIDDEN, DEFAULT_TASK_ID)
-val DEFAULT_AFTER_PROPERTY = Property(HIDDEN, DEFAULT_TASK_ID)
-val DEFAULT_SUB_TASKS_PROPERTY = Property(HIDDEN, arrayListOf<TaskID>())
+val DEFAULT_SUB_TASKS_PROPERTY = Property(HIDDEN, DEFAULT_SUB_TASKS)
 
 // Used for deadlines
 var GRACE_PERIOD: Duration = Duration.ofSeconds(0)

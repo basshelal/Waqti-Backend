@@ -63,7 +63,11 @@ class Task(var title: String) {
 
     // The time a task is killed
     var killedTime = DEFAULT_TIME
+        private set(killedTime) {
+            field = killedTime
+        }
 
+    // Put this in the Database and make sure this' key is unique
     init {
         while (database.containsKey(this.taskID)) {
             this.taskID = Math.abs(Random().nextLong())
@@ -241,12 +245,6 @@ class Task(var title: String) {
             field = before
         }
 
-    // The Task after this
-    var after: Property<TaskID> = DEFAULT_AFTER_PROPERTY
-        private set(after) {
-            field = after
-        }
-
     //TODO Implement this guy everywhere please but define him in the .md
     var subTasks: Property<ArrayList<TaskID>> = DEFAULT_SUB_TASKS_PROPERTY
         private set(subTasks) {
@@ -287,7 +285,7 @@ class Task(var title: String) {
             deadline,
             target,
             before,
-            after
+            subTasks
     )
 
     /**
@@ -1001,35 +999,40 @@ class Task(var title: String) {
         return setBeforeProperty(Constraint(SHOWING, beforeTask.taskID, UNMET))
     }
 
-    //-------------------------------------------------------------------------------------------------------------
-
-    fun setAfterProperty(afterProperty: Property<TaskID>): Task {
-        this.after = afterProperty
-        if (afterProperty is Constraint) {
-            makeFailableIfConstraint(afterProperty)
-            //afterConstraintChecking()
+    fun setSubTasksProperty(subTasksProperty: Property<ArrayList<TaskID>>): Task {
+        this.subTasks = subTasksProperty
+        if (subTasksProperty is Constraint) {
+            makeFailableIfConstraint(subTasksProperty)
+            subTasksConstraintChecking()
         }
         return this
     }
 
-    fun setAfterConstraint(afterConstraint: Constraint<TaskID>): Task {
-        return setAfterProperty(afterConstraint)
+    fun setSubTasksConstraint(subTasksConstraint: Constraint<ArrayList<TaskID>>): Task {
+        return setSubTasksProperty(subTasksConstraint)
     }
 
-    fun setAfterPropertyValue(afterTaskID: TaskID): Task {
-        return setAfterProperty(Property(SHOWING, afterTaskID))
+    fun setSubTasksPropertyValue(subTasks: ArrayList<TaskID>): Task {
+        return setSubTasksProperty(Property(SHOWING, subTasks))
     }
 
-    fun setAfterConstraintValue(afterTaskID: TaskID): Task {
-        return setAfterProperty(Constraint(SHOWING, afterTaskID, UNMET))
+    fun setSubTasksConstraintValue(subTasks: ArrayList<TaskID>): Task {
+        return setSubTasksProperty(Constraint(SHOWING, subTasks, UNMET))
     }
 
-    fun setAfterPropertyValue(afterTask: Task): Task {
-        return setAfterProperty(Property(SHOWING, afterTask.taskID))
+    //TODO this is broken! It's not necessary but it's a useful utility
+    fun addSubTasks(vararg tasks: Task): Task {
+        this.subTasks.value.addAll(tasksToTaskIDs(tasks.toList()))
+        this.subTasks.isVisible = SHOWING
+        return this
     }
 
-    fun setAfterConstraintValue(afterTask: Task): Task {
-        return setAfterProperty(Constraint(SHOWING, afterTask.taskID, UNMET))
+    fun getSubTasksIDsList(): ArrayList<TaskID> {
+        return this.subTasks.value
+    }
+
+    fun getSubTasksList(): ArrayList<Task> {
+        return ArrayList(taskIDsToTasks(this.subTasks.value))
     }
 
     //endregion Property setters for chaining
@@ -1096,10 +1099,10 @@ class Task(var title: String) {
         } else throw IllegalStateException("Cannot hide, before is Constraint")
     }
 
-    fun hideAfter() {
-        if (isNotConstraint(after)) {
-            after = DEFAULT_AFTER_PROPERTY
-        } else throw IllegalStateException("Cannot hide, after is Constraint")
+    fun hideSubTasks() {
+        if (isNotConstraint(subTasks)) {
+            subTasks = DEFAULT_SUB_TASKS_PROPERTY
+        } else throw IllegalStateException("Cannot hide, subTasks is Constraint")
     }
 
     //endregion Hide Properties
@@ -1357,26 +1360,66 @@ class Task(var title: String) {
      */
     private fun beforeConstraintChecking() {
         var done = false
-        val beforeTask = database.get(this.before.value)
+        val beforeTask = database[this.before.value]
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .subscribeOn(Concurrent.otherTaskCheckingThread)
                 .subscribe(
                         {
-                            if (beforeTask == null) {
-                                throw ConcurrentException("Before Constraint checking failed! Before is null in " +
-                                        "database")
-                            } else if (beforeTask.getTaskState() == TaskState.KILLED) {
-                                (this.before as Constraint).isMet = true
-                                done = true
-                            } else if (beforeTask.getTaskState() == TaskState.FAILED) {
-                                (this.before as Constraint).isMet = false
-                                if (canFail()) fail()
-                                done = true
+                            when {
+                                beforeTask == null -> {
+                                    throw ConcurrentException("Before Constraint checking failed!" +
+                                            " Before is null in database")
+                                }
+
+                                beforeTask.getTaskState() == TaskState.KILLED -> {
+                                    (this.before as Constraint).isMet = true
+                                    done = true
+                                }
+
+                                beforeTask.getTaskState() == TaskState.FAILED -> {
+                                    (this.before as Constraint).isMet = false
+                                    if (canFail()) fail()
+                                    done = true
+                                }
+
                             }
                         },
                         {
                             throw ConcurrentException("Before Constraint checking failed!")
+                        }
+                )
+    }
+
+    private fun subTasksConstraintChecking() {
+        var done = false
+        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+                .takeWhile { !done }
+                .subscribeOn(Concurrent.otherTaskCheckingThread)
+                .subscribe(
+                        {
+                            when {
+                            // SubTasks contains more than 0 failed Tasks
+                                taskIDsToTasks(this.subTasks.value)
+                                        .filter { it.getTaskState() == TaskState.FAILED }
+                                        .isNotEmpty()
+                                -> {
+                                    (subTasks as Constraint).isMet = false
+                                    if (canFail()) fail()
+                                    done = true
+                                }
+
+                            // All SubTasks are killed
+                                taskIDsToTasks(this.subTasks.value)
+                                        .all { it.getTaskState() == TaskState.KILLED } -> {
+                                    (subTasks as Constraint).isMet = true
+                                    done = true
+                                }
+
+                            }
+                        },
+                        {
+                            throw ConcurrentException("SubTasks Constraint checking failed!")
                         }
                 )
     }
