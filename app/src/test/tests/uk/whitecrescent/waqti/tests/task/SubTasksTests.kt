@@ -20,6 +20,7 @@ import uk.whitecrescent.waqti.code.database
 import uk.whitecrescent.waqti.code.sleep
 import uk.whitecrescent.waqti.code.taskIDsToTasks
 import uk.whitecrescent.waqti.code.tasksToTaskIDs
+import uk.whitecrescent.waqti.code.toArrayList
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
@@ -181,7 +182,6 @@ class SubTasksTests {
         assertFalse((task.subTasks as Constraint).isMet)
     }
 
-    //TODO Something is broken with addSubTasks()
     @DisplayName("Add SubTasks")
     @Test
     fun testTaskAddSubTasks() {
@@ -213,7 +213,7 @@ class SubTasksTests {
 
         val subTasksIDs = ArrayList(tasksToTaskIDs(task.getSubTasksList()))
         assertEquals(subTasksIDs, task.getSubTasksIDsList())
-        assertEquals(taskIDsToTasks(subTasksIDs),task.getSubTasksList())
+        assertEquals(taskIDsToTasks(subTasksIDs), task.getSubTasksList())
 
     }
 
@@ -332,17 +332,124 @@ class SubTasksTests {
         val level3 = Task("Level3")
         val level4 = Task("Level4")
 
-        level3.setSubTasksPropertyValue(arrayListOf(level4.taskID))
-        level2.setSubTasksPropertyValue(arrayListOf(level3.taskID))
-        level1.setSubTasksPropertyValue(arrayListOf(level2.taskID))
-        root.setSubTasksPropertyValue(arrayListOf(level1.taskID))
+        level3.setSubTasksConstraintValue(arrayListOf(level4.taskID))
+        level2.setSubTasksConstraintValue(arrayListOf(level3.taskID))
+        level1.setSubTasksConstraintValue(arrayListOf(level2.taskID))
+        root.setSubTasksConstraintValue(arrayListOf(level1.taskID))
 
-        val subtasks = taskIDsToTasks(root.subTasks.value)
+        assertThrows(TaskStateException::class.java, { root.kill() })
+        assertThrows(TaskStateException::class.java, { level1.kill() })
+        assertThrows(TaskStateException::class.java, { level2.kill() })
+        assertThrows(TaskStateException::class.java, { level3.kill() })
 
-        println(subtasks)
+        assertEquals(1, root.subTasks.value.size)
+        assertEquals(1, level1.subTasks.value.size)
+        assertEquals(1, level2.subTasks.value.size)
+        assertEquals(1, level3.subTasks.value.size)
+        assertEquals(0, level4.subTasks.value.size)
+
+        val rootSubTasks = taskIDsToTasks(root.subTasks.value)
+        val level1SubTasks = taskIDsToTasks(rootSubTasks.first().subTasks.value)
+        val level2SubTasks = taskIDsToTasks(level1SubTasks.first().subTasks.value)
+        val level3SubTasks = taskIDsToTasks(level2SubTasks.first().subTasks.value)
+        val level4SubTasks = taskIDsToTasks(level3SubTasks.first().subTasks.value)
+
+        assertEquals("Level1", rootSubTasks.first().title)
+        assertEquals("Level2", level1SubTasks.first().title)
+        assertEquals("Level3", level2SubTasks.first().title)
+        assertEquals("Level4", level3SubTasks.first().title)
+        assertEquals(0, level4SubTasks.size)
+
+        level4.kill()
+        sleep(1)
+        level3.kill()
+        sleep(1)
+        level2.kill()
+        sleep(1)
+        level1.kill()
+        sleep(1)
+        root.kill()
 
     }
 
-    //TODO test with SubTasks befores and activity within a Task's subtasks
+    @DisplayName("Before Constraining in SubTasks")
+    @Test
+    fun testTaskBeforeConstrainingInSubTasks() {
+        val subTask2SubTask = Task("SubTask2SubTask")
+
+        val subTask0 = Task("SubTask0")
+        val subTask1 = Task("SubTask1")
+
+        val subTask2 = Task("SubTask2")
+                .setSubTasksConstraintValue(tasksToTaskIDs(subTask2SubTask).toArrayList())
+                .setBeforeConstraintValue(subTask1)
+
+        val subTask3 = Task("SubTask3")
+                .setBeforeConstraintValue(subTask2)
+
+        assertThrows(TaskStateException::class.java, { subTask2.kill() })
+        assertThrows(TaskStateException::class.java, { subTask3.kill() })
+
+        val task = testTask()
+                .setSubTasksConstraintValue(
+                        tasksToTaskIDs(
+                                subTask0,
+                                subTask1,
+                                subTask2,
+                                subTask3
+
+                        ).toArrayList()
+                )
+
+        assertThrows(TaskStateException::class.java, { task.kill() })
+
+        subTask0.kill()
+        subTask1.kill()
+
+        sleep(1)
+
+        assertThrows(TaskStateException::class.java, { subTask2.kill() })
+
+        subTask2SubTask.kill()
+
+        sleep(1)
+
+        subTask2.kill()
+
+        assertThrows(TaskStateException::class.java, { task.kill() })
+
+        sleep(1)
+
+        subTask3.kill()
+
+        sleep(1)
+
+        task.kill()
+    }
+
+    @DisplayName("SubTasks Extra depth")
+    @Test
+    fun testTaskSubTasksExtraDepth() {
+
+        database.clear()
+
+        val list = getTasks(500)
+
+        list.forEachIndexed { index, task -> run {
+            if (index != 499) task.setSubTasksConstraintValue(arrayListOf(list[index+1].taskID))
+        } }
+
+        assertEquals(1,list[0].subTasks.value.size)
+
+        list.minus(list.last()).reversed().forEach { assertTrue(it.subTasks.value.size == 1) }
+        list.minus(list.last()).reversed().forEach { assertThrows(TaskStateException::class.java, {it.kill()}) }
+
+        assertEquals(499, list[0].getSubTasksLevelsDepth())
+        assertEquals(300, list[199].getSubTasksLevelsDepth())
+        assertEquals(0, list[499].getSubTasksLevelsDepth())
+
+        assertTrue(database.size == 500)
+
+    }
 
 }

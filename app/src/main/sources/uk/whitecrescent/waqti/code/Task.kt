@@ -60,6 +60,9 @@ class Task(var title: String) {
 
     // The times a task has been failed
     var failedTimes = arrayListOf<Time>()
+        private set(failedTimes) {
+            field = failedTimes
+        }
 
     // The time a task is killed
     var killedTime = DEFAULT_TIME
@@ -1020,10 +1023,11 @@ class Task(var title: String) {
         return setSubTasksProperty(Constraint(SHOWING, subTasks, UNMET))
     }
 
-    //TODO this is broken! It's not necessary but it's a useful utility
     fun addSubTasks(vararg tasks: Task): Task {
-        this.subTasks.value.addAll(tasksToTaskIDs(tasks.toList()))
-        this.subTasks.isVisible = SHOWING
+        val value = this.subTasks.value
+        value.addAll(tasksToTaskIDs(tasks.toList()))
+        setSubTasksProperty(Property(SHOWING, value))
+
         return this
     }
 
@@ -1033,6 +1037,18 @@ class Task(var title: String) {
 
     fun getSubTasksList(): ArrayList<Task> {
         return ArrayList(taskIDsToTasks(this.subTasks.value))
+    }
+
+    fun getSubTasksLevelsDepth(task: Task = this): Int {
+        val list = arrayListOf<Int>()
+        if (task.subTasks.value.isEmpty()) {
+            return 0
+        } else {
+            for (task0 in taskIDsToTasks(task.subTasks.value)) {
+                list.add(getSubTasksLevelsDepth(task0) + 1)
+            }
+            return list.max() as Int
+        }
     }
 
     //endregion Property setters for chaining
@@ -1431,6 +1447,7 @@ class Task(var title: String) {
     override fun hashCode() =
             title.hashCode() + getAllShowingProperties().hashCode()
 
+    //TODO equality should mean more than just those
     override fun equals(other: Any?) =
             other is Task &&
                     other.title == this.title &&
@@ -1442,11 +1459,9 @@ class Task(var title: String) {
         result.append("ID: $taskID isKillable: $isKillable isFailable: $isFailable state: $state\n")
 
         result.append("\tP:\n")
-
         getAllShowingProperties().filter { it !is Constraint }.forEach { result.append("\t\t$it\n") }
 
         result.append("\tC:\n")
-
         getAllShowingConstraints().forEach { result.append("\t\t$it\n") }
 
         return result.toString()
@@ -1454,5 +1469,3 @@ class Task(var title: String) {
 
     //endregion Overriden from kotlin.Any
 }
-
-

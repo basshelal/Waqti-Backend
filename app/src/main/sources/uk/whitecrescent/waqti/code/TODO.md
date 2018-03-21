@@ -1,13 +1,15 @@
 # TODO
 
-* Finish all Properties with tests and documentation to ensure (as much as possible) they work perfectly as intended
-
-* Ensure the Task lifecycle works with tests and documentation
+* Test unconstraining problem with some stories
 
 * Consider the un-constraining problem (I suspect the solution may be simple but better to be safe), the problem: 
 Think about when we un-constrain while it's checking the condition, for example if we have duration as a Constraint
  for a while then before it is met we un-constrain, the checking should end, but I don't think it will, we need to 
  test this extensively
+ 
+* Finish all Properties with tests and documentation to ensure (as much as possible) they work perfectly as intended
+
+* Ensure the Task lifecycle works with tests and documentation
 
 * Write stories tests to test as many possible scenarios, here we try to write tests to break the thing
 
@@ -22,6 +24,9 @@ will check all their elements and see for collisions
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Test Activity within Tasks, inside a Task, sub-tasks can interact with one another and with the parent, this is 
+tricky but quite useful~~
 
 * ~~Concurrent Constraint checking to transition between states in the lifecycle,
  meaning for example if deadline is a Constraint then there must be something that constantly checks the time to compare the current time 
