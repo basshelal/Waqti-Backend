@@ -247,4 +247,47 @@ class BeforeTests {
 
     }
 
+    @DisplayName("Before Un-constraining")
+    @Test
+    fun testTaskBeforeUnConstraining() {
+        val beforeTask = Task("Before Task")
+        val task = testTask()
+                .setBeforeConstraintValue(beforeTask)
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+        task.setBeforeProperty((task.before as Constraint).toProperty())
+
+        sleep(1)
+
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
+    @DisplayName("Before Constraint Re-Set")
+    @Test
+    fun testTaskBeforeConstraintReSet() {
+        val beforeTask = Task("Before Task")
+        val task = testTask()
+                .setBeforeConstraintValue(beforeTask)
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+
+        val newBeforeTask = Task("New Before Task")
+
+        task.setBeforeConstraintValue(newBeforeTask)
+        assertEquals(newBeforeTask.taskID, task.before.value)
+
+        newBeforeTask.kill()
+
+        sleep(1)
+
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
 }

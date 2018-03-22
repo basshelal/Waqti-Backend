@@ -7,6 +7,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
+//TODO delete this, put the threads in Constants.kt and check that they're sensible
 object Concurrent {
 
     val timeCheckingThread = Schedulers.newThread()
@@ -61,19 +62,19 @@ fun setGracePeriod(duration: Duration) {
     GRACE_PERIOD = duration
 }
 
-fun tasksToTaskIDs(tasks: List<Task>): List<TaskID> {
+fun tasksToTaskIDs(tasks: List<Task>): ArrayList<TaskID> {
     val ids = ArrayList<TaskID>(tasks.size)
     tasks.forEach { ids.add(it.taskID) }
     return ids
 }
 
-fun tasksToTaskIDs(vararg tasks: Task): List<TaskID> {
+fun tasksToTaskIDs(vararg tasks: Task): ArrayList<TaskID> {
     val ids = ArrayList<TaskID>(tasks.size)
     tasks.forEach { ids.add(it.taskID) }
     return ids
 }
 
-fun taskIDsToTasks(taskIDs: List<TaskID>): List<Task> {
+fun taskIDsToTasks(taskIDs: List<TaskID>): ArrayList<Task> {
     val tasks = ArrayList<Task>(taskIDs.size)
     for (id in taskIDs) {
         val task = database.get(id)
@@ -84,7 +85,7 @@ fun taskIDsToTasks(taskIDs: List<TaskID>): List<Task> {
     return tasks
 }
 
-fun taskIDsToTasks(vararg taskIDs: TaskID): List<Task> {
+fun taskIDsToTasks(vararg taskIDs: TaskID): ArrayList<Task> {
     val tasks = ArrayList<Task>(taskIDs.size)
     for (id in taskIDs) {
         val task = database.get(id)
@@ -100,4 +101,5 @@ fun <T> List<T>.toArrayList() : ArrayList<T> {
     return this as ArrayList<T>
 }
 
-val database = ConcurrentHashMap<Long, Task>(5000)
+// When implementing this API, change usages of this to use your database system appropriately
+val database = ConcurrentHashMap<TaskID, Task>(5000)

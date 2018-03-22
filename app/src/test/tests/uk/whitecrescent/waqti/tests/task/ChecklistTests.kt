@@ -223,7 +223,7 @@ class ChecklistTests {
         assertFalse((task.checklist as Constraint).isMet)
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        for (listItem in task.checklist.value){
+        for (listItem in task.checklist.value) {
             task.checklist.value.checkItem(listItem)
         }
 
@@ -277,5 +277,45 @@ class ChecklistTests {
         assertEquals(TaskState.KILLED, task.getTaskState())
         assertTrue((task.checklist as Constraint).isMet)
     }
+
+    @DisplayName("Checklist Un-constraining")
+    @Test
+    fun testTaskChecklistUnConstraining() {
+        val task = testTask()
+                .setChecklistConstraintValue(Checklist("Zero"))
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+        task.setChecklistProperty((task.checklist as Constraint).toProperty())
+
+        sleep(1)
+
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
+    @DisplayName("Checklist Constraint Re-Set")
+    @Test
+    fun testTaskChecklistConstraintReSet() {
+        val task = testTask()
+                .setChecklistConstraintValue(Checklist("First"))
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+
+        task.setChecklistConstraintValue(Checklist("Second"))
+        assertEquals(Checklist("Second"), task.checklist.value)
+
+        task.checklist.value.checkItem(0)
+
+        sleep(2)
+
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
 
 }

@@ -219,4 +219,39 @@ class DeadlineTests {
         assertThrows(IllegalStateException::class.java, { task.getTimeUntilDeadline() })
     }
 
+    @DisplayName("Deadline Un-constraining")
+    @Test
+    fun testTaskDeadlineUnConstraining() {
+        val task = testTask()
+                .setDeadlineConstraintValue(Time.from(now().plusDays(7)))
+
+        sleep(1)
+        task.setDeadlineProperty((task.deadline as Constraint).toProperty())
+
+        sleep(1)
+
+        assertFalse(task.isFailable)
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
+    @DisplayName("Deadline Constraint Re-Set")
+    @Test
+    fun testTaskDeadlineConstraintReSet() {
+        val task = testTask()
+                .setDeadlineConstraintValue(Time.from(now().plusDays(7)))
+
+        sleep(1)
+
+        val newDeadline = Time.from(now().plusSeconds(2))
+
+        task.setDeadlineConstraintValue(newDeadline)
+        assertEquals(newDeadline, task.deadline.value)
+
+        sleep(3)
+
+        assertEquals(TaskState.FAILED, task.getTaskState())
+    }
+
 }

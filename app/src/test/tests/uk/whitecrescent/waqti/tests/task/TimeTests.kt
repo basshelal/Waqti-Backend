@@ -2,6 +2,7 @@ package uk.whitecrescent.waqti.tests.task
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
@@ -11,6 +12,7 @@ import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
 import uk.whitecrescent.waqti.code.SHOWING
 import uk.whitecrescent.waqti.code.TaskState
+import uk.whitecrescent.waqti.code.TaskStateException
 import uk.whitecrescent.waqti.code.Time
 import uk.whitecrescent.waqti.code.UNMET
 import uk.whitecrescent.waqti.code.now
@@ -176,6 +178,42 @@ class TimeTests {
 
         tasks.forEach { assertTrue(it.getTaskState() == TaskState.EXISTING) }
 
+    }
+
+    @DisplayName("Time Un-constraining")
+    @Test
+    fun testTaskTimeUnConstraining() {
+        val task = testTask()
+                .setTimeConstraintValue(Time.from(now().plusDays(7)))
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+        task.setTimeProperty((task.time as Constraint).toProperty())
+
+        sleep(1)
+
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        assertEquals(TaskState.EXISTING, task.getTaskState())
+    }
+
+    @DisplayName("Time Constraint Re-Set")
+    @Test
+    fun testTaskTimeConstraintReSet() {
+        val task = testTask()
+                .setTimeConstraintValue(Time.from(now().plusDays(7)))
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+
+        val newTime = now().plusSeconds(2)
+
+        task.setTimeConstraintValue(newTime)
+        assertEquals(newTime, task.time.value)
+
+        sleep(3)
+
+        assertEquals(TaskState.EXISTING, task.getTaskState())
     }
 
 }

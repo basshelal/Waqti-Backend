@@ -435,14 +435,16 @@ class SubTasksTests {
 
         val list = getTasks(500)
 
-        list.forEachIndexed { index, task -> run {
-            if (index != 499) task.setSubTasksConstraintValue(arrayListOf(list[index+1].taskID))
-        } }
+        list.forEachIndexed { index, task ->
+            run {
+                if (index != 499) task.setSubTasksConstraintValue(arrayListOf(list[index + 1].taskID))
+            }
+        }
 
-        assertEquals(1,list[0].subTasks.value.size)
+        assertEquals(1, list[0].subTasks.value.size)
 
         list.minus(list.last()).reversed().forEach { assertTrue(it.subTasks.value.size == 1) }
-        list.minus(list.last()).reversed().forEach { assertThrows(TaskStateException::class.java, {it.kill()}) }
+        list.minus(list.last()).reversed().forEach { assertThrows(TaskStateException::class.java, { it.kill() }) }
 
         assertEquals(499, list[0].getSubTasksLevelsDepth())
         assertEquals(300, list[199].getSubTasksLevelsDepth())
@@ -450,6 +452,62 @@ class SubTasksTests {
 
         assertTrue(database.size == 500)
 
+    }
+
+    @DisplayName("SubTasks Un-constraining")
+    @Test
+    fun testTaskSubTasksUnConstraining() {
+        val subTasks = arrayListOf(
+                Task("SubTask1"),
+                Task("SubTask2"),
+                Task("SubTask3")
+        )
+
+        val task = testTask()
+                .setSubTasksConstraintValue(tasksToTaskIDs(subTasks))
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+        task.setSubTasksProperty((task.subTasks as Constraint).toProperty())
+
+        sleep(1)
+
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
+    @DisplayName("SubTasks Constraint Re-Set")
+    @Test
+    fun testTaskSubTasksConstraintReSet() {
+        val subTasks = arrayListOf(
+                Task("SubTask1"),
+                Task("SubTask2"),
+                Task("SubTask3")
+        )
+
+        val task = testTask()
+                .setSubTasksConstraintValue(tasksToTaskIDs(subTasks))
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+
+        val newSubTasks = arrayListOf(
+                Task("New SubTask1"),
+                Task("New SubTask2")
+        )
+
+        task.setSubTasksConstraintValue(tasksToTaskIDs(newSubTasks))
+        assertEquals(tasksToTaskIDs(newSubTasks), task.subTasks.value)
+
+        newSubTasks.forEach { it.kill() }
+
+        sleep(2)
+
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
     }
 
 }

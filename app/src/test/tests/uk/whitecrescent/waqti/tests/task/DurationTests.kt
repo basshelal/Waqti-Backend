@@ -260,7 +260,7 @@ class DurationTests {
     @DisplayName("Get Duration Left")
     @Test
     fun testTaskGetDurationLeft() {
-      val timeDue = now().plusSeconds(3)
+        val timeDue = now().plusSeconds(3)
 
         val task = testTask()
                 .setDurationConstraintValue(Duration.ofSeconds(3))
@@ -275,5 +275,45 @@ class DurationTests {
         val task = testTask()
         assertThrows(IllegalStateException::class.java, { task.getDurationLeft() })
     }
+
+    @DisplayName("Duration Un-constraining")
+    @Test
+    fun testTaskDurationUnConstraining() {
+        val task = testTask()
+                .setDurationConstraintValue(Duration.ofDays(7))
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+        task.setDurationProperty((task.duration as Constraint).toProperty())
+
+        sleep(1)
+
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
+    @DisplayName("Duration Constraint Re-Set")
+    @Test
+    fun testTaskDurationConstraintReSet() {
+        val task = testTask()
+                .setDurationConstraintValue(Duration.ofDays(7))
+
+        sleep(1)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+        assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
+
+        val newDuration = Duration.ofSeconds(2)
+
+        task.setDurationConstraintValue(newDuration)
+        assertEquals(newDuration, task.duration.value)
+
+        sleep(3)
+
+        task.kill()
+        assertEquals(TaskState.KILLED, task.getTaskState())
+    }
+
 
 }

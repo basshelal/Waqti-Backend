@@ -272,6 +272,10 @@ class Task(var title: String) {
         }
     }
 
+    private fun makeNonFailableIfNoConstraints() {
+        if (this.getAllConstraints().isEmpty()) this.isFailable = false
+    }
+
     /**
      * Gets the list of all the Properties of a Task, does not matter what their values are.
      * See the Properties.md docs for more.
@@ -348,13 +352,12 @@ class Task(var title: String) {
      * no more changes will occur.
      *
      * In the case that the passed in `timeProperty` is a Constraint and it is after now, three things will happen:
-     * <ul>
-     *     <li>This Task's state will become SLEEPING</li>
-     *     <li>This Task will become failable if it wasn't already</li>
-     *     <li>This Task will start checking the time, and will become EXISTING once the time in `timeProperty` has
-     *     passed and will also make the time Constraint MET if it wasn't already see [timeConstraintTimeChecking()]
-     *     </li>
-     * </ul>
+     *
+     * * This Task's state will become SLEEPING
+     * * This Task will become failable if it wasn't already
+     * * This Task will start checking the time, and will become EXISTING once the time in `timeProperty` has passed
+     * and will also make the time Constraint MET if it wasn't already see [timeConstraintTimeChecking]
+     *
      *
      * If the passed in `timeProperty` is not a Constraint or is not after now then the Task's state will remain the
      * same.
@@ -416,11 +419,9 @@ class Task(var title: String) {
      * Further changes will occur only if the passed in `durationProperty` is a Constraint.
      *
      * In the case that the passed in `durationProperty` is a Constraint, two things will happen:
-     * <ul>
-     *     <li>This Task will become failable if it wasn't already</li>
-     *     <li>This Task will start checking the time and after the duration has passed will make the duration
-     *     Constraint MET if it wasn't already see [durationConstraintTimeChecking()]</li>
-     * </ul>
+     * * This Task will become failable if it wasn't already
+     * * This Task will start checking the time and after the duration has passed will make the duration
+     * Constraint MET if it wasn't already see [durationConstraintTimeChecking]
      *
      * If the passed in `durationProperty` is not a Constraint then the Task's state will remain the same.
      *
@@ -712,15 +713,16 @@ class Task(var title: String) {
         return setDescriptionProperty(Property(SHOWING, description))
     }
 
+    // TODO: 22-Mar-18 Fix this Doc
     /**
      * Sets this Task's checklist Property, the passed in Property can be a Constraint.
      *
      * If the passed in `checklistProperty` is a Constraint then this Task will become failable if it wasn't already
      * and will start viewing the checklist to see if all its list items are checked, if they are, the checklist
      * Constraint is met. This also refers to empty checklists, meaning to this Task, an empty checklist is one that
-     * has all its items checked and so the checklist Constraint is met, thus it is important to differentiate
-     * between the case that the checklist contains unchecked items or is just empty, this is up to the
-     * implementation to deal with.
+     * has all its items checked and so the checklist Constraint is met if there are no items in the checklist, thus
+     * it is important to differentiate between the case that the checklist contains unchecked items or is just
+     * empty, this is up to the implementation to deal with.
      *
      * @see Task.checklistConstraintChecking
      * @see Checklist
@@ -779,16 +781,14 @@ class Task(var title: String) {
      * Further changes will occur only if the passed in `deadlineProperty` is a Constraint.
      *
      * In the case that the passed in `deadlineProperty` is a Constraint, three things will happen:
-     * <ul>
-     *     <li>The deadline Constraint will become met until that deadline time where it will become unmet again,
-     *     this is only in the case that the Task is not killed before the deadline, this is done in order to allow
-     *     the Task to be killed </li>
-     *     <li>This Task will become failable if it wasn't already</li>
-     *     <li>This Task will start checking the time to compare it with the deadline, if the current time is after
-     *     the deadline plus the defined grace period [GRACE_PERIOD] then the Task becomes failed and the deadline
-     *     Constraint becomes unmet. See [deadlineConstraintChecking()].
-     *     </li>
-     * </ul>
+     *
+     * * The deadline Constraint will become met until that deadline time where it will become unmet again, this is
+     * only in the case that the Task is not killed before the deadline, this is done in order to allow the Task to
+     * be killed
+     * * This Task will become failable if it wasn't already
+     * * This Task will start checking the time to compare it with the deadline, if the current time is after the
+     * deadline plus the defined grace period [GRACE_PERIOD] then the Task becomes failed and the deadline Constraint
+     * becomes unmet. See [deadlineConstraintChecking].
      *
      * If the passed in `deadlineProperty` is not a Constraint then there will be no further changes and the Task
      * will not fail automatically.
@@ -917,11 +917,10 @@ class Task(var title: String) {
      * will occur.
      *
      * In the case that the passed in `beforeProperty` is a Constraint, two things will happen:
-     * <ul>
-     *     <li>This Task will become failable if it wasn't already</li>
-     *     <li>This Task will start checking the state of task the before value refers to using the database, and
-     *     will make the before Constraint met only when the before Task is killed</li>
-     * </ul>
+     *
+     * * This Task will become failable if it wasn't already
+     * * This Task will start checking the state of task the before value refers to using the database, and will make
+     * the before Constraint met only when the before Task is killed, see [beforeConstraintChecking]
      *
      * If the passed in `beforeProperty` is not a Constraint then the Task's state will remain the same.
      *
@@ -1041,13 +1040,13 @@ class Task(var title: String) {
 
     fun getSubTasksLevelsDepth(task: Task = this): Int {
         val list = arrayListOf<Int>()
-        if (task.subTasks.value.isEmpty()) {
-            return 0
+        return if (task.subTasks.value.isEmpty()) {
+            0
         } else {
             for (task0 in taskIDsToTasks(task.subTasks.value)) {
                 list.add(getSubTasksLevelsDepth(task0) + 1)
             }
-            return list.max() as Int
+            list.max() as Int
         }
     }
 
@@ -1200,8 +1199,6 @@ class Task(var title: String) {
         }
     }
 
-    private fun killed() = state == TaskState.KILLED
-
     //endregion Task lifecycle
 
     //region Concurrency
@@ -1212,6 +1209,16 @@ class Task(var title: String) {
      * When the time is past this Task's time Constraint value the state will change to EXISTING and the time
      * Constraint will be met if it wasn't already and the checking ends.
      *
+     * If this Task's time is no longer a Constraint (time is un-constrained) then the changes
+     * [setTimeProperty] will be undone, namely:
+     *
+     * * This Task's state will become EXISTING
+     * * This Task will become non-failable if there are no Constraints
+     * * The time checking will end
+     *
+     * If the time Constraint is re-set, set to a new value, then this Observer ends and a new one begins checking the
+     * new value.
+     *
      * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
      * values as they may change for performance reasons.
      *
@@ -1220,21 +1227,34 @@ class Task(var title: String) {
      * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
      * is done once every so often, which itself is cheap.
      *
+     * @see Task.setTimeProperty
      * @throws ConcurrentException if the Observer's `onError` is called for any reasons
      */
     private fun timeConstraintTimeChecking() {
+        val originalValue = this.time.value
         var done = false
+
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .subscribeOn(Concurrent.stateCheckingThread)
                 .subscribe(
                         {
-                            if (now().isAfter(this.time.value)) {
-                                this.state = TaskState.EXISTING
-                                if (this.time is Constraint && (this.time as Constraint).isMet != MET) {
-                                    (this.time as Constraint).isMet = MET
+                            when {
+                                this.time !is Constraint -> {
+                                    makeNonFailableIfNoConstraints()
+                                    this.state = TaskState.EXISTING
+                                    done = true
                                 }
-                                done = true
+                                this.time.value != originalValue -> {
+                                    done = true
+                                }
+                                now().isAfter(this.time.value) -> {
+                                    this.state = TaskState.EXISTING
+                                    if (this.time is Constraint && (this.time as Constraint).isMet != MET) {
+                                        (this.time as Constraint).isMet = MET
+                                    }
+                                    done = true
+                                }
                             }
                         },
                         {
@@ -1250,6 +1270,15 @@ class Task(var title: String) {
      * When the time is past this Task's duration Constraint value the duration Constraint will be met if it wasn't
      * already and the checking ends.
      *
+     * If this Task's duration is no longer a Constraint (duration is un-constrained) then the changes
+     * [setDurationProperty] will be undone, namely:
+     *
+     * * This Task will become non-failable if there are no Constraints
+     * * The duration checking will end
+     *
+     * If the duration Constraint is re-set, set to a new value, then this Observer ends and a new one begins checking
+     * the new value.
+     *
      * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
      * values as they may change for performance reasons.
      *
@@ -1258,21 +1287,33 @@ class Task(var title: String) {
      * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
      * is done once every so often, which itself is cheap.
      *
+     * @see Task.setTimeProperty
      * @throws ConcurrentException if the Observer's `onError` is called for any reasons
      */
     private fun durationConstraintTimeChecking() {
+        val originalValue = this.duration.value
         var done = false
         val minimumTime = now().plus(this.duration.value)
+
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .subscribeOn(Concurrent.stateCheckingThread)
                 .subscribe(
                         {
-                            if (now().isAfter(minimumTime)) {
-                                if (this.duration is Constraint && (this.duration as Constraint).isMet != MET) {
-                                    (this.duration as Constraint).isMet = MET
+                            when {
+                                this.duration !is Constraint -> {
+                                    makeNonFailableIfNoConstraints()
+                                    done = true
                                 }
-                                done = true
+                                this.duration.value != originalValue -> {
+                                    done = true
+                                }
+                                now().isAfter(minimumTime) -> {
+                                    if (this.duration is Constraint && (this.duration as Constraint).isMet != MET) {
+                                        (this.duration as Constraint).isMet = MET
+                                    }
+                                    done = true
+                                }
                             }
                         },
                         {
@@ -1288,25 +1329,46 @@ class Task(var title: String) {
      * When the checklist has no unchecked items this Task's checklist Constraint will be met if it wasn't already
      * and the checking ends.
      *
+     * If this Task's checklist is no longer a Constraint (checklist is un-constrained) then the changes
+     * [setChecklistProperty] will be undone, namely:
+     *
+     * * This Task will become non-failable if there are no Constraints
+     * * The checklist checking will end
+     *
+     * If the checklist Constraint is re-set, set to a new value, then this Observer ends and a new one begins checking
+     * the new value.
+     *
      * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
      * values as they may change for performance reasons.
      *
      * This function is only called when `checklist` is set as a Constraint.
      *
+     * @see Task.setChecklistProperty
      * @throws ConcurrentException if the Observer's `onError` is called for any reasons
      */
     private fun checklistConstraintChecking() {
+        val originalValue = this.checklist.value
         var done = false
+
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .subscribeOn(Concurrent.stateCheckingThread)
                 .subscribe(
                         {
-                            if (this.checklist.value.getAllUncheckedItems().isEmpty()) {
-                                if (this.checklist is Constraint && (this.checklist as Constraint).isMet != MET) {
-                                    (this.checklist as Constraint).isMet = MET
+                            when {
+                                this.checklist !is Constraint -> {
+                                    makeNonFailableIfNoConstraints()
+                                    done = true
                                 }
-                                done = true
+                                this.checklist.value != originalValue -> {
+                                    done = true
+                                }
+                                this.checklist.value.getAllUncheckedItems().isEmpty() -> {
+                                    if (this.checklist is Constraint && (this.checklist as Constraint).isMet != MET) {
+                                        (this.checklist as Constraint).isMet = MET
+                                    }
+                                    done = true
+                                }
                             }
                         },
                         {
@@ -1322,6 +1384,15 @@ class Task(var title: String) {
      * When the time is past this Task's deadline Constraint value plus the grace period, the state will change to
      * FAILED and the deadline Constraint will be unmet and the checking ends.
      *
+     * If this Task's deadline is no longer a Constraint (deadline is un-constrained) then the changes
+     * [setDeadlineProperty] will be undone, namely:
+     *
+     * * This Task will become non-failable if there are no Constraints
+     * * The deadline checking will end
+     *
+     * If the checklist Constraint is re-set, set to a new value, then this Observer ends and a new one begins checking
+     * the new value.
+     *
      * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
      * values as they may change for performance reasons.
      *
@@ -1330,23 +1401,35 @@ class Task(var title: String) {
      * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
      * is done once every so often, which itself is cheap.
      *
+     * @see Task.setDeadlineProperty
      * @throws ConcurrentException if the Observer's `onError` is called for any reasons
      */
     private fun deadlineConstraintChecking() {
         var done = false
-        val deadline0 = this.deadline.value.plus(GRACE_PERIOD)
+        val originalValue = this.deadline.value
+        val deadlineWithGrace = this.deadline.value.plus(GRACE_PERIOD)
+
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .doOnSubscribe { (deadline as Constraint).isMet = true }
                 .subscribeOn(Concurrent.stateCheckingThread)
                 .subscribe(
                         {
-                            if (now().isAfter(deadline0)) {
-                                if (canFail()) {
-                                    this.fail()
-                                    (deadline as Constraint).isMet = false
+                            when {
+                                this.deadline !is Constraint -> {
+                                    makeNonFailableIfNoConstraints()
+                                    done = true
                                 }
-                                done = true
+                                this.deadline.value != originalValue -> {
+                                    done = true
+                                }
+                                now().isAfter(deadlineWithGrace) -> {
+                                    if (canFail()) {
+                                        this.fail()
+                                        (deadline as Constraint).isMet = false
+                                    }
+                                    done = true
+                                }
                             }
                         },
                         {
@@ -1364,6 +1447,15 @@ class Task(var title: String) {
      *
      * If the before Task's state is KILLED then this Task's before Constraint will be met.
      *
+     * If this Task's before is no longer a Constraint (before is un-constrained) then the changes
+     * [setBeforeProperty] will be undone, namely:
+     *
+     * * This Task will become non-failable if there are no Constraints
+     * * The before checking will end
+     *
+     * If the before Constraint is re-set, set to a new value, then this Observer ends and a new one begins checking
+     * the new value.
+     *
      * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
      * values as they may change for performance reasons.
      *
@@ -1376,23 +1468,30 @@ class Task(var title: String) {
      */
     private fun beforeConstraintChecking() {
         var done = false
+        val originalValue = this.before.value
         val beforeTask = database[this.before.value]
+
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .subscribeOn(Concurrent.otherTaskCheckingThread)
                 .subscribe(
                         {
                             when {
+                                this.before !is Constraint -> {
+                                    makeNonFailableIfNoConstraints()
+                                    done = true
+                                }
+                                this.before.value != originalValue -> {
+                                    done = true
+                                }
                                 beforeTask == null -> {
                                     throw ConcurrentException("Before Constraint checking failed!" +
                                             " Before is null in database")
                                 }
-
                                 beforeTask.getTaskState() == TaskState.KILLED -> {
                                     (this.before as Constraint).isMet = true
                                     done = true
                                 }
-
                                 beforeTask.getTaskState() == TaskState.FAILED -> {
                                     (this.before as Constraint).isMet = false
                                     if (canFail()) fail()
@@ -1408,23 +1507,30 @@ class Task(var title: String) {
     }
 
     private fun subTasksConstraintChecking() {
+        val originalValue = this.subTasks.value
         var done = false
+
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .subscribeOn(Concurrent.otherTaskCheckingThread)
                 .subscribe(
                         {
                             when {
+                                this.subTasks !is Constraint -> {
+                                    makeNonFailableIfNoConstraints()
+                                    done = true
+                                }
+                                this.subTasks.value != originalValue -> {
+                                    done = true
+                                }
                             // SubTasks contains more than 0 failed Tasks
                                 taskIDsToTasks(this.subTasks.value)
                                         .filter { it.getTaskState() == TaskState.FAILED }
-                                        .isNotEmpty()
-                                -> {
+                                        .isNotEmpty() -> {
                                     (subTasks as Constraint).isMet = false
                                     if (canFail()) fail()
                                     done = true
                                 }
-
                             // All SubTasks are killed
                                 taskIDsToTasks(this.subTasks.value)
                                         .all { it.getTaskState() == TaskState.KILLED } -> {
