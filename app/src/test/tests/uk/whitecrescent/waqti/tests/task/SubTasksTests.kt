@@ -361,13 +361,13 @@ class SubTasksTests {
         assertEquals(0, level4SubTasks.size)
 
         level4.kill()
-        sleep(1)
+        sleep(2)
         level3.kill()
-        sleep(1)
+        sleep(2)
         level2.kill()
-        sleep(1)
+        sleep(2)
         level1.kill()
-        sleep(1)
+        sleep(2)
         root.kill()
 
     }
@@ -406,23 +406,23 @@ class SubTasksTests {
         subTask0.kill()
         subTask1.kill()
 
-        sleep(1)
+        sleep(2)
 
         assertThrows(TaskStateException::class.java, { subTask2.kill() })
 
         subTask2SubTask.kill()
 
-        sleep(1)
+        sleep(2)
 
         subTask2.kill()
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        sleep(1)
+        sleep(2)
 
         subTask3.kill()
 
-        sleep(1)
+        sleep(2)
 
         task.kill()
     }
@@ -452,6 +452,28 @@ class SubTasksTests {
 
         assertTrue(database.size == 500)
 
+    }
+
+    @DisplayName("SubTasks varied depth")
+    @Test
+    fun testTaskSubTasksVariedDepth() {
+        val level1A = Task("Level1A")
+        val level1B = Task("Level1B")
+        val level2A = Task("Level2A")
+        val level2B = Task("Level2B")
+        val level3A = Task("Level3A")
+        val level4A = Task("Level4A")
+        val root = Task("Root")
+
+        assertEquals(0, root.getSubTasksLevelsDepth())
+
+        level3A.setSubTasksConstraintValue(arrayListOf(level4A.taskID))
+        level2A.setSubTasksConstraintValue(arrayListOf(level3A.taskID))
+        level1B.setSubTasksConstraintValue(arrayListOf(level2B.taskID))
+        level1A.setSubTasksConstraintValue(arrayListOf(level2A.taskID))
+        root.setSubTasksConstraintValue(arrayListOf(level1A.taskID, level1B.taskID))
+
+        assertEquals(4, root.getSubTasksLevelsDepth())
     }
 
     @DisplayName("SubTasks Un-constraining")

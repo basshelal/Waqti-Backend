@@ -206,9 +206,8 @@ class DeadlineTests {
 
         sleep(2)
 
-        assertEquals(
-                Duration.between(now(), deadline).seconds,
-                task.getTimeUntilDeadline().seconds
+        assertTrue(Math.abs(
+                Duration.between(now(), deadline).seconds - task.getTimeUntilDeadline().seconds) <= 1
         )
     }
 

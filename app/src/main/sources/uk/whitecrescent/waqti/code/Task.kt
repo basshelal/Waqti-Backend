@@ -141,6 +141,7 @@ class Task(var title: String) {
      *
      * Labels can not be a Constraint.
      *
+     * @see ArrayList
      * @see Label
      */
     var labels: Property<ArrayList<Label>> = DEFAULT_LABEL_PROPERTY
@@ -248,12 +249,25 @@ class Task(var title: String) {
             field = before
         }
 
-    //TODO Implement this guy everywhere please but define him in the .md
+    /**
+     * The list of sub-Tasks this Task has, a Task can have zero to potentially many sub-Tasks but has zero by
+     * default.
+     *
+     * If SubTasks is a Constraint then the state of the sub-Tasks is shared upwards to the parent, meaning
+     * if this Task's sub-Tasks contains a FAILED Task then this Task is FAILED, if this Task's sub-Tasks contains a
+     * non-killed non-optional Task then this Task cannot be killed, only if all the sub-Tasks are KILLED will the
+     * Constraint be met.
+     *
+     * If SubTasks is a Property then it has no rules on killing or failing the Task, the sub-Tasks' states will make
+     * no difference to this Task.
+     *
+     * @see ArrayList
+     * @see Long
+     */
     var subTasks: Property<ArrayList<TaskID>> = DEFAULT_SUB_TASKS_PROPERTY
         private set(subTasks) {
             field = subTasks
         }
-
 
     //endregion Task Properties
 
@@ -358,7 +372,6 @@ class Task(var title: String) {
      * * This Task will start checking the time, and will become EXISTING once the time in `timeProperty` has passed
      * and will also make the time Constraint MET if it wasn't already see [timeConstraintTimeChecking]
      *
-     *
      * If the passed in `timeProperty` is not a Constraint or is not after now then the Task's state will remain the
      * same.
      *
@@ -419,6 +432,7 @@ class Task(var title: String) {
      * Further changes will occur only if the passed in `durationProperty` is a Constraint.
      *
      * In the case that the passed in `durationProperty` is a Constraint, two things will happen:
+     *
      * * This Task will become failable if it wasn't already
      * * This Task will start checking the time and after the duration has passed will make the duration
      * Constraint MET if it wasn't already see [durationConstraintTimeChecking]
@@ -713,16 +727,22 @@ class Task(var title: String) {
         return setDescriptionProperty(Property(SHOWING, description))
     }
 
-    // TODO: 22-Mar-18 Fix this Doc
     /**
      * Sets this Task's checklist Property, the passed in Property can be a Constraint.
      *
-     * If the passed in `checklistProperty` is a Constraint then this Task will become failable if it wasn't already
-     * and will start viewing the checklist to see if all its list items are checked, if they are, the checklist
-     * Constraint is met. This also refers to empty checklists, meaning to this Task, an empty checklist is one that
-     * has all its items checked and so the checklist Constraint is met if there are no items in the checklist, thus
-     * it is important to differentiate between the case that the checklist contains unchecked items or is just
-     * empty, this is up to the implementation to deal with.
+     * Further changes will occur only if the passed in `checklistProperty` is a Constraint, otherwise no more changes
+     * will occur.
+     *
+     * In the case that the passed in `checklistProperty` is a Constraint, two things will happen:
+     *
+     * * This Task will become failable if it wasn't already
+     * * This Task will start viewing the checklist to see if all its list items are checked, if they are, the checklist
+     * Constraint is met, see [checklistConstraintChecking]
+     *
+     * Note: An empty checklist means every item in the checklist is checked so this can make the checklist
+     * Constraint met
+     *
+     * If the passed in `checklistProperty` is not a Constraint then the Task's state will remain the same.
      *
      * @see Task.checklistConstraintChecking
      * @see Checklist
@@ -1001,6 +1021,25 @@ class Task(var title: String) {
         return setBeforeProperty(Constraint(SHOWING, beforeTask.taskID, UNMET))
     }
 
+    /**
+     * Sets this Task's sub-Tasks Property, the passed in Property can be a Constraint.
+     *
+     * Further changes will occur only if the passed in `subTasksProperty` is a Constraint, otherwise no more changes
+     * will occur.
+     *
+     * In the case that the passed in `subTasksProperty` is a Constraint, two things will happen:
+     *
+     * * This Task will become failable if it wasn't already
+     * * This Task will start checking the state of all of its sub-Tasks, if all are KILLED then the sub-Tasks
+     * Constraint is met, if any one sub-Task is FAILED then this Task is FAILED if it is failable, see [subTasksConstraintChecking]
+     *
+     * If the passed in `subTasksProperty` is not a Constraint then the Task's state will remain the same.
+     *
+     * @see Task.subTasksConstraintChecking
+     * @param subTasksProperty the `Property` of type `ArrayList<TaskID>` that this Task's subTasks property will be
+     * set to, this is the list of TaskIDs of the sub-Tasks
+     * @return this Task after setting the Task's subTasks Property
+     */
     fun setSubTasksProperty(subTasksProperty: Property<ArrayList<TaskID>>): Task {
         this.subTasks = subTasksProperty
         if (subTasksProperty is Constraint) {
@@ -1010,18 +1049,51 @@ class Task(var title: String) {
         return this
     }
 
+    /**
+     * Sets this Task's subTasks Constraint.
+     *
+     * @see Task.setSubTasksProperty
+     * @param subTasksConstraint the `Constraint` of type `ArrayList<TaskID>` that this Task's subTasks will be set to
+     * @return this Task after setting the Task's subTasks Constraint
+     */
     fun setSubTasksConstraint(subTasksConstraint: Constraint<ArrayList<TaskID>>): Task {
         return setSubTasksProperty(subTasksConstraint)
     }
 
+    /**
+     * Sets this Task's subTasks Property with the given ArrayList of TaskIDs and makes the Property showing.
+     *
+     * This is a shorthand of writing `setSubTasksProperty(Property(SHOWING, mySubTasks))`.
+     *
+     * @see Task.setSubTasksProperty
+     * @param subTasks the ArrayList of TaskIDs of the subTasks that this Task's subTasks value will be set to
+     * @return this Task after setting the Task's subTasks Property
+     */
     fun setSubTasksPropertyValue(subTasks: ArrayList<TaskID>): Task {
         return setSubTasksProperty(Property(SHOWING, subTasks))
     }
 
+    /**
+     * Sets this Task's subTasks Constraint with the given ArrayList of TaskIDs and makes the Constraint showing and
+     * unmet.
+     *
+     * This is a shorthand of writing `setSubTasksConstraint(Constraint(SHOWING, mySubTasks, UNMET))`.
+     *
+     * @see Task.setSubTasksProperty
+     * @param subTasks he ArrayList of TaskIDs of the subTasks that this Task's subTasks value will be set to
+     * @return this Task after setting the Task's subTasks Constraint
+     */
     fun setSubTasksConstraintValue(subTasks: ArrayList<TaskID>): Task {
         return setSubTasksProperty(Constraint(SHOWING, subTasks, UNMET))
     }
 
+    /**
+     * Adds the given subTasks to this Task's subTasks Property and makes this Task's subTasks Property showing if it
+     * wasn't already.
+     *
+     * @param tasks the Tasks to add to this Task's subTasks Property
+     * @return this Task after adding the given subTasks to the Task's subTasks Property
+     */
     fun addSubTasks(vararg tasks: Task): Task {
         val value = this.subTasks.value
         value.addAll(tasksToTaskIDs(tasks.toList()))
@@ -1030,14 +1102,29 @@ class Task(var title: String) {
         return this
     }
 
+    /**
+     * Gets the ArrayList of TaskIDs of the sub-Tasks of this Task
+     *
+     * @return the ArrayList of TaskIDs of the sub-Tasks of this Task
+     */
     fun getSubTasksIDsList(): ArrayList<TaskID> {
         return this.subTasks.value
     }
 
+    /**
+     * Gets the ArrayList of Tasks of the sub-Tasks of this Task
+     *
+     * @return the ArrayList of Tasks of the sub-Tasks of this Task
+     */
     fun getSubTasksList(): ArrayList<Task> {
         return ArrayList(taskIDsToTasks(this.subTasks.value))
     }
 
+    /**
+     * Gets the maximum depth of sub-Tasks of this Task, this is a recursive function
+     *
+     * @return the maximum depth of sub-Tasks of this Task
+     */
     fun getSubTasksLevelsDepth(task: Task = this): Int {
         val list = arrayListOf<Int>()
         return if (task.subTasks.value.isEmpty()) {
@@ -1464,7 +1551,9 @@ class Task(var title: String) {
      * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
      * is done once every so often, which itself is cheap.
      *
-     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     * @see Task.setBeforeProperty
+     * @throws ConcurrentException if the Observer's `onError` is called for any reasons or if the before Task cannot
+     * be found in the database
      */
     private fun beforeConstraintChecking() {
         var done = false
@@ -1506,6 +1595,33 @@ class Task(var title: String) {
                 )
     }
 
+    /**
+     * Checks the state of the sub-Tasks of this Task on the `otherTaskCheckingThread`.
+     *
+     * If any of the sub-Tasks' states is FAILED then this Task will fail if it can [canFail].
+     *
+     * If all of the sub-Tasks' states is KILLED then this Task's subTasks Constraint will be met.
+     *
+     * If this Task's subTasks is no longer a Constraint (subTasks is un-constrained) then the changes
+     * [setSubTasksProperty] will be undone, namely:
+     *
+     * * This Task will become non-failable if there are no Constraints
+     * * The subTasks checking will end
+     *
+     * If the subTasks Constraint is re-set, set to a new value, then this Observer ends and a new one begins checking
+     * the new value.
+     *
+     * The Observer performs this check every [TIME_CHECKING_PERIOD] [TIME_CHECKING_UNIT], see Constants for these
+     * values as they may change for performance reasons.
+     *
+     * This function is only called when `subTasks` is set as a Constraint.
+     *
+     * This has been tested to be computationally cheap when running for 1000 tasks concurrently since the checking
+     * is done once every so often, which itself is cheap.
+     *
+     * @see Task.setSubTasksProperty
+     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     */
     private fun subTasksConstraintChecking() {
         val originalValue = this.subTasks.value
         var done = false

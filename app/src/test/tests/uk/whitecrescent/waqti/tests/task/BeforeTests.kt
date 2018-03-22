@@ -284,7 +284,7 @@ class BeforeTests {
 
         newBeforeTask.kill()
 
-        sleep(1)
+        sleep(2)
 
         task.kill()
         assertEquals(TaskState.KILLED, task.getTaskState())
