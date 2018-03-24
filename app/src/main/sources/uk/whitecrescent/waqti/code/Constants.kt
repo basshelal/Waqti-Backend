@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit
 
 // When implementing this API, change usages of this to use your database system appropriately
 val DATABASE = ConcurrentHashMap<TaskID, Task>(5000)
+val TEMPLATE_DATABASE = ConcurrentHashMap<String, Bundle<String, Property<*>>>()
 
 // Type Aliases for more readable code
 typealias Description = String

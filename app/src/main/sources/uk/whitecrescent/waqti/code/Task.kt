@@ -1321,84 +1321,6 @@ class Task(var title: String) {
 
     //endregion Task lifecycle
 
-    //region Template Task
-
-    // TODO: 24-Mar-18 Test and document this thing
-
-    fun toTemplate() = Task.Template.toTemplate(this)
-
-    object Template {
-        private const val initialName = "New Task..."
-        private const val time = "time"
-        private const val duration = "duration"
-        private const val priority = "priority"
-        private const val labels = "labels"
-        private const val optional = "optional"
-        private const val description = "description"
-        private const val checklist = "checklist"
-        private const val deadline = "deadline"
-        private const val target = "target"
-        private const val before = "before"
-        private const val subTasks = "subTasks"
-
-        @Suppress("UNCHECKED_CAST")
-        fun fromTemplate(bundle: Bundle<String, Property<*>>): Task {
-            val task = Task(initialName)
-            if (bundle[time] != DEFAULT_TIME_PROPERTY) {
-                task.setTimeProperty(bundle["time"] as Property<Time>)
-            }
-            if (bundle[duration] != DEFAULT_DURATION_PROPERTY) {
-                task.setDurationProperty(bundle["duration"] as Property<Duration>)
-            }
-            if (bundle[priority] != DEFAULT_PRIORITY_PROPERTY) {
-                task.setPriorityProperty(bundle["priority"] as Property<Priority>)
-            }
-            if (bundle[labels] != DEFAULT_LABELS_PROPERTY) {
-                task.setLabelsProperty(bundle["labels"] as Property<ArrayList<Label>>)
-            }
-            if (bundle[optional] != DEFAULT_OPTIONAL_PROPERTY) {
-                task.setOptionalProperty(bundle["optional"] as Property<Optional>)
-            }
-            if (bundle[description] != DEFAULT_DESCRIPTION_PROPERTY) {
-                task.setDescriptionProperty(bundle["description"] as Property<Description>)
-            }
-            if (bundle[checklist] != DEFAULT_CHECKLIST_PROPERTY) {
-                task.setChecklistProperty(bundle["checklist"] as Property<Checklist>)
-            }
-            if (bundle[deadline] != DEFAULT_DEADLINE_PROPERTY) {
-                task.setDeadlineProperty(bundle["priority"] as Property<LocalDateTime>)
-            }
-            if (bundle[target] != DEFAULT_TARGET_PROPERTY) {
-                task.setTargetProperty(bundle["target"] as Property<Target>)
-            }
-            if (bundle[before] != DEFAULT_BEFORE_PROPERTY) {
-                task.setBeforeProperty(bundle["before"] as Property<TaskID>)
-            }
-            if (bundle[subTasks] != DEFAULT_SUB_TASKS_PROPERTY) {
-                task.setSubTasksProperty(bundle["subTasks"] as Property<ArrayList<TaskID>>)
-            }
-            return task
-        }
-
-        fun toTemplate(task: Task): Bundle<String, Property<*>> {
-            val bundle = Bundle<String, Property<*>>(11)
-            bundle[time] = task.time
-            bundle[duration] = task.duration
-            bundle[priority] = task.priority
-            bundle[labels] = task.labels
-            bundle[optional] = task.optional
-            bundle[description] = task.description
-            bundle[checklist] = task.checklist
-            bundle[deadline] = task.deadline
-            bundle[target] = task.target
-            bundle[before] = task.before
-            bundle[subTasks] = task.subTasks
-            return bundle
-        }
-    }
-
-    //endregion Template Task
-
     //region Concurrency
 
     /**
@@ -1825,4 +1747,125 @@ class Task(var title: String) {
     }
 
     //endregion Overriden from kotlin.Any
+
+    //region Template Task
+
+    /**
+     * Returns the information of this Task's Properties in the form of a [Bundle]
+     *
+     * @see Task.Template.toTemplate
+     * @return the Bundle representing this Task's Properties information
+     */
+    fun toTemplate() = Task.Template.toTemplate(this)
+
+    /**
+     * Sets this Task's Properties from the information of the passed in Task's Properties, essentially the passed in
+     * Task has its [Bundle] retrieved and used to set this Task's Properties if and only if the Property is not
+     * equal to its default value, see [Task.Template.fromTemplate] for more information
+     *
+     * @see Task.Template.fromTemplate
+     * @param task the Task from which this Task's Properties information will be set
+     * @return this Task after setting its Properties based on the passed in Task
+     */
+    fun fromTemplate(task: Task) = Task.Template.fromTemplate(task.toTemplate())
+
+    // TODO: 24-Mar-18 Document this later
+    object Template {
+        private const val initialName = "New Task"
+        private const val time = "time"
+        private const val duration = "duration"
+        private const val priority = "priority"
+        private const val labels = "labels"
+        private const val optional = "optional"
+        private const val description = "description"
+        private const val checklist = "checklist"
+        private const val deadline = "deadline"
+        private const val target = "target"
+        private const val before = "before"
+        private const val subTasks = "subTasks"
+
+        /**
+         * Returns a Task with the Properties of the passed in Bundle, this is not recommended to be used outside of
+         * the Task class, instead use [Task.fromTemplate]
+         *
+         * A [Bundle] is essentially a [HashMap] with [String] as the Key and [Property] as the Value, what this
+         * function does is it unpacks the passed in Bundle and returns a Task with the Properties contained in the
+         * Bundle if and only if the Properties in the Bundle are not their default values.
+         *
+         * @see Task.fromTemplate
+         * @see Bundle
+         * @param bundle the Bundle containing the Properties information from another Task see [Task.Template.toTemplate]
+         * @return the Task with the Properties set from the passed in Bundle
+         */
+        @Suppress("UNCHECKED_CAST")
+        fun fromTemplate(bundle: Bundle<String, Property<*>>): Task {
+            val task = Task(initialName)
+            if (bundle[time] != DEFAULT_TIME_PROPERTY) {
+                task.setTimeProperty(bundle[time] as Property<Time>)
+            }
+            if (bundle[duration] != DEFAULT_DURATION_PROPERTY) {
+                task.setDurationProperty(bundle[duration] as Property<Duration>)
+            }
+            if (bundle[priority] != DEFAULT_PRIORITY_PROPERTY) {
+                task.setPriorityProperty(bundle[priority] as Property<Priority>)
+            }
+            if (bundle[labels] != DEFAULT_LABELS_PROPERTY) {
+                task.setLabelsProperty(bundle[labels] as Property<ArrayList<Label>>)
+            }
+            if (bundle[optional] != DEFAULT_OPTIONAL_PROPERTY) {
+                task.setOptionalProperty(bundle[optional] as Property<Optional>)
+            }
+            if (bundle[description] != DEFAULT_DESCRIPTION_PROPERTY) {
+                task.setDescriptionProperty(bundle[description] as Property<Description>)
+            }
+            if (bundle[checklist] != DEFAULT_CHECKLIST_PROPERTY) {
+                task.setChecklistProperty(bundle[checklist] as Property<Checklist>)
+            }
+            if (bundle[deadline] != DEFAULT_DEADLINE_PROPERTY) {
+                task.setDeadlineProperty(bundle[deadline] as Property<LocalDateTime>)
+            }
+            if (bundle[target] != DEFAULT_TARGET_PROPERTY) {
+                task.setTargetProperty(bundle[target] as Property<Target>)
+            }
+            if (bundle[before] != DEFAULT_BEFORE_PROPERTY) {
+                task.setBeforeProperty(bundle[before] as Property<TaskID>)
+            }
+            if (bundle[subTasks] != DEFAULT_SUB_TASKS_PROPERTY) {
+                task.setSubTasksProperty(bundle[subTasks] as Property<ArrayList<TaskID>>)
+            }
+            return task
+        }
+
+        /**
+         * Returns the Bundle of the passed in Task representing its Properties, this is used to send the information
+         * of the passed in Task to a new Task from a template see [Task.Template.fromTemplate], this is not recommended to be
+         * used outside of the Task class, instead use [Task.toTemplate]
+         *
+         * A [Bundle] is essentially a [HashMap] with [String] as the Key and [Property] as the Value, what this
+         * function does is it packs the passed in Task's Properties information into a Bundle and returns the Bundle
+         * containing the Properties information.
+         *
+         * @see Task.toTemplate
+         * @see Bundle
+         * @param task the Task to extract its Properties information from
+         * @return the Bundle representing the passed in Task's Properties information
+         */
+        fun toTemplate(task: Task): Bundle<String, Property<*>> {
+            val bundle = Bundle<String, Property<*>>(11)
+            bundle[time] = task.time
+            bundle[duration] = task.duration
+            bundle[priority] = task.priority
+            bundle[labels] = task.labels
+            bundle[optional] = task.optional
+            bundle[description] = task.description
+            bundle[checklist] = task.checklist
+            bundle[deadline] = task.deadline
+            bundle[target] = task.target
+            bundle[before] = task.before
+            bundle[subTasks] = task.subTasks
+            return bundle
+        }
+    }
+
+    //endregion Template Task
 }

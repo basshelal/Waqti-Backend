@@ -1,5 +1,7 @@
 # TODO
  
+* Relative Time like tomorrow, next week etc
+ 
 * Ensure the Task lifecycle works with tests and documentation
 
 * Figure out a better way to implement Template Tasks, maybe have a function in Task to get this Task's information 
