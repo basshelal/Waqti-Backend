@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
-import uk.whitecrescent.waqti.code.DEFAULT_LABEL_LIST
+import uk.whitecrescent.waqti.code.DEFAULT_LABELS_LIST
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Label
 import uk.whitecrescent.waqti.code.Property
@@ -57,7 +57,7 @@ class LabelTests {
     fun testTaskLabelDefaultValues() {
         val task = testTask()
         assertFalse(task.labels is Constraint)
-        assertEquals(DEFAULT_LABEL_LIST, task.labels.value)
+        assertEquals(DEFAULT_LABELS_LIST, task.labels.value)
         assertFalse(task.labels.isVisible)
     }
 
@@ -78,7 +78,7 @@ class LabelTests {
 
 
         task.hideLabel()
-        assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
+        assertEquals(Property(HIDDEN, DEFAULT_LABELS_LIST), task.labels)
     }
 
     @DisplayName("Set Label Property using setLabelsValue")
@@ -99,7 +99,7 @@ class LabelTests {
 
 
         task.hideLabel()
-        assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
+        assertEquals(Property(HIDDEN, DEFAULT_LABELS_LIST), task.labels)
     }
 
 
@@ -142,7 +142,7 @@ class LabelTests {
 
 
         task.hideLabel()
-        assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
+        assertEquals(Property(HIDDEN, DEFAULT_LABELS_LIST), task.labels)
     }
 
     @DisplayName("Add Label when not showing")
@@ -171,7 +171,7 @@ class LabelTests {
 
 
         task.hideLabel()
-        assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
+        assertEquals(Property(HIDDEN, DEFAULT_LABELS_LIST), task.labels)
     }
 
     @DisplayName("Remove Label")
@@ -192,7 +192,7 @@ class LabelTests {
 
 
         task.hideLabel()
-        assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
+        assertEquals(Property(HIDDEN, DEFAULT_LABELS_LIST), task.labels)
     }
 
 }

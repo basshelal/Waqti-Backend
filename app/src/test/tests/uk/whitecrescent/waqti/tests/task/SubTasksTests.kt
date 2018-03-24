@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
+import uk.whitecrescent.waqti.code.DATABASE
 import uk.whitecrescent.waqti.code.DEFAULT_SUB_TASKS
 import uk.whitecrescent.waqti.code.DEFAULT_SUB_TASKS_PROPERTY
 import uk.whitecrescent.waqti.code.HIDDEN
@@ -16,7 +17,6 @@ import uk.whitecrescent.waqti.code.Task
 import uk.whitecrescent.waqti.code.TaskState
 import uk.whitecrescent.waqti.code.TaskStateException
 import uk.whitecrescent.waqti.code.UNMET
-import uk.whitecrescent.waqti.code.database
 import uk.whitecrescent.waqti.code.sleep
 import uk.whitecrescent.waqti.code.taskIDsToTasks
 import uk.whitecrescent.waqti.code.tasksToTaskIDs
@@ -253,12 +253,12 @@ class SubTasksTests {
 
         assertFalse(task.getTaskState() == TaskState.KILLED)
 
-        database.get(subTasksIDs[0])!!.kill()
-        database.get(subTasksIDs[1])!!.kill()
+        DATABASE.get(subTasksIDs[0])!!.kill()
+        DATABASE.get(subTasksIDs[1])!!.kill()
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        database.get(subTasksIDs[2])!!.kill()
+        DATABASE.get(subTasksIDs[2])!!.kill()
 
         sleep(2)
 
@@ -287,9 +287,9 @@ class SubTasksTests {
 
         assertFalse(task.getTaskState() == TaskState.KILLED)
 
-        database.get(subTasksIDs[0])!!.fail()
-        database.get(subTasksIDs[1])!!.kill()
-        database.get(subTasksIDs[2])!!.kill()
+        DATABASE.get(subTasksIDs[0])!!.fail()
+        DATABASE.get(subTasksIDs[1])!!.kill()
+        DATABASE.get(subTasksIDs[2])!!.kill()
 
         sleep(2)
 
@@ -314,9 +314,9 @@ class SubTasksTests {
 
         assertThrows(TaskStateException::class.java, { tasks.forEach { it.kill() } })
 
-        database.get(subTasksIDs[0])!!.kill()
-        database.get(subTasksIDs[1])!!.kill()
-        database.get(subTasksIDs[2])!!.kill()
+        DATABASE.get(subTasksIDs[0])!!.kill()
+        DATABASE.get(subTasksIDs[1])!!.kill()
+        DATABASE.get(subTasksIDs[2])!!.kill()
 
         sleep(2)
 
@@ -432,7 +432,7 @@ class SubTasksTests {
     @Test
     fun testTaskSubTasksExtraDepth() {
 
-        database.clear()
+        DATABASE.clear()
 
         val list = getTasks(500)
 
@@ -451,7 +451,7 @@ class SubTasksTests {
         assertEquals(300, list[199].getSubTasksLevelsDepth())
         assertEquals(0, list[499].getSubTasksLevelsDepth())
 
-        assertTrue(database.size == 500)
+        assertTrue(DATABASE.size == 500)
 
     }
 

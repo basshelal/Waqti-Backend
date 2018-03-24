@@ -72,10 +72,10 @@ class Task(var title: String) {
 
     // Put this in the Database and make sure this' key is unique
     init {
-        while (database.containsKey(this.taskID)) {
+        while (DATABASE.containsKey(this.taskID)) {
             this.taskID = Math.abs(Random().nextLong())
         }
-        database.put(this.taskID, this)
+        DATABASE.put(this.taskID, this)
     }
 
     /**
@@ -84,7 +84,7 @@ class Task(var title: String) {
      * This is especially useful for [Task.hashCode] and [Task.equals] hence the implementation does not contain as
      * many aspects of this Task as it could.
      *
-     * A Task's bundle is determined by the following:
+     * A Task's Equality Bundle is determined by the following:
      *
      * * [title]
      * * [state]
@@ -103,19 +103,19 @@ class Task(var title: String) {
      * see [java.lang.StringBuilder] (it does not override equals, hence this default implementation)
      *
      * @see HashMap
-     * @return a HashMap with `String` as the Key and `Any` as the Value to represent the bundle which will store the
-     * parts that make up a Task's overall state
+     * @return a HashMap with `String` as the Key and `Any` as the Value to represent the Equality Bundle which will
+     * store the parts that make up a Task's overall state
      */
-    private fun bundle(): HashMap<String, Any> {
+    private fun equalityBundle(): Bundle<String, Any> {
         val bundle = HashMap<String, Any>(20)
-        bundle.put("title", this.title)
-        bundle.put("state", this.state)
-        bundle.put("isFailable", this.isFailable)
-        bundle.put("isKillable", this.isKillable)
-        bundle.put("age", this.age)
-        bundle.put("failedTimes", this.failedTimes)
-        bundle.put("killedTime", this.killedTime)
-        bundle.put("properties", this.getAllProperties())
+        bundle["title"] = this.title
+        bundle["state"] = this.state
+        bundle["isFailable"] = this.isFailable
+        bundle["isKillable"] = this.isKillable
+        bundle["age"] = this.age
+        bundle["failedTimes"] = this.failedTimes
+        bundle["killedTime"] = this.killedTime
+        bundle["properties"] = this.getAllProperties()
         return bundle
     }
 
@@ -185,7 +185,7 @@ class Task(var title: String) {
      * @see ArrayList
      * @see Label
      */
-    var labels: Property<ArrayList<Label>> = DEFAULT_LABEL_PROPERTY
+    var labels: Property<ArrayList<Label>> = DEFAULT_LABELS_PROPERTY
         private set(label) {
             field = label
         }
@@ -1181,6 +1181,7 @@ class Task(var title: String) {
 
     //region Hide Properties
 
+    // TODO: 24-Mar-18 Document this stuff
     fun hideTime() {
         if (isNotConstraint(time)) {
             time = DEFAULT_TIME_PROPERTY
@@ -1201,7 +1202,7 @@ class Task(var title: String) {
 
     fun hideLabel() {
         if (isNotConstraint(labels)) {
-            labels = DEFAULT_LABEL_PROPERTY
+            labels = DEFAULT_LABELS_PROPERTY
         } else throw IllegalStateException("Cannot hide, labels is Constraint")
     }
 
@@ -1294,12 +1295,6 @@ class Task(var title: String) {
         }
     }
 
-    // Send this tasks info to create a template from it
-    fun sendToTemplate() {
-
-    }
-
-
     // If a Task is killed it can be modified because it doesn't matter at all, after killed there is no other State.
     //TODO This isn't entirely true! We need to do something to make sure that Killed Tasks can't be meddled with much
     fun kill() {
@@ -1325,6 +1320,84 @@ class Task(var title: String) {
     }
 
     //endregion Task lifecycle
+
+    //region Template Task
+
+    // TODO: 24-Mar-18 Test and document this thing
+
+    fun toTemplate() = Task.Template.toTemplate(this)
+
+    object Template {
+        private const val initialName = "New Task..."
+        private const val time = "time"
+        private const val duration = "duration"
+        private const val priority = "priority"
+        private const val labels = "labels"
+        private const val optional = "optional"
+        private const val description = "description"
+        private const val checklist = "checklist"
+        private const val deadline = "deadline"
+        private const val target = "target"
+        private const val before = "before"
+        private const val subTasks = "subTasks"
+
+        @Suppress("UNCHECKED_CAST")
+        fun fromTemplate(bundle: Bundle<String, Property<*>>): Task {
+            val task = Task(initialName)
+            if (bundle[time] != DEFAULT_TIME_PROPERTY) {
+                task.setTimeProperty(bundle["time"] as Property<Time>)
+            }
+            if (bundle[duration] != DEFAULT_DURATION_PROPERTY) {
+                task.setDurationProperty(bundle["duration"] as Property<Duration>)
+            }
+            if (bundle[priority] != DEFAULT_PRIORITY_PROPERTY) {
+                task.setPriorityProperty(bundle["priority"] as Property<Priority>)
+            }
+            if (bundle[labels] != DEFAULT_LABELS_PROPERTY) {
+                task.setLabelsProperty(bundle["labels"] as Property<ArrayList<Label>>)
+            }
+            if (bundle[optional] != DEFAULT_OPTIONAL_PROPERTY) {
+                task.setOptionalProperty(bundle["optional"] as Property<Optional>)
+            }
+            if (bundle[description] != DEFAULT_DESCRIPTION_PROPERTY) {
+                task.setDescriptionProperty(bundle["description"] as Property<Description>)
+            }
+            if (bundle[checklist] != DEFAULT_CHECKLIST_PROPERTY) {
+                task.setChecklistProperty(bundle["checklist"] as Property<Checklist>)
+            }
+            if (bundle[deadline] != DEFAULT_DEADLINE_PROPERTY) {
+                task.setDeadlineProperty(bundle["priority"] as Property<LocalDateTime>)
+            }
+            if (bundle[target] != DEFAULT_TARGET_PROPERTY) {
+                task.setTargetProperty(bundle["target"] as Property<Target>)
+            }
+            if (bundle[before] != DEFAULT_BEFORE_PROPERTY) {
+                task.setBeforeProperty(bundle["before"] as Property<TaskID>)
+            }
+            if (bundle[subTasks] != DEFAULT_SUB_TASKS_PROPERTY) {
+                task.setSubTasksProperty(bundle["subTasks"] as Property<ArrayList<TaskID>>)
+            }
+            return task
+        }
+
+        fun toTemplate(task: Task): Bundle<String, Property<*>> {
+            val bundle = Bundle<String, Property<*>>(11)
+            bundle[time] = task.time
+            bundle[duration] = task.duration
+            bundle[priority] = task.priority
+            bundle[labels] = task.labels
+            bundle[optional] = task.optional
+            bundle[description] = task.description
+            bundle[checklist] = task.checklist
+            bundle[deadline] = task.deadline
+            bundle[target] = task.target
+            bundle[before] = task.before
+            bundle[subTasks] = task.subTasks
+            return bundle
+        }
+    }
+
+    //endregion Template Task
 
     //region Concurrency
 
@@ -1361,7 +1434,7 @@ class Task(var title: String) {
 
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
-                .subscribeOn(Concurrent.stateCheckingThread)
+                .subscribeOn(TIME_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
@@ -1422,7 +1495,7 @@ class Task(var title: String) {
 
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
-                .subscribeOn(Concurrent.stateCheckingThread)
+                .subscribeOn(DURATION_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
@@ -1477,7 +1550,7 @@ class Task(var title: String) {
 
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
-                .subscribeOn(Concurrent.stateCheckingThread)
+                .subscribeOn(CHECKLIST_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
@@ -1537,7 +1610,7 @@ class Task(var title: String) {
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .doOnSubscribe { (deadline as Constraint).isMet = true }
-                .subscribeOn(Concurrent.stateCheckingThread)
+                .subscribeOn(DEADLINE_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
@@ -1596,11 +1669,11 @@ class Task(var title: String) {
     private fun beforeConstraintChecking() {
         var done = false
         val originalValue = this.before.value
-        val beforeTask = database[this.before.value]
+        val beforeTask = DATABASE[this.before.value]
 
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
-                .subscribeOn(Concurrent.otherTaskCheckingThread)
+                .subscribeOn(BEFORE_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
@@ -1666,7 +1739,7 @@ class Task(var title: String) {
 
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
-                .subscribeOn(Concurrent.otherTaskCheckingThread)
+                .subscribeOn(SUB_TASKS_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
@@ -1703,24 +1776,24 @@ class Task(var title: String) {
     //region Overriden from kotlin.Any
 
     /**
-     * Returns the hash code of this Task, this is the hash code of this Task's bundle, see [bundle]
+     * Returns the hash code of this Task, this is the hash code of this Task's equalityBundle, see [equalityBundle]
      *
      * @see java.util.AbstractMap.hashCode
      * @see Any.hashCode
      * @return the hash code of this Task
      */
-    override fun hashCode() = bundle().hashCode()
+    override fun hashCode() = equalityBundle().hashCode()
 
     /**
      * Checks whether the given `other` is equal to this Task or not, if `other` is not a Task then returns false, then
-     * determines that the Tasks are equal if and only if their bundles are equal [bundle]
+     * determines that the Tasks are equal if and only if their bundles are equal [equalityBundle]
      *
-     * @see Task.bundle
+     * @see Task.equalityBundle
      * @see Any.equals
-     * @return true if `other` is a Task and its bundle is equal to this Task's bundle, false otherwise
+     * @return true if `other` is a Task and its equalityBundle is equal to this Task's equalityBundle, false otherwise
      */
     override fun equals(other: Any?) =
-            other is Task && other.bundle() == this.bundle()
+            other is Task && other.equalityBundle() == this.equalityBundle()
 
     /**
      * Returns the String representation of this Task, depicted using Task Card syntax which appears as follows:

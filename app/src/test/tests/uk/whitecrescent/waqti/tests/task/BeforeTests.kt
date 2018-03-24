@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
+import uk.whitecrescent.waqti.code.DATABASE
 import uk.whitecrescent.waqti.code.DEFAULT_TASK_ID
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
@@ -15,7 +16,6 @@ import uk.whitecrescent.waqti.code.Task
 import uk.whitecrescent.waqti.code.TaskState
 import uk.whitecrescent.waqti.code.TaskStateException
 import uk.whitecrescent.waqti.code.UNMET
-import uk.whitecrescent.waqti.code.database
 import uk.whitecrescent.waqti.code.sleep
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
@@ -43,7 +43,7 @@ class BeforeTests {
 
         assertFalse(task.before is Constraint)
         assertEquals(beforeTask.taskID, task.before.value)
-        assertEquals(beforeTask, database.get(task.before.value))
+        assertEquals(beforeTask, DATABASE.get(task.before.value))
         assertTrue(task.before.isVisible)
 
 
@@ -62,7 +62,7 @@ class BeforeTests {
 
         assertFalse(task.before is Constraint)
         assertEquals(beforeTask.taskID, task.before.value)
-        assertEquals(beforeTask, database.get(task.before.value))
+        assertEquals(beforeTask, DATABASE.get(task.before.value))
         assertTrue(task.before.isVisible)
 
         task.hideBefore()
@@ -80,7 +80,7 @@ class BeforeTests {
 
         assertFalse(task.before is Constraint)
         assertEquals(beforeTask.taskID, task.before.value)
-        assertEquals(beforeTask, database.get(task.before.value))
+        assertEquals(beforeTask, DATABASE.get(task.before.value))
         assertTrue(task.before.isVisible)
 
         task.hideBefore()
@@ -98,7 +98,7 @@ class BeforeTests {
 
         assertTrue(task.before is Constraint)
         assertEquals(beforeTask.taskID, task.before.value)
-        assertEquals(beforeTask, database.get(task.before.value))
+        assertEquals(beforeTask, DATABASE.get(task.before.value))
         assertTrue(task.before.isVisible)
         assertFalse((task.before as Constraint).isMet)
     }
@@ -114,7 +114,7 @@ class BeforeTests {
 
         assertTrue(task.before is Constraint)
         assertEquals(beforeTask.taskID, task.before.value)
-        assertEquals(beforeTask, database.get(task.before.value))
+        assertEquals(beforeTask, DATABASE.get(task.before.value))
         assertTrue(task.before.isVisible)
         assertFalse((task.before as Constraint).isMet)
     }
@@ -128,7 +128,7 @@ class BeforeTests {
 
         assertTrue(task.before is Constraint)
         assertEquals(beforeTask.taskID, task.before.value)
-        assertEquals(beforeTask, database.get(task.before.value))
+        assertEquals(beforeTask, DATABASE.get(task.before.value))
         assertTrue(task.before.isVisible)
         assertFalse((task.before as Constraint).isMet)
     }
@@ -142,7 +142,7 @@ class BeforeTests {
 
         assertTrue(task.before is Constraint)
         assertEquals(beforeTask.taskID, task.before.value)
-        assertEquals(beforeTask, database.get(task.before.value))
+        assertEquals(beforeTask, DATABASE.get(task.before.value))
         assertTrue(task.before.isVisible)
         assertFalse((task.before as Constraint).isMet)
     }
@@ -199,7 +199,7 @@ class BeforeTests {
 
         assertFalse(task.getTaskState() == TaskState.KILLED)
 
-        database.get(beforeTask.taskID)!!.kill()
+        DATABASE.get(beforeTask.taskID)!!.kill()
 
         sleep(2)
 
@@ -221,7 +221,7 @@ class BeforeTests {
 
         assertFalse(task.getTaskState() == TaskState.KILLED)
 
-        database.get(beforeTask.taskID)!!.fail()
+        DATABASE.get(beforeTask.taskID)!!.fail()
 
         sleep(2)
 
@@ -240,7 +240,7 @@ class BeforeTests {
 
         assertThrows(TaskStateException::class.java, { tasks.forEach { it.kill() } })
 
-        database.get(beforeTask.taskID)!!.kill()
+        DATABASE.get(beforeTask.taskID)!!.kill()
 
         sleep(2)
 
