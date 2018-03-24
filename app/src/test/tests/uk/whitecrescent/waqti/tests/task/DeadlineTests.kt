@@ -21,6 +21,7 @@ import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 import java.time.Duration
 
+@DisplayName("Deadline Tests")
 class DeadlineTests {
 
     @DisplayName("Deadline Default Values")
@@ -243,7 +244,7 @@ class DeadlineTests {
 
         sleep(1)
 
-        val newDeadline = Time.from(now().plusSeconds(2))
+        val newDeadline = Time.from(now().plusSeconds(1))
 
         task.setDeadlineConstraintValue(newDeadline)
         assertEquals(newDeadline, task.deadline.value)

@@ -11,5 +11,3 @@
 * Recurring Tasks!!!
 
 * Do Task Aging
-
-* Properties categorization, meaning we should categorize Properties internally for better understanding and separation of concerns

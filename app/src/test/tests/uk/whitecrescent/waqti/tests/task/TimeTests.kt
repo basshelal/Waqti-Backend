@@ -185,12 +185,12 @@ class TimeTests {
     fun testTaskTimeUnConstraining() {
         val task = testTask()
                 .setTimeConstraintValue(Time.from(now().plusDays(7)))
-        sleep(1)
+        sleep(2)
         assertThrows(TaskStateException::class.java, { task.kill() })
         assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
         task.setTimeProperty((task.time as Constraint).toProperty())
 
-        sleep(1)
+        sleep(2)
 
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
         assertEquals(TaskState.EXISTING, task.getTaskState())

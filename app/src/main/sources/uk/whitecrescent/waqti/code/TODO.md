@@ -1,17 +1,5 @@
 # TODO
-
-* Fix the re-setting problem with the Un-constraining problem on all the Observers and test them and re-document
-
-* Consider the un-constraining problem (I suspect the solution may be simple but better to be safe), the problem: 
-Think about when we un-constrain while it's checking the condition, for example if we have duration as a Constraint
- for a while then before it is met we un-constrain, the checking should end, but I don't think it will, we need to 
- test this extensively
  
-* Consider the Optional issue, should we make it constrainable and give it so much power over Task or keep it simple 
-and keep it the way it is?
- 
-* Finish all Properties with tests and documentation to ensure (as much as possible) they work perfectly as intended
-
 * Ensure the Task lifecycle works with tests and documentation
 
 * Figure out a better way to implement Template Tasks, maybe have a function in Task to get this Task's information 
@@ -28,6 +16,18 @@ specific Tasks etc
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Finish all Properties with tests and documentation to ensure (as much as possible) they work perfectly as intended~~
+
+* ~~Consider the Optional issue, should we make it constrainable and give it so much power over Task or keep it simple 
+and keep it the way it is?~~
+
+* ~~Fix the re-setting problem with the Un-constraining problem on all the Observers and test them and re-document~~
+
+* ~~Consider the un-constraining problem (I suspect the solution may be simple but better to be safe), the problem: 
+Think about when we un-constrain while it's checking the condition, for example if we have duration as a Constraint
+ for a while then before it is met we un-constrain, the checking should end, but I don't think it will, we need to 
+ test this extensively~~
 
 * ~~Test Activity within Tasks, inside a Task, sub-tasks can interact with one another and with the parent, this is 
 tricky but quite useful~~

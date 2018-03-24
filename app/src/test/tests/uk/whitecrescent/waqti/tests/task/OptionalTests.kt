@@ -15,6 +15,7 @@ import uk.whitecrescent.waqti.code.SHOWING
 import uk.whitecrescent.waqti.code.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
+@DisplayName("Optional Tests")
 class OptionalTests {
 
     @DisplayName("Optional Default Values")

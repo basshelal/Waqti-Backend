@@ -16,6 +16,7 @@ import uk.whitecrescent.waqti.code.SHOWING
 import uk.whitecrescent.waqti.code.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
+@DisplayName("Priority Tests")
 class PriorityTests {
 
     //Before All

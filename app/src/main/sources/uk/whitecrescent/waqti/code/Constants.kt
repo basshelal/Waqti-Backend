@@ -5,7 +5,7 @@ import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 // Type Aliases for more readable code
-typealias Description = StringBuilder
+typealias Description = String
 typealias Optional = Boolean
 typealias Target = String
 typealias Time = LocalDateTime
@@ -39,7 +39,7 @@ val DEFAULT_DURATION: Duration = Duration.ZERO
 val DEFAULT_PRIORITY = Priority.getOrCreatePriority("", -1)
 val DEFAULT_LABEL_LIST = arrayListOf<Label>()
 const val DEFAULT_OPTIONAL = MANDATORY
-val DEFAULT_DESCRIPTION = StringBuilder("")
+val DEFAULT_DESCRIPTION = ""
 val DEFAULT_CHECKLIST = Checklist()
 const val DEFAULT_TARGET = ""
 val DEFAULT_DEADLINE: LocalDateTime = LocalDateTime.MAX

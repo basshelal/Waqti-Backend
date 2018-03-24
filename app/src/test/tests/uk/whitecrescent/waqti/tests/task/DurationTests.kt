@@ -247,7 +247,7 @@ class DurationTests {
     @DisplayName("Set Duration Constraint on many Tasks")
     @Test
     fun testTaskSetDurationConstraintOnManyTasks() {
-        val duration = Duration.ofSeconds(3)
+        val duration = Duration.ofSeconds(2)
         val tasks = TestUtils.getTasks(100)
         tasks.forEach { it.setDurationConstraintValue(duration) }
 
@@ -309,7 +309,7 @@ class DurationTests {
         task.setDurationConstraintValue(newDuration)
         assertEquals(newDuration, task.duration.value)
 
-        sleep(3)
+        sleep(4)
 
         task.kill()
         assertEquals(TaskState.KILLED, task.getTaskState())

@@ -8,7 +8,6 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DEFAULT_DESCRIPTION
-import uk.whitecrescent.waqti.code.Description
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
 import uk.whitecrescent.waqti.code.SHOWING
@@ -23,7 +22,7 @@ class DescriptionTests {
     fun testTaskDescriptionDefaultValues() {
         val task = testTask()
         assertFalse(task.description is Constraint)
-        assertEquals(DEFAULT_DESCRIPTION.toString(), task.description.value.toString())
+        assertEquals(DEFAULT_DESCRIPTION, task.description.value)
         assertFalse(task.description.isVisible)
     }
 
@@ -31,10 +30,10 @@ class DescriptionTests {
     @Test
     fun testTaskSetDescriptionProperty() {
         val task = testTask()
-                .setDescriptionProperty(Property(SHOWING, Description("Test Description")))
+                .setDescriptionProperty(Property(SHOWING, "Test Description"))
 
         assertFalse(task.description is Constraint)
-        assertEquals(Description("Test Description").toString(), task.description.value.toString())
+        assertEquals("Test Description", task.description.value)
         assertTrue(task.description.isVisible)
 
 
@@ -46,10 +45,10 @@ class DescriptionTests {
     @Test
     fun testTaskSetDescriptionValue() {
         val task = testTask()
-                .setDescriptionValue(Description("Test Description"))
+                .setDescriptionValue("Test Description")
 
         assertFalse(task.description is Constraint)
-        assertEquals(Description("Test Description").toString(), task.description.value.toString())
+        assertEquals("Test Description", task.description.value)
         assertTrue(task.description.isVisible)
 
         task.hideDescription()
@@ -60,11 +59,11 @@ class DescriptionTests {
     @Test
     fun testTaskSetDescriptionConstraint() {
         val task = testTask()
-                .setDescriptionProperty(Constraint(SHOWING, Description("Test Description"), UNMET))
+                .setDescriptionProperty(Constraint(SHOWING, "Test Description", UNMET))
 
         assertFalse(task.description is Constraint)
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
-        assertEquals(Description("Test Description").toString(), task.description.value.toString())
+        assertEquals("Test Description", task.description.value)
         assertTrue(task.description.isVisible)
         assertThrows(ClassCastException::class.java,
                 { assertTrue((task.description as Constraint).isMet == true) })

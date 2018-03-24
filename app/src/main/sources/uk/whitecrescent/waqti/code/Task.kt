@@ -78,6 +78,47 @@ class Task(var title: String) {
         database.put(this.taskID, this)
     }
 
+    /**
+     * Used to determine the overall state of this Task at this point in time.
+     *
+     * This is especially useful for [Task.hashCode] and [Task.equals] hence the implementation does not contain as
+     * many aspects of this Task as it could.
+     *
+     * A Task's bundle is determined by the following:
+     *
+     * * [title]
+     * * [state]
+     * * [isFailable]
+     * * [isKillable]
+     * * [age]
+     * * [failedTimes]
+     * * [killedTime]
+     * * [getAllProperties], the list of this Task's Properties.
+     *
+     * For [getAllProperties] see [java.util.ArrayList.equals], essentially all Properties must be equal in order for
+     * this to be satisfied see [Property.equals] meaning even the values must be equal, this will differ depending
+     * on the type of value, for example any [LocalDateTime] is equal to another if and only if they are exactly the
+     * same to the nanosecond precision see [LocalDateTime.equals] whereas [StringBuilder] checks for equality using
+     * identity meaning two different StringBuilder instances can have the exact same value and be consider unequal
+     * see [java.lang.StringBuilder] (it does not override equals, hence this default implementation)
+     *
+     * @see HashMap
+     * @return a HashMap with `String` as the Key and `Any` as the Value to represent the bundle which will store the
+     * parts that make up a Task's overall state
+     */
+    private fun bundle(): HashMap<String, Any> {
+        val bundle = HashMap<String, Any>(20)
+        bundle.put("title", this.title)
+        bundle.put("state", this.state)
+        bundle.put("isFailable", this.isFailable)
+        bundle.put("isKillable", this.isKillable)
+        bundle.put("age", this.age)
+        bundle.put("failedTimes", this.failedTimes)
+        bundle.put("killedTime", this.killedTime)
+        bundle.put("properties", this.getAllProperties())
+        return bundle
+    }
+
     //endregion Class Properties
 
     //region Task Properties
@@ -149,8 +190,6 @@ class Task(var title: String) {
             field = label
         }
 
-    //TODO I'm still unsure about having Optional be non-constrainable, it would be a good idea to make it
-    // constrainable but it's quite a difficult task
     /**
      * Shows whether the Task is optional or not.
      *
@@ -626,7 +665,7 @@ class Task(var title: String) {
      * set to
      * @return this Task after setting the Task's labels Property
      */
-    fun setLabelProperty(labelProperty: Property<ArrayList<Label>>): Task {
+    fun setLabelsProperty(labelProperty: Property<ArrayList<Label>>): Task {
         this.labels = Property(labelProperty.isVisible, labelProperty.value)
         return this
     }
@@ -634,28 +673,29 @@ class Task(var title: String) {
     /**
      * Sets this Task's labels Property with the given value and makes the Property showing.
      *
-     * This is a shorthand of writing `setLabelProperty(Property(SHOWING, myLabelList))`.
+     * This is a shorthand of writing `setLabelsProperty(Property(SHOWING, myLabelList))`.
      *
-     * @see Task.setLabelProperty
+     * @see Task.setLabelsProperty
      * @param labels the list of labels that this Task's labels Property will be set to
      * @return this Task after setting the Task's labels Property
      */
-    fun setLabelValue(vararg labels: Label): Task {
-        return setLabelProperty(Property(SHOWING, arrayListOf(*labels)))
+    fun setLabelsValue(vararg labels: Label): Task {
+        return setLabelsProperty(Property(SHOWING, arrayListOf(*labels)))
     }
 
     /**
-     * Adds a label to this Task's labels Property and makes this Task's labels Property showing if it wasn't already.
+     * Adds the passed in labels to this Task's labels Property and makes this Task's labels Property showing if it
+     * wasn't already.
      *
      * @see Label
-     * @param label the label to add to this Task's labels Property
-     * @return this Task after adding the label to the Task's labels Property
+     * @param labels the labels to add to this Task's labels Property
+     * @return this Task after adding the labels to the Task's labels Property
      */
-    fun addLabel(label: Label): Task {
+    fun addLabels(vararg labels: Label): Task {
         if (!this.labels.isVisible) {
             this.labels.isVisible = SHOWING
         }
-        this.labels.value.add(label)
+        this.labels.value.addAll(labels)
         return this
     }
 
@@ -1213,15 +1253,13 @@ class Task(var title: String) {
 
     fun getTaskState() = state
 
-    private fun isExisting() = state == TaskState.EXISTING
-
     fun canKill() = isKillable &&
-            isExisting() &&
+            this.state == TaskState.EXISTING &&
             getAllUnmetAndShowingConstraints().isEmpty()
 
 
     fun canFail() = isFailable &&
-            isExisting()
+            this.state == TaskState.EXISTING
 
     fun canSleep() = getTaskState() == TaskState.FAILED
 
@@ -1274,7 +1312,7 @@ class Task(var title: String) {
         if (state == TaskState.FAILED) {
             throw TaskStateException("Kill unsuccessful, ${this.title} is FAILED", getTaskState())
         }
-        if (!getAllUnmetAndShowingConstraints().isEmpty()) {
+        if (getAllUnmetAndShowingConstraints().isNotEmpty()) {
             throw TaskStateException(
                     "Kill unsuccessful, ${this.title} has unmet Constraints ${this.getAllUnmetAndShowingConstraints()}",
                     getTaskState())
@@ -1640,9 +1678,7 @@ class Task(var title: String) {
                                     done = true
                                 }
                             // SubTasks contains more than 0 failed Tasks
-                                taskIDsToTasks(this.subTasks.value)
-                                        .filter { it.getTaskState() == TaskState.FAILED }
-                                        .isNotEmpty() -> {
+                                taskIDsToTasks(this.subTasks.value).any { it.getTaskState() == TaskState.FAILED } -> {
                                     (subTasks as Constraint).isMet = false
                                     if (canFail()) fail()
                                     done = true
@@ -1666,16 +1702,42 @@ class Task(var title: String) {
 
     //region Overriden from kotlin.Any
 
-    override fun hashCode() =
-            title.hashCode() + getAllShowingProperties().hashCode()
+    /**
+     * Returns the hash code of this Task, this is the hash code of this Task's bundle, see [bundle]
+     *
+     * @see java.util.AbstractMap.hashCode
+     * @see Any.hashCode
+     * @return the hash code of this Task
+     */
+    override fun hashCode() = bundle().hashCode()
 
-    //TODO equality should mean more than just those
+    /**
+     * Checks whether the given `other` is equal to this Task or not, if `other` is not a Task then returns false, then
+     * determines that the Tasks are equal if and only if their bundles are equal [bundle]
+     *
+     * @see Task.bundle
+     * @see Any.equals
+     * @return true if `other` is a Task and its bundle is equal to this Task's bundle, false otherwise
+     */
     override fun equals(other: Any?) =
-            other is Task &&
-                    other.title == this.title &&
-                    other.getTaskState() == this.state &&
-                    other.getAllShowingProperties() == this.getAllShowingProperties()
+            other is Task && other.bundle() == this.bundle()
 
+    /**
+     * Returns the String representation of this Task, depicted using Task Card syntax which appears as follows:
+     * ```
+     * "My Task"
+     * ID: 123456789 isKillable: true isFailable: false state: EXISTING
+     *     P:
+     *         ...
+     *     C:
+     *         ...
+     * ```
+     *
+     * The Properties and Constraints are represented using their toString function. [Property.toString] [Constraint.toString]
+     *
+     * @see Any.toString
+     * @return the String representation of this Task
+     */
     override fun toString(): String {
         val result = StringBuilder("$title\n")
         result.append("ID: $taskID isKillable: $isKillable isFailable: $isFailable state: $state\n")

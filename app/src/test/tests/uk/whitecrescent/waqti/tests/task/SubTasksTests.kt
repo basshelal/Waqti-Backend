@@ -24,6 +24,7 @@ import uk.whitecrescent.waqti.code.toArrayList
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
+@DisplayName("SubTasks Tests")
 class SubTasksTests {
 
     @DisplayName("SubTasks Default Values")

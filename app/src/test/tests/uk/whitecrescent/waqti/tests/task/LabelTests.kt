@@ -61,11 +61,11 @@ class LabelTests {
         assertFalse(task.labels.isVisible)
     }
 
-    @DisplayName("Set Label Property using setLabelProperty")
+    @DisplayName("Set Label Property using setLabelsProperty")
     @Test
     fun testTaskSetLabelProperty() {
         val task = testTask()
-                .setLabelProperty(Property(SHOWING,
+                .setLabelsProperty(Property(SHOWING,
                         arrayListOf(Label.getLabel("TestLabel_0"), Label.getLabel("TestLabel_1"))
                 ))
 
@@ -81,11 +81,11 @@ class LabelTests {
         assertEquals(Property(HIDDEN, DEFAULT_LABEL_LIST), task.labels)
     }
 
-    @DisplayName("Set Label Property using setLabelValue")
+    @DisplayName("Set Label Property using setLabelsValue")
     @Test
     fun testTaskSetLabelValue() {
         val task = testTask()
-                .setLabelValue(
+                .setLabelsValue(
                         Label.getLabel("TestLabel_0"),
                         Label.getLabel("TestLabel_1")
                 )
@@ -107,7 +107,7 @@ class LabelTests {
     @Test
     fun testTaskSetLabelConstraint() {
         val task = testTask()
-                .setLabelProperty(Constraint(SHOWING,
+                .setLabelsProperty(Constraint(SHOWING,
                         arrayListOf(Label.getLabel("TestLabel_0"), Label.getLabel("TestLabel_1"))
                         , UNMET))
 
@@ -124,9 +124,9 @@ class LabelTests {
     @Test
     fun testTaskAddLabel() {
         val task = testTask()
-                .setLabelProperty(Property(SHOWING,
+                .setLabelsProperty(Property(SHOWING,
                         arrayListOf(Label.getLabel("TestLabel_0"), Label.getLabel("TestLabel_1"))
-                )).addLabel(Label.getLabel("TestLabel_2"))
+                )).addLabels(Label.getLabel("TestLabel_2"))
 
         assertFalse(task.labels is Constraint)
         assertTrue(task.labels.value.containsAll(
@@ -149,12 +149,12 @@ class LabelTests {
     @Test
     fun testTaskAddLabelNotShowing() {
         val task = testTask()
-                .setLabelProperty(Property(HIDDEN,
+                .setLabelsProperty(Property(HIDDEN,
                         arrayListOf(Label.getLabel("TestLabel_0"), Label.getLabel("TestLabel_1"))
                 ))
 
         assertFalse(task.labels.isVisible)
-        task.addLabel(Label.getLabel("TestLabel_2"))
+        task.addLabels(Label.getLabel("TestLabel_2"))
         assertTrue(task.labels.isVisible)
 
         assertFalse(task.labels is Constraint)
@@ -178,7 +178,7 @@ class LabelTests {
     @Test
     fun testTaskRemoveLabel() {
         val task = testTask()
-                .setLabelProperty(Property(SHOWING,
+                .setLabelsProperty(Property(SHOWING,
                         arrayListOf(Label.getLabel("TestLabel_0"), Label.getLabel("TestLabel_1"))
                 )).removeLabel(Label.getLabel("TestLabel_1"))
 

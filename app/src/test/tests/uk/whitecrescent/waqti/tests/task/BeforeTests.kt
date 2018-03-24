@@ -20,6 +20,7 @@ import uk.whitecrescent.waqti.code.sleep
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
+@DisplayName("Before Tests")
 class BeforeTests {
 
     @DisplayName("Before Default Values")
@@ -200,7 +201,7 @@ class BeforeTests {
 
         database.get(beforeTask.taskID)!!.kill()
 
-        sleep(1)
+        sleep(2)
 
         task.kill()
 
