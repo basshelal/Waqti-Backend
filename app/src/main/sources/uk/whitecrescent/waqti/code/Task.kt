@@ -16,7 +16,10 @@ class Task(var title: String) {
      * See The Task Lifecycle Documentation for more information
      * @see TaskState
      */
-    private var state = DEFAULT_TASK_STATE
+    var state = DEFAULT_TASK_STATE
+        private set(state) {
+            field = state
+        }
 
     /**
      * Boolean value representing whether it is possible for this Task to be failed at any arbitrary point in time.
@@ -43,6 +46,9 @@ class Task(var title: String) {
      * @see java.util.Random.nextLong
      */
     var taskID = Math.abs(Random().nextLong())
+        private set(taskID) {
+            field = taskID
+        }
 
     /**
      * The point in time at which the duration Property was set, used to calculate duration left by adding the
@@ -421,7 +427,7 @@ class Task(var title: String) {
     fun setTimeProperty(timeProperty: Property<Time>): Task {
         this.time = timeProperty
         if (timeProperty.value.isAfter(now()) && timeProperty is Constraint) {
-            this.state = TaskState.SLEEPING
+            if (canSleep()) sleep()
             makeFailableIfConstraint(timeProperty)
             timeConstraintTimeChecking()
         }
@@ -1252,8 +1258,6 @@ class Task(var title: String) {
 
     //region Task lifecycle
 
-    fun getTaskState() = state
-
     fun canKill() = isKillable &&
             this.state == TaskState.EXISTING &&
             getAllUnmetAndShowingConstraints().isEmpty()
@@ -1262,60 +1266,70 @@ class Task(var title: String) {
     fun canFail() = isFailable &&
             this.state == TaskState.EXISTING
 
-    fun canSleep() = getTaskState() == TaskState.FAILED
+    fun canSleep() = this.state == TaskState.FAILED ||
+            this.state == TaskState.EXISTING
 
     fun fail() {
-        if (state == TaskState.FAILED) {
-            throw TaskStateException("Fail unsuccessful, ${this.title} is already Failed!", getTaskState())
-        }
         if (!isFailable) {
-            throw TaskStateException("Fail unsuccessful, ${this.title} is not Failable", getTaskState())
+            throw TaskStateException("Fail unsuccessful, ${this.title} is not Failable", this.state)
+        }
+        if (state == TaskState.FAILED) {
+            throw TaskStateException("Fail unsuccessful, ${this.title} is already Failed!", this.state)
+        }
+        if (state == TaskState.SLEEPING) {
+            throw TaskStateException("Fail unsuccessful, ${this.title} is Sleeping!", this.state)
+        }
+        if (state == TaskState.KILLED) {
+            throw TaskStateException("Fail unsuccessful, ${this.title} is Killed!", this.state)
         } else if (canFail()) {
             state = TaskState.FAILED
             age++
             failedTimes.add(now())
         } else {
-            throw TaskStateException("Fail unsuccessful, unknown reason, remember only EXISTING tasks can be failed!", getTaskState())
+            throw TaskStateException("Fail unsuccessful, unknown reason, remember only EXISTING tasks can be " +
+                    "failed!", this.state)
         }
     }
 
     fun sleep() {
         if (state == TaskState.SLEEPING) {
-            throw TaskStateException("Sleep unsuccessful, ${this.title} is already Sleeping!", getTaskState())
+            throw TaskStateException("Sleep unsuccessful, ${this.title} is already Sleeping!", this.state)
         }
         if (state == TaskState.KILLED) {
-            throw TaskStateException("Sleep unsuccessful, ${this.title} is Killed!", getTaskState())
-        }
-        if (state == TaskState.EXISTING) {
-            throw TaskStateException("Sleep unsuccessful, ${this.title} is Existing!", getTaskState())
+            throw TaskStateException("Sleep unsuccessful, ${this.title} is Killed!", this.state)
         } else if (canSleep()) {
             state = TaskState.SLEEPING
         } else {
-            throw TaskStateException("Sleep unsuccessful, unknown reason, remember only FAILED tasks can be slept!", getTaskState())
+            throw TaskStateException(
+                    "Sleep unsuccessful, unknown reason, remember only FAILED or EXISTING tasks can be Slept!",
+                    this.state)
         }
     }
 
-    // If a Task is killed it can be modified because it doesn't matter at all, after killed there is no other State.
-    //TODO This isn't entirely true! We need to do something to make sure that Killed Tasks can't be meddled with much
     fun kill() {
-        if (state == TaskState.KILLED) {
-            throw TaskStateException("Kill unsuccessful, ${this.title} is already Killed!", getTaskState())
-        }
         if (!isKillable) {
-            throw TaskStateException("Kill unsuccessful, ${this.title} is not Killable", getTaskState())
+            throw TaskStateException("Kill unsuccessful, ${this.title} is not Killable", this.state)
+        }
+        if (state == TaskState.KILLED) {
+            throw TaskStateException("Kill unsuccessful, ${this.title} is already Killed!", this.state)
         }
         if (state == TaskState.FAILED) {
-            throw TaskStateException("Kill unsuccessful, ${this.title} is FAILED", getTaskState())
+            throw TaskStateException("Kill unsuccessful, ${this.title} is Failed", this.state)
+        }
+        if (state == TaskState.SLEEPING) {
+            throw TaskStateException("Kill unsuccessful, ${this.title} is Sleeping", this.state)
         }
         if (getAllUnmetAndShowingConstraints().isNotEmpty()) {
             throw TaskStateException(
                     "Kill unsuccessful, ${this.title} has unmet Constraints ${this.getAllUnmetAndShowingConstraints()}",
-                    getTaskState())
+                    this.state)
         } else if (canKill()) {
             state = TaskState.KILLED
             killedTime = now()
         } else {
-            throw TaskStateException("Kill unsuccessful, unknown reason, remember only EXISTING tasks can be killed!", getTaskState())
+            throw TaskStateException(
+                    "Kill unsuccessful, unknown reason, remember only EXISTING tasks can be killed!",
+                    this.state)
         }
     }
 
@@ -1610,11 +1624,11 @@ class Task(var title: String) {
                                     throw ConcurrentException("Before Constraint checking failed!" +
                                             " Before is null in database")
                                 }
-                                beforeTask.getTaskState() == TaskState.KILLED -> {
+                                beforeTask.state == TaskState.KILLED -> {
                                     (this.before as Constraint).isMet = true
                                     done = true
                                 }
-                                beforeTask.getTaskState() == TaskState.FAILED -> {
+                                beforeTask.state == TaskState.FAILED -> {
                                     (this.before as Constraint).isMet = false
                                     if (canFail()) fail()
                                     done = true
@@ -1673,14 +1687,14 @@ class Task(var title: String) {
                                     done = true
                                 }
                             // SubTasks contains more than 0 failed Tasks
-                                taskIDsToTasks(this.subTasks.value).any { it.getTaskState() == TaskState.FAILED } -> {
+                                taskIDsToTasks(this.subTasks.value).any { it.state == TaskState.FAILED } -> {
                                     (subTasks as Constraint).isMet = false
                                     if (canFail()) fail()
                                     done = true
                                 }
                             // All SubTasks are killed
                                 taskIDsToTasks(this.subTasks.value)
-                                        .all { it.getTaskState() == TaskState.KILLED } -> {
+                                        .all { it.state == TaskState.KILLED } -> {
                                     (subTasks as Constraint).isMet = true
                                     done = true
                                 }

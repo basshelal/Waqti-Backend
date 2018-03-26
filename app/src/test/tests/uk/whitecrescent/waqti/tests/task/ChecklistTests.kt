@@ -231,7 +231,7 @@ class ChecklistTests {
 
         task.kill()
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
         assertTrue((task.checklist as Constraint).isMet)
     }
 
@@ -254,7 +254,7 @@ class ChecklistTests {
 
         task.kill()
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
         assertTrue((task.checklist as Constraint).isMet)
     }
 
@@ -274,7 +274,7 @@ class ChecklistTests {
 
         task.kill()
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
         assertTrue((task.checklist as Constraint).isMet)
     }
 
@@ -293,7 +293,7 @@ class ChecklistTests {
 
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("Checklist Constraint Re-Set")
@@ -314,7 +314,7 @@ class ChecklistTests {
         sleep(2)
 
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
 

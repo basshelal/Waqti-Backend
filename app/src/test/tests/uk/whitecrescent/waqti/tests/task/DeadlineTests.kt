@@ -135,7 +135,7 @@ class DeadlineTests {
 
         sleep(3)
 
-        assertEquals(TaskState.FAILED, task.getTaskState())
+        assertEquals(TaskState.FAILED, task.state)
         assertFalse((task.deadline as Constraint).isMet)
     }
 
@@ -155,7 +155,7 @@ class DeadlineTests {
         sleep(4)
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        assertEquals(TaskState.FAILED, task.getTaskState())
+        assertEquals(TaskState.FAILED, task.state)
         assertFalse((task.deadline as Constraint).isMet)
 
     }
@@ -176,12 +176,12 @@ class DeadlineTests {
         sleep(3)
         task.kill()
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
         assertTrue((task.deadline as Constraint).isMet)
 
         sleep(3)
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
         assertTrue((task.deadline as Constraint).isMet)
 
     }
@@ -228,12 +228,12 @@ class DeadlineTests {
         sleep(1)
         task.setDeadlineProperty((task.deadline as Constraint).toProperty())
 
-        sleep(1)
+        sleep(2)
 
         assertFalse(task.isFailable)
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("Deadline Constraint Re-Set")
@@ -251,7 +251,7 @@ class DeadlineTests {
 
         sleep(3)
 
-        assertEquals(TaskState.FAILED, task.getTaskState())
+        assertEquals(TaskState.FAILED, task.state)
     }
 
 }

@@ -233,7 +233,7 @@ class SubTasksTests {
 
         task.kill()
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("Kill with SubTasks Constraint")
@@ -251,7 +251,7 @@ class SubTasksTests {
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        assertFalse(task.getTaskState() == TaskState.KILLED)
+        assertFalse(task.state == TaskState.KILLED)
 
         DATABASE.get(subTasksIDs[0])!!.kill()
         DATABASE.get(subTasksIDs[1])!!.kill()
@@ -264,7 +264,7 @@ class SubTasksTests {
 
         task.kill()
 
-        assertTrue(task.getTaskState() == TaskState.KILLED)
+        assertTrue(task.state == TaskState.KILLED)
 
     }
 
@@ -285,7 +285,7 @@ class SubTasksTests {
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        assertFalse(task.getTaskState() == TaskState.KILLED)
+        assertFalse(task.state == TaskState.KILLED)
 
         DATABASE.get(subTasksIDs[0])!!.fail()
         DATABASE.get(subTasksIDs[1])!!.kill()
@@ -295,7 +295,7 @@ class SubTasksTests {
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        assertTrue(task.getTaskState() == TaskState.FAILED)
+        assertTrue(task.state == TaskState.FAILED)
 
     }
 
@@ -498,7 +498,7 @@ class SubTasksTests {
 
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("SubTasks Constraint Re-Set")
@@ -530,7 +530,7 @@ class SubTasksTests {
         sleep(2)
 
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
 }

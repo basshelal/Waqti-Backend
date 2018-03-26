@@ -19,10 +19,11 @@ action or lack of action from either time or the user or both.
 
 Tasks have a lifecycle. A Task may be in only one of the of the following lifecycle states at a given point in time.
 
-    -> S -> E -> K
-       ^   /
-        \ v
-         F 
+    --> E --> K
+       ^ \
+      /   \
+     v     v
+     S <-- F
 
 ### SLEEPING
 

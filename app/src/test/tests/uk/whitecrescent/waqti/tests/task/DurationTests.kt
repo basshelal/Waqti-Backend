@@ -240,7 +240,7 @@ class DurationTests {
 
         task.kill()
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
         assertTrue((task.duration as Constraint).isMet)
     }
 
@@ -291,7 +291,7 @@ class DurationTests {
 
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("Duration Constraint Re-Set")
@@ -312,7 +312,7 @@ class DurationTests {
         sleep(4)
 
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
 

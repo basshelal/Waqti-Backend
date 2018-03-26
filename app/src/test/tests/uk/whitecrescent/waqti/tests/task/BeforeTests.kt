@@ -185,7 +185,7 @@ class BeforeTests {
 
         task.kill()
 
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("Kill with Before Constraint")
@@ -197,7 +197,7 @@ class BeforeTests {
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        assertFalse(task.getTaskState() == TaskState.KILLED)
+        assertFalse(task.state == TaskState.KILLED)
 
         DATABASE.get(beforeTask.taskID)!!.kill()
 
@@ -205,7 +205,7 @@ class BeforeTests {
 
         task.kill()
 
-        assertTrue(task.getTaskState() == TaskState.KILLED)
+        assertTrue(task.state == TaskState.KILLED)
 
     }
 
@@ -219,7 +219,7 @@ class BeforeTests {
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        assertFalse(task.getTaskState() == TaskState.KILLED)
+        assertFalse(task.state == TaskState.KILLED)
 
         DATABASE.get(beforeTask.taskID)!!.fail()
 
@@ -227,7 +227,7 @@ class BeforeTests {
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
-        assertTrue(task.getTaskState() == TaskState.FAILED)
+        assertTrue(task.state == TaskState.FAILED)
 
     }
 
@@ -264,7 +264,7 @@ class BeforeTests {
 
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("Before Constraint Re-Set")
@@ -288,7 +288,7 @@ class BeforeTests {
         sleep(2)
 
         task.kill()
-        assertEquals(TaskState.KILLED, task.getTaskState())
+        assertEquals(TaskState.KILLED, task.state)
     }
 
 }

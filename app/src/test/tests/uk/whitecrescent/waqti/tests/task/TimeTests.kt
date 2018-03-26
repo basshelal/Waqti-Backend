@@ -138,7 +138,7 @@ class TimeTests {
         val task = testTask()
                 .setTimeConstraint(Constraint(SHOWING, time, UNMET))
 
-        assertTrue(task.getTaskState() == TaskState.SLEEPING)
+        assertTrue(task.state == TaskState.SLEEPING)
         assertTrue(task.isFailable)
         assertTrue(task.time is Constraint)
         assertEquals(time, task.time.value)
@@ -147,7 +147,7 @@ class TimeTests {
 
         sleep(4)
 
-        assertTrue(task.getTaskState() == TaskState.EXISTING)
+        assertTrue(task.state == TaskState.EXISTING)
         assertTrue((task.time as Constraint).isMet)
     }
 
@@ -157,14 +157,14 @@ class TimeTests {
         val time = now().minusSeconds(2)
         val task = testTask()
                 .setTimeConstraint(Constraint(SHOWING, time, UNMET))
-        assertTrue(task.getTaskState() != TaskState.SLEEPING)
+        assertTrue(task.state != TaskState.SLEEPING)
         assertFalse(task.isFailable)
         assertTrue(task.time is Constraint)
         assertEquals(time, task.time.value)
         assertTrue(task.time.isVisible)
         assertFalse((task.time as Constraint).isMet)
         sleep(3)
-        assertTrue(task.getTaskState() == TaskState.EXISTING)
+        assertTrue(task.state == TaskState.EXISTING)
     }
 
     @DisplayName("Set Time Constraint after now on many Tasks")
@@ -176,7 +176,7 @@ class TimeTests {
 
         sleep(4)
 
-        tasks.forEach { assertTrue(it.getTaskState() == TaskState.EXISTING) }
+        tasks.forEach { assertTrue(it.state == TaskState.EXISTING) }
 
     }
 
@@ -186,6 +186,7 @@ class TimeTests {
         val task = testTask()
                 .setTimeConstraintValue(Time.from(now().plusDays(7)))
         sleep(2)
+        assertEquals(TaskState.SLEEPING, task.state)
         assertThrows(TaskStateException::class.java, { task.kill() })
         assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
         task.setTimeProperty((task.time as Constraint).toProperty())
@@ -193,7 +194,7 @@ class TimeTests {
         sleep(2)
 
         assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
-        assertEquals(TaskState.EXISTING, task.getTaskState())
+        assertEquals(TaskState.EXISTING, task.state)
     }
 
     @DisplayName("Time Constraint Re-Set")
@@ -213,7 +214,7 @@ class TimeTests {
 
         sleep(3)
 
-        assertEquals(TaskState.EXISTING, task.getTaskState())
+        assertEquals(TaskState.EXISTING, task.state)
     }
 
 }

@@ -62,7 +62,7 @@ class OtherTests {
         val task1 = Task("Task").setTimeConstraintValue(time)
         val task2 = Task("Task")
 
-        assertNotEquals(task1.getTaskState(), task2.getTaskState())
+        assertNotEquals(task1.state, task2.state)
 
         assertFalse(task1 == task2)
         task2.setTimeConstraintValue(time)
@@ -352,7 +352,7 @@ class OtherTests {
         assertEquals("${task.title}\nID: ${task.taskID} " +
                 "isKillable: ${task.isKillable} " +
                 "isFailable: ${task.isFailable} " +
-                "state: ${task.getTaskState()}\n\tP:\n\tC:\n", task.toString())
+                "state: ${task.state}\n\tP:\n\tC:\n", task.toString())
     }
 
 }
