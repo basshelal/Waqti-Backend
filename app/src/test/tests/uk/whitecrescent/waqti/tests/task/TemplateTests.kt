@@ -23,7 +23,7 @@ import uk.whitecrescent.waqti.code.Priority
 import uk.whitecrescent.waqti.code.TEMPLATE_DATABASE
 import uk.whitecrescent.waqti.code.Task
 import uk.whitecrescent.waqti.code.Time
-import uk.whitecrescent.waqti.code.tasksToTaskIDs
+import uk.whitecrescent.waqti.code.taskIDs
 import java.time.Duration
 
 @DisplayName("Template Task Tests")
@@ -105,7 +105,7 @@ class TemplateTests {
                 .setDeadlinePropertyValue(Time.of(2018, 6, 6, 6, 6))
                 .setTargetConstraintValue("My Target")
                 .setBeforePropertyValue(Task("Before"))
-                .setSubTasksPropertyValue(tasksToTaskIDs(Task("SubTask1"), Task("SubTask2")))
+                .setSubTasksPropertyValue(arrayListOf(Task("SubTask1"), Task("SubTask2")).taskIDs())
 
 
         val taskFromTemplate = Task("From Template").fromTemplate(task)

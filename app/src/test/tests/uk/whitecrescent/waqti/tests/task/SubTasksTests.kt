@@ -18,9 +18,8 @@ import uk.whitecrescent.waqti.code.TaskState
 import uk.whitecrescent.waqti.code.TaskStateException
 import uk.whitecrescent.waqti.code.UNMET
 import uk.whitecrescent.waqti.code.sleep
-import uk.whitecrescent.waqti.code.taskIDsToTasks
-import uk.whitecrescent.waqti.code.tasksToTaskIDs
-import uk.whitecrescent.waqti.code.toArrayList
+import uk.whitecrescent.waqti.code.taskIDs
+import uk.whitecrescent.waqti.code.tasks
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
@@ -44,7 +43,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
         val task = testTask()
                 .setSubTasksProperty(
                         Property(SHOWING, subTasksIDs)
@@ -67,7 +66,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
         val task = testTask()
                 .setSubTasksPropertyValue(
                         subTasksIDs
@@ -89,7 +88,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val task = testTask()
                 .setSubTasksProperty(
@@ -110,7 +109,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val task = testTask()
                 .setSubTasksConstraint(
@@ -131,7 +130,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val task = testTask()
                 .setSubTasksConstraintValue(subTasksIDs)
@@ -150,7 +149,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val task = testTask()
                 .setSubTasksPropertyValue(subTasksIDs)
@@ -169,7 +168,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val task = testTask()
                 .setSubTasksConstraint(
@@ -192,7 +191,7 @@ class SubTasksTests {
                 Task("SubTask3")
         )
 
-        val subTasksIDs = ArrayList(tasksToTaskIDs(task.getSubTasksList()))
+        val subTasksIDs = task.getSubTasksList().taskIDs()
 
         assertFalse(task.subTasks is Constraint)
         assertEquals(subTasksIDs, task.subTasks.value)
@@ -212,9 +211,9 @@ class SubTasksTests {
                 Task("SubTask3")
         )
 
-        val subTasksIDs = ArrayList(tasksToTaskIDs(task.getSubTasksList()))
+        val subTasksIDs = task.getSubTasksList().taskIDs()
         assertEquals(subTasksIDs, task.getSubTasksIDsList())
-        assertEquals(taskIDsToTasks(subTasksIDs), task.getSubTasksList())
+        assertEquals(subTasksIDs.tasks(), task.getSubTasksList())
 
     }
 
@@ -226,7 +225,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val task = testTask()
                 .setSubTasksPropertyValue(subTasksIDs)
@@ -244,7 +243,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val task = testTask()
                 .setSubTasksConstraintValue(subTasksIDs)
@@ -276,7 +275,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         subTasks.forEach { it.isFailable = true }
 
@@ -307,7 +306,7 @@ class SubTasksTests {
                 Task("SubTask2"),
                 Task("SubTask3")
         )
-        val subTasksIDs = ArrayList(tasksToTaskIDs(subTasks))
+        val subTasksIDs = subTasks.taskIDs()
 
         val tasks = getTasks(1000)
         tasks.forEach { it.setSubTasksConstraintValue(subTasksIDs) }
@@ -349,11 +348,11 @@ class SubTasksTests {
         assertEquals(1, level3.subTasks.value.size)
         assertEquals(0, level4.subTasks.value.size)
 
-        val rootSubTasks = taskIDsToTasks(root.subTasks.value)
-        val level1SubTasks = taskIDsToTasks(rootSubTasks.first().subTasks.value)
-        val level2SubTasks = taskIDsToTasks(level1SubTasks.first().subTasks.value)
-        val level3SubTasks = taskIDsToTasks(level2SubTasks.first().subTasks.value)
-        val level4SubTasks = taskIDsToTasks(level3SubTasks.first().subTasks.value)
+        val rootSubTasks = root.subTasks.value.tasks()
+        val level1SubTasks = rootSubTasks.first().subTasks.value.tasks()
+        val level2SubTasks = level1SubTasks.first().subTasks.value.tasks()
+        val level3SubTasks = level2SubTasks.first().subTasks.value.tasks()
+        val level4SubTasks = level3SubTasks.first().subTasks.value.tasks()
 
         assertEquals("Level1", rootSubTasks.first().title)
         assertEquals("Level2", level1SubTasks.first().title)
@@ -382,7 +381,7 @@ class SubTasksTests {
         val subTask1 = Task("SubTask1")
 
         val subTask2 = Task("SubTask2")
-                .setSubTasksConstraintValue(tasksToTaskIDs(subTask2SubTask).toArrayList())
+                .setSubTasksConstraintValue(arrayListOf(subTask2SubTask).taskIDs())
                 .setBeforeConstraintValue(subTask1)
 
         val subTask3 = Task("SubTask3")
@@ -393,13 +392,13 @@ class SubTasksTests {
 
         val task = testTask()
                 .setSubTasksConstraintValue(
-                        tasksToTaskIDs(
+                        arrayListOf(
                                 subTask0,
                                 subTask1,
                                 subTask2,
                                 subTask3
 
-                        ).toArrayList()
+                        ).taskIDs()
                 )
 
         assertThrows(TaskStateException::class.java, { task.kill() })
@@ -487,7 +486,7 @@ class SubTasksTests {
         )
 
         val task = testTask()
-                .setSubTasksConstraintValue(tasksToTaskIDs(subTasks))
+                .setSubTasksConstraintValue(subTasks.taskIDs())
 
         sleep(1)
         assertThrows(TaskStateException::class.java, { task.kill() })
@@ -511,7 +510,7 @@ class SubTasksTests {
         )
 
         val task = testTask()
-                .setSubTasksConstraintValue(tasksToTaskIDs(subTasks))
+                .setSubTasksConstraintValue(subTasks.taskIDs())
 
         sleep(1)
         assertThrows(TaskStateException::class.java, { task.kill() })
@@ -522,8 +521,8 @@ class SubTasksTests {
                 Task("New SubTask2")
         )
 
-        task.setSubTasksConstraintValue(tasksToTaskIDs(newSubTasks))
-        assertEquals(tasksToTaskIDs(newSubTasks), task.subTasks.value)
+        task.setSubTasksConstraintValue(newSubTasks.taskIDs())
+        assertEquals(newSubTasks.taskIDs(), task.subTasks.value)
 
         newSubTasks.forEach { it.kill() }
 
@@ -539,14 +538,14 @@ class SubTasksTests {
         val subTasks = arrayListOf(Task("SubTask1"), Task("SubTask2"))
 
         val task = testTask()
-                .setSubTasksPropertyValue(tasksToTaskIDs(subTasks))
-        assertEquals(tasksToTaskIDs(subTasks), task.subTasks.value)
+                .setSubTasksPropertyValue(subTasks.taskIDs())
+        assertEquals(subTasks.taskIDs(), task.subTasks.value)
 
         task.hideSubTasks()
         assertEquals(DEFAULT_SUB_TASKS_PROPERTY, task.subTasks)
 
-        task.setSubTasksConstraintValue(tasksToTaskIDs(subTasks))
-        assertEquals(tasksToTaskIDs(subTasks), task.subTasks.value)
+        task.setSubTasksConstraintValue(subTasks.taskIDs())
+        assertEquals(subTasks.taskIDs(), task.subTasks.value)
         assertThrows(IllegalStateException::class.java, { task.hideSubTasks() })
     }
 

@@ -23,41 +23,25 @@ fun setGracePeriod(duration: Duration) {
     GRACE_PERIOD = duration
 }
 
-fun tasksToTaskIDs(tasks: List<Task>): ArrayList<TaskID> {
-    val ids = ArrayList<TaskID>(tasks.size)
-    tasks.forEach { ids.add(it.taskID) }
-    return ids
-}
+// Extensions
 
-fun tasksToTaskIDs(vararg tasks: Task): ArrayList<TaskID> {
-    val ids = ArrayList<TaskID>(tasks.size)
-    tasks.forEach { ids.add(it.taskID) }
-    return ids
-}
-
-fun taskIDsToTasks(taskIDs: List<TaskID>): ArrayList<Task> {
-    val tasks = ArrayList<Task>(taskIDs.size)
-    for (id in taskIDs) {
-        val task = DATABASE.get(id)
-        if (task != null) {
-            tasks.add(task)
-        }
-    }
-    return tasks
-}
-
-fun taskIDsToTasks(vararg taskIDs: TaskID): ArrayList<Task> {
-    val tasks = ArrayList<Task>(taskIDs.size)
-    for (id in taskIDs) {
-        val task = DATABASE.get(id)
-        if (task != null) {
-            tasks.add(task)
-        }
-    }
-    return tasks
-}
-
-// Extension
 fun <T> List<T>.toArrayList(): ArrayList<T> {
     return this as ArrayList<T>
+}
+
+fun ArrayList<Task>.taskIDs(): ArrayList<TaskID> {
+    val ids = ArrayList<TaskID>(this.size)
+    this.forEach { ids.add(it.taskID) }
+    return ids
+}
+
+fun ArrayList<TaskID>.tasks(): ArrayList<Task> {
+    val tasks = ArrayList<Task>(this.size)
+    for (id in this) {
+        val task = DATABASE.get(id)
+        if (task != null) {
+            tasks.add(task)
+        }
+    }
+    return tasks
 }

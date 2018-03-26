@@ -213,7 +213,7 @@ class TimeTests {
         task.setTimeConstraintValue(newTime)
         assertEquals(newTime, task.time.value)
 
-        sleep(3)
+        sleep(4)
 
         assertEquals(TaskState.EXISTING, task.state)
     }

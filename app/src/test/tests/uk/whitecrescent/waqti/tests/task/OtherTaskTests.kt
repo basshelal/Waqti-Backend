@@ -15,11 +15,11 @@ import uk.whitecrescent.waqti.code.Task
 import uk.whitecrescent.waqti.code.Time
 import uk.whitecrescent.waqti.code.now
 import uk.whitecrescent.waqti.code.sleep
-import uk.whitecrescent.waqti.code.tasksToTaskIDs
+import uk.whitecrescent.waqti.code.taskIDs
 import java.time.Duration
 
 @DisplayName("Other Task Tests")
-class OtherTests {
+class OtherTaskTests {
 
     @DisplayName("Task Title")
     @Test
@@ -326,7 +326,7 @@ class OtherTests {
     @DisplayName("Task Equals SubTasks")
     @Test
     fun testTaskEqualsSubTasks() {
-        val subTasks = tasksToTaskIDs(Task("SubTask1"), Task("SubTask2"))
+        val subTasks = arrayListOf(Task("SubTask1"), Task("SubTask2")).taskIDs()
         val task1 = Task("Task").setSubTasksPropertyValue(subTasks)
         val task2 = Task("Task").setSubTasksPropertyValue(subTasks)
 

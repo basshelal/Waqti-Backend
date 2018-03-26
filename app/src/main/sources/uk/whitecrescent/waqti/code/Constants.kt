@@ -12,7 +12,6 @@ val TEMPLATE_DATABASE = ConcurrentHashMap<String, Bundle<String, Property<*>>>()
 
 // Type Aliases for more readable code
 typealias Description = String
-
 typealias Optional = Boolean
 typealias Target = String
 typealias Time = LocalDateTime

@@ -6,7 +6,7 @@ import java.time.LocalDateTime
 import java.util.Random
 
 //TODO make sure KDoc is up to date
-class Task(var title: String) {
+class Task(var title: String = "") {
 
     //region Class Properties
 
@@ -55,6 +55,8 @@ class Task(var title: String) {
      * decreases.
      */
     private var timeDurationSet = DEFAULT_TIME
+
+    // TODO: 26-Mar-18 Document this stuff!
 
     // A Task ages when it is failed
     var age = 0
@@ -1138,9 +1140,10 @@ class Task(var title: String) {
      */
     fun addSubTasks(vararg tasks: Task): Task {
         val value = this.subTasks.value
-        value.addAll(tasksToTaskIDs(tasks.toList()))
+        val list = ArrayList<Task>()
+        list.addAll(tasks)
+        value.addAll(list.taskIDs())
         setSubTasksProperty(Property(SHOWING, value))
-
         return this
     }
 
@@ -1159,7 +1162,7 @@ class Task(var title: String) {
      * @return the ArrayList of Tasks of the sub-Tasks of this Task
      */
     fun getSubTasksList(): ArrayList<Task> {
-        return ArrayList(taskIDsToTasks(this.subTasks.value))
+        return ArrayList(this.subTasks.value.tasks())
     }
 
     /**
@@ -1172,7 +1175,7 @@ class Task(var title: String) {
         return if (task.subTasks.value.isEmpty()) {
             0
         } else {
-            for (task0 in taskIDsToTasks(task.subTasks.value)) {
+            for (task0 in task.subTasks.value.tasks()) {
                 list.add(getSubTasksLevelsDepth(task0) + 1)
             }
             list.max() as Int
@@ -1183,7 +1186,6 @@ class Task(var title: String) {
 
     //region Hide Properties
 
-    // TODO: 26-Mar-18 Write tests to assertThrows when hiding when a Constraint
     // TODO: 24-Mar-18 Document this stuff
     fun hideTime() {
         if (isNotConstraint(time)) {
@@ -1685,13 +1687,13 @@ class Task(var title: String) {
                                     done = true
                                 }
                             // SubTasks contains more than 0 failed Tasks
-                                taskIDsToTasks(this.subTasks.value).any { it.state == TaskState.FAILED } -> {
+                                this.subTasks.value.tasks().any { it.state == TaskState.FAILED } -> {
                                     (subTasks as Constraint).isMet = false
                                     if (canFail()) fail()
                                     done = true
                                 }
                             // All SubTasks are killed
-                                taskIDsToTasks(this.subTasks.value)
+                                this.subTasks.value.tasks()
                                         .all { it.state == TaskState.KILLED } -> {
                                     (subTasks as Constraint).isMet = true
                                     done = true
