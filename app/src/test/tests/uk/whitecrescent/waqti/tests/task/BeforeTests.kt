@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DATABASE
+import uk.whitecrescent.waqti.code.DEFAULT_BEFORE_PROPERTY
 import uk.whitecrescent.waqti.code.DEFAULT_TASK_ID
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
@@ -289,6 +290,23 @@ class BeforeTests {
 
         task.kill()
         assertEquals(TaskState.KILLED, task.state)
+    }
+
+    @DisplayName("Before Hiding")
+    @Test
+    fun testBeforeHiding() {
+        val before = Task("Before")
+
+        val task = testTask()
+                .setBeforePropertyValue(before)
+        assertEquals(before.taskID, task.before.value)
+
+        task.hideBefore()
+        assertEquals(DEFAULT_BEFORE_PROPERTY, task.before)
+
+        task.setBeforeConstraintValue(before)
+        assertEquals(before.taskID, task.before.value)
+        assertThrows(IllegalStateException::class.java, { task.hideBefore() })
     }
 
 }

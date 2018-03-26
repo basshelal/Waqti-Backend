@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DEFAULT_DEADLINE
+import uk.whitecrescent.waqti.code.DEFAULT_DEADLINE_PROPERTY
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
 import uk.whitecrescent.waqti.code.SHOWING
@@ -252,6 +253,23 @@ class DeadlineTests {
         sleep(3)
 
         assertEquals(TaskState.FAILED, task.state)
+    }
+
+    @DisplayName("Deadline Hiding")
+    @Test
+    fun testDeadlineHiding() {
+        val deadline = Time.from(now().plusDays(7))
+
+        val task = testTask()
+                .setDeadlinePropertyValue(deadline)
+        assertEquals(deadline, task.deadline.value)
+
+        task.hideDeadline()
+        assertEquals(DEFAULT_DEADLINE_PROPERTY, task.deadline)
+
+        task.setDeadlineConstraintValue(deadline)
+        assertEquals(deadline, task.deadline.value)
+        assertThrows(IllegalStateException::class.java, { task.hideDeadline() })
     }
 
 }

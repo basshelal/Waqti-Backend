@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DEFAULT_DURATION
+import uk.whitecrescent.waqti.code.DEFAULT_DURATION_PROPERTY
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
 import uk.whitecrescent.waqti.code.SHOWING
@@ -315,5 +316,21 @@ class DurationTests {
         assertEquals(TaskState.KILLED, task.state)
     }
 
+    @DisplayName("Duration Hiding")
+    @Test
+    fun testDurationHiding() {
+        val duration = Duration.ofDays(7)
+
+        val task = testTask()
+                .setDurationPropertyValue(duration)
+        assertEquals(duration, task.duration.value)
+
+        task.hideDuration()
+        assertEquals(DEFAULT_DURATION_PROPERTY, task.duration)
+
+        task.setDurationConstraintValue(duration)
+        assertEquals(duration, task.duration.value)
+        assertThrows(IllegalStateException::class.java, { task.hideDuration() })
+    }
 
 }

@@ -533,4 +533,21 @@ class SubTasksTests {
         assertEquals(TaskState.KILLED, task.state)
     }
 
+    @DisplayName("SubTasks Hiding")
+    @Test
+    fun testSubTasksHiding() {
+        val subTasks = arrayListOf(Task("SubTask1"), Task("SubTask2"))
+
+        val task = testTask()
+                .setSubTasksPropertyValue(tasksToTaskIDs(subTasks))
+        assertEquals(tasksToTaskIDs(subTasks), task.subTasks.value)
+
+        task.hideSubTasks()
+        assertEquals(DEFAULT_SUB_TASKS_PROPERTY, task.subTasks)
+
+        task.setSubTasksConstraintValue(tasksToTaskIDs(subTasks))
+        assertEquals(tasksToTaskIDs(subTasks), task.subTasks.value)
+        assertThrows(IllegalStateException::class.java, { task.hideSubTasks() })
+    }
+
 }

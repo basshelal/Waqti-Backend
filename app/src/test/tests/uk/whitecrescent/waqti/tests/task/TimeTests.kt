@@ -8,6 +8,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DEFAULT_TIME
+import uk.whitecrescent.waqti.code.DEFAULT_TIME_PROPERTY
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
 import uk.whitecrescent.waqti.code.SHOWING
@@ -215,6 +216,23 @@ class TimeTests {
         sleep(3)
 
         assertEquals(TaskState.EXISTING, task.state)
+    }
+
+    @DisplayName("Time Hiding")
+    @Test
+    fun testTimeHiding() {
+        val time = Time.from(now().plusDays(7))
+
+        val task = testTask()
+                .setTimePropertyValue(time)
+        assertEquals(time, task.time.value)
+
+        task.hideTime()
+        assertEquals(DEFAULT_TIME_PROPERTY, task.time)
+
+        task.setTimeConstraintValue(time)
+        assertEquals(time, task.time.value)
+        assertThrows(IllegalStateException::class.java, { task.hideTime() })
     }
 
 }

@@ -1,5 +1,6 @@
 package uk.whitecrescent.waqti.tests.task
 
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DEFAULT_TARGET
+import uk.whitecrescent.waqti.code.DEFAULT_TARGET_PROPERTY
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.Property
 import uk.whitecrescent.waqti.code.SHOWING
@@ -122,5 +124,22 @@ class TargetTests {
         assertEquals("Test Target", task.target.value)
         assertTrue(task.target.isVisible)
         assertFalse((task.target as Constraint).isMet)
+    }
+
+    @DisplayName("Target Hiding")
+    @Test
+    fun testTargetHiding() {
+        val target = "Target"
+
+        val task = testTask()
+                .setTargetPropertyValue(target)
+        assertEquals(target, task.target.value)
+
+        task.hideTarget()
+        assertEquals(DEFAULT_TARGET_PROPERTY, task.target)
+
+        task.setTargetConstraintValue(target)
+        assertEquals(target, task.target.value)
+        Assertions.assertThrows(IllegalStateException::class.java, { task.hideTarget() })
     }
 }

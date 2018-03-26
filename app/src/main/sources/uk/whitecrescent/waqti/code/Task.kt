@@ -46,9 +46,7 @@ class Task(var title: String) {
      * @see java.util.Random.nextLong
      */
     var taskID = Math.abs(Random().nextLong())
-        private set(taskID) {
-            field = taskID
-        }
+        private set
 
     /**
      * The point in time at which the duration Property was set, used to calculate duration left by adding the
@@ -66,9 +64,7 @@ class Task(var title: String) {
 
     // The times a task has been failed
     var failedTimes = arrayListOf<Time>()
-        private set(failedTimes) {
-            field = failedTimes
-        }
+        private set
 
     // The time a task is killed
     var killedTime = DEFAULT_TIME
@@ -1187,6 +1183,7 @@ class Task(var title: String) {
 
     //region Hide Properties
 
+    // TODO: 26-Mar-18 Write tests to assertThrows when hiding when a Constraint
     // TODO: 24-Mar-18 Document this stuff
     fun hideTime() {
         if (isNotConstraint(time)) {
@@ -1257,6 +1254,7 @@ class Task(var title: String) {
     //endregion Hide Properties
 
     //region Task lifecycle
+    // TODO: 26-Mar-18 Document this stuff really well
 
     fun canKill() = isKillable &&
             this.state == TaskState.EXISTING &&
@@ -1376,14 +1374,14 @@ class Task(var title: String) {
                             when {
                                 this.time !is Constraint -> {
                                     makeNonFailableIfNoConstraints()
-                                    this.state = TaskState.EXISTING
+                                    if (this.state == TaskState.SLEEPING) this.state = TaskState.EXISTING
                                     done = true
                                 }
                                 this.time.value != originalValue -> {
                                     done = true
                                 }
                                 now().isAfter(this.time.value) -> {
-                                    this.state = TaskState.EXISTING
+                                    if (this.state == TaskState.SLEEPING) this.state = TaskState.EXISTING
                                     if (this.time is Constraint && (this.time as Constraint).isMet != MET) {
                                         (this.time as Constraint).isMet = MET
                                     }

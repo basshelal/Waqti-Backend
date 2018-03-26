@@ -1,13 +1,10 @@
 # TODO
  
-* Relative Time like tomorrow, next week etc
- 
-* Ensure the Task lifecycle works with tests and documentation
-
-* Figure out a better way to implement Template Tasks, maybe have a function in Task to get this Task's information 
-and save it as a Template Task, using a state just for Template Tasks is a bad idea
+* Finish documentation inside Task class
 
 * Write stories tests to test as many possible scenarios, here we try to write tests to break the thing
+
+* Relative Time like tomorrow, next week etc
 
 * Priority collisions are not done on the Task level, they are done on the List level, specifically TimedLists which 
 will check all their elements and see for collisions
@@ -18,6 +15,11 @@ specific Tasks etc
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Figure out a better way to implement Template Tasks, maybe have a function in Task to get this Task's information 
+and save it as a Template Task, using a state just for Template Tasks is a bad idea~~
+
+* ~~Ensure the Task lifecycle works with tests and documentation~~
 
 * ~~Finish all Properties with tests and documentation to ensure (as much as possible) they work perfectly as intended~~
 

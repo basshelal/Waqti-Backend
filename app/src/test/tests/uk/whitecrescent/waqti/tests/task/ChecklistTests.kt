@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Checklist
 import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.DEFAULT_CHECKLIST
+import uk.whitecrescent.waqti.code.DEFAULT_CHECKLIST_PROPERTY
 import uk.whitecrescent.waqti.code.HIDDEN
 import uk.whitecrescent.waqti.code.ListItem
 import uk.whitecrescent.waqti.code.Property
@@ -317,5 +318,21 @@ class ChecklistTests {
         assertEquals(TaskState.KILLED, task.state)
     }
 
+    @DisplayName("Checklist Hiding")
+    @Test
+    fun testChecklistHiding() {
+        val checklist = Checklist("ZERO", "ONE")
+
+        val task = testTask()
+                .setChecklistPropertyValue(checklist)
+        assertEquals(checklist, task.checklist.value)
+
+        task.hideChecklist()
+        assertEquals(DEFAULT_CHECKLIST_PROPERTY, task.checklist)
+
+        task.setChecklistConstraintValue(checklist)
+        assertEquals(checklist, task.checklist.value)
+        assertThrows(IllegalStateException::class.java, { task.hideChecklist() })
+    }
 
 }
