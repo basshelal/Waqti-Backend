@@ -2,6 +2,8 @@
  
 * Finish Timer, we will use this to have duration work better
 
+* Make Bundle a "first class citizen"
+
 * Fix Task Duration with Timer setting
 
 * Write stories tests to test as many possible scenarios, here we try to write tests to break the thing
@@ -11,7 +13,10 @@
 * Anonymous Tasks is a good idea that can be done on the List level by checking that the passed in real Task matches 
 the Anonymous Task's Properties, this would be something similar to template in a way
 
-* Think of a way to implement Moments, if they're even that useful!
+* Moments would be like reminders
+
+* Tuples, an ordering of Tasks by using each Task's before Property, by default it's just Properties, but there will 
+be a method to Constrain all Tasks
 
 * Priority collisions are not done on the Task level, they are done on the List level, specifically TimedLists which 
 will check all their elements and see for collisions
@@ -19,7 +24,7 @@ will check all their elements and see for collisions
 * Collections like Tuples, Lists, TimedLists, Boards and maybe others, TodayList, PriorityList Lists that allow only 
 specific Tasks etc
 
--------------------------------------------------------------------------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------------------------------------------
 
 # Done
 
@@ -30,7 +35,8 @@ and save it as a Template Task, using a state just for Template Tasks is a bad i
 
 * ~~Ensure the Task lifecycle works with tests and documentation~~
 
-* ~~Finish all Properties with tests and documentation to ensure (as much as possible) they work perfectly as intended~~
+* ~~Finish all Properties with tests and documentation to ensure (as much as possible) they work perfectly as 
+intended~~
 
 * ~~Consider the Optional issue, should we make it constrainable and give it so much power over Task or keep it simple 
 and keep it the way it is?~~
@@ -46,8 +52,9 @@ Think about when we un-constrain while it's checking the condition, for example 
 tricky but quite useful~~
 
 * ~~Concurrent Constraint checking to transition between states in the lifecycle,
- meaning for example if deadline is a Constraint then there must be something that constantly checks the time to compare the current time 
- with the deadline time and when they are equal to act accordingly, in this case to fail the task.~~
+ meaning for example if deadline is a Constraint then there must be something that constantly checks the time to 
+ compare the current time with the deadline time and when they are equal to act accordingly, in this case to fail 
+ the task.~~
 
 * ~~Deadline has the problem that if you kill before the deadline then deadline is an unmet Constraint and you can't 
 kill at all! Maybe we disregard deadline from being one of the Constraints to be met before killing. Deadline must be
@@ -60,10 +67,10 @@ cancel the effects of all the others? Let Optional be a descriptor only and not 
 * ~~Stop using JSON!~~
 
 * ~~Based on Concurrent stuff, check which state we make the default,
- WAITING should be the default since a Task is waiting to be relevant, however this can be an option?
-  Maybe we make Task be EXISTING and then if Time is set then it can change to WAITING, then when that time passes it will be EXISTING,
-  so the default state does not matter as much as having effective concurrent checking of Task's state (as in 
-  condition) in time.~~
+WAITING should be the default since a Task is waiting to be relevant, however this can be an option?
+Maybe we make Task be EXISTING and then if Time is set then it can change to WAITING, then when that time passes it
+will be EXISTING, so the default state does not matter as much as having effective concurrent checking of Task's 
+state (as in condition) in time.~~
 
 * ~~When Task is given a Constraint we must change it to being failable automatically (this may also require Rx)~~
 
@@ -75,7 +82,8 @@ Task since there are ambiguities with Task Properties and Constraints and how a 
 * ~~We need to define which Properties can be Constraints and which can't and the behaviours when Properties are 
 allowed to be Constraints, why should Description be a Constraint??~~
 
-* ~~Task Failing Sub-cycle (Failing, Sleeping and back to Existing (Waiting)) needs concurrent time checking, maybe we use Rx for this~~
+* ~~Task Failing Sub-cycle (Failing, Sleeping and back to Existing (Waiting)) needs concurrent time checking, maybe 
+we use Rx for this~~
 
 * ~~Organize tests properly~~
 

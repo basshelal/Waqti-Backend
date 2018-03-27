@@ -73,6 +73,9 @@ class Task(var title: String = "") {
             field = killedTime
         }
 
+    // Used for Duration Constraint
+    private val timer = Timer()
+
     // Put this in the Database and make sure this' key is unique
     init {
         while (DATABASE.containsKey(this.taskID)) {
@@ -505,7 +508,6 @@ class Task(var title: String = "") {
         timeDurationSet = now()
         if (durationProperty is Constraint) {
             makeFailableIfConstraint(durationProperty)
-            durationConstraintTimeChecking() // TODO: 27-Mar-18 get rid of this and make it use the Timer
         }
         return this
     }
@@ -524,8 +526,7 @@ class Task(var title: String = "") {
         if (duration.value == DEFAULT_DURATION) {
             throw IllegalStateException("Duration not set!")
         } else {
-            val timeDue = timeDurationSet.plus(duration.value)
-            return Duration.between(now(), timeDue)
+            return duration.value.minus(timer.duration)
         }
     }
 
@@ -1358,6 +1359,31 @@ class Task(var title: String = "") {
 
     //endregion Task lifecycle
 
+    //region Timer
+
+    // Timer is independent of Duration Constraint, but Duration Constraint needs the timer to run to be MET
+
+    fun startTimer() {
+        timer.start()
+        if (duration is Constraint) {
+            durationConstraintTimerChecking()
+        }
+    }
+
+    fun pauseTimer() = timer.pause()
+
+    fun stopTimer() = timer.stop()
+
+    fun timerDuration() = timer.duration
+
+    fun timerIsRunning() = timer.running
+
+    fun timerIsPaused() = timer.paused
+
+    fun timerIsStopped() = timer.stopped
+
+    //endregion Timer
+
     //region Concurrency
 
     /**
@@ -1447,10 +1473,9 @@ class Task(var title: String = "") {
      * @see Task.setTimeProperty
      * @throws ConcurrentException if the Observer's `onError` is called for any reasons
      */
-    private fun durationConstraintTimeChecking() {
+    private fun durationConstraintTimerChecking() {
         val originalValue = this.duration.value
         var done = false
-        val minimumTime = now().plus(this.duration.value)
 
         Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
@@ -1465,8 +1490,11 @@ class Task(var title: String = "") {
                                 this.duration.value != originalValue -> {
                                     done = true
                                 }
-                                now().isAfter(minimumTime) -> {
-                                    if (this.duration is Constraint && (this.duration as Constraint).isMet != MET) {
+                                this.timer.stopped -> {
+                                    done = true
+                                }
+                                timer.duration >= this.duration.value -> {
+                                    if (this.duration is Constraint && !(this.duration as Constraint).isMet) {
                                         (this.duration as Constraint).isMet = MET
                                     }
                                     done = true
@@ -1474,10 +1502,11 @@ class Task(var title: String = "") {
                             }
                         },
                         {
-                            throw ConcurrentException("Duration Constraint time checking failed!")
+                            throw ConcurrentException("Duration Constraint timer checking failed!")
                         }
                 )
     }
+
 
     // TODO: 26-Mar-18 Have a timer to do duration checking
 

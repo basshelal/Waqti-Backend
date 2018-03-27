@@ -17,7 +17,6 @@ import uk.whitecrescent.waqti.code.TaskState
 import uk.whitecrescent.waqti.code.TaskStateException
 import uk.whitecrescent.waqti.code.TimeUnit
 import uk.whitecrescent.waqti.code.UNMET
-import uk.whitecrescent.waqti.code.now
 import uk.whitecrescent.waqti.code.sleep
 import uk.whitecrescent.waqti.tests.TestUtils
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
@@ -237,6 +236,8 @@ class DurationTests {
         assertFalse((task.duration as Constraint).isMet)
         assertThrows(TaskStateException::class.java, { task.kill() })
 
+        task.startTimer()
+
         sleep(4)
 
         task.kill()
@@ -250,24 +251,15 @@ class DurationTests {
     fun testTaskSetDurationConstraintOnManyTasks() {
         val duration = Duration.ofSeconds(2)
         val tasks = TestUtils.getTasks(100)
-        tasks.forEach { it.setDurationConstraintValue(duration) }
+        tasks.forEach {
+            it.setDurationConstraintValue(duration)
+            it.startTimer()
+        }
 
         sleep(4)
 
         tasks.forEach { it.kill() }
 
-    }
-
-    @DisplayName("Get Duration Left")
-    @Test
-    fun testTaskGetDurationLeft() {
-        val timeDue = now().plusSeconds(3)
-
-        val task = testTask()
-                .setDurationConstraintValue(Duration.ofSeconds(3))
-        sleep(1)
-
-        assertEquals(Duration.between(now(), timeDue).seconds, task.getDurationLeft().seconds)
     }
 
     @DisplayName("Get Duration Left Default")
@@ -283,10 +275,17 @@ class DurationTests {
         val task = testTask()
                 .setDurationConstraintValue(Duration.ofDays(7))
 
+        task.startTimer()
+
         sleep(1)
         assertThrows(TaskStateException::class.java, { task.kill() })
         assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
         task.setDurationProperty((task.duration as Constraint).toProperty())
+
+        task.stopTimer()
+        assertTrue(!task.timerIsRunning())
+
+        task.startTimer()
 
         sleep(1)
 
@@ -301,14 +300,20 @@ class DurationTests {
         val task = testTask()
                 .setDurationConstraintValue(Duration.ofDays(7))
 
+        task.startTimer()
+
         sleep(1)
         assertThrows(TaskStateException::class.java, { task.kill() })
         assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
 
         val newDuration = Duration.ofSeconds(2)
 
+        task.stopTimer()
+
         task.setDurationConstraintValue(newDuration)
         assertEquals(newDuration, task.duration.value)
+
+        task.startTimer()
 
         sleep(4)
 
@@ -331,6 +336,76 @@ class DurationTests {
         task.setDurationConstraintValue(duration)
         assertEquals(duration, task.duration.value)
         assertThrows(IllegalStateException::class.java, { task.hideDuration() })
+    }
+
+    @DisplayName("Task Timer Independently")
+    @Test
+    fun testTaskTimer() {
+        val task = testTask()
+
+        task.startTimer()
+        assertTrue(task.timerIsRunning())
+        assertFalse(task.timerIsPaused())
+        assertFalse(task.timerIsStopped())
+
+        sleep(2)
+
+        task.pauseTimer()
+
+        assertTrue(task.timerIsPaused())
+        assertFalse(task.timerIsRunning())
+        assertFalse(task.timerIsStopped())
+
+        assertTrue(task.timerDuration().seconds >= 1.999 || task.timerDuration().seconds <= 2.001)
+
+        task.startTimer()
+
+        sleep(2)
+
+        assertTrue(task.timerDuration().seconds >= 3.999 || task.timerDuration().seconds <= 4.001)
+
+        task.stopTimer()
+        assertTrue(task.timerIsStopped())
+        assertFalse(task.timerIsRunning())
+        assertFalse(task.timerIsPaused())
+
+        assertEquals(0, task.timerDuration().seconds)
+
+    }
+
+    @DisplayName("Task Duration Constraint without Timer")
+    @Test
+    fun testTaskDurationConstraintWithoutTimer() {
+        val task = testTask()
+                .setDurationConstraintValue(Duration.ofSeconds(2))
+        assertTrue(task.timerIsStopped())
+        assertFalse(task.timerIsRunning())
+
+        sleep(4)
+
+        assertFalse((task.duration as Constraint).isMet)
+        assertTrue(task.getAllUnmetAndShowingConstraints().isNotEmpty())
+        assertThrows(TaskStateException::class.java, { task.kill() })
+
+    }
+
+    @DisplayName("Task Duration reset with Timer stop")
+    @Test
+    fun testTaskDurationReset() {
+        val task = testTask()
+                .setDurationConstraintValue(Duration.ofSeconds(2))
+
+        sleep(2)
+
+        assertEquals(Duration.ofSeconds(2), task.getDurationLeft())
+
+        task.startTimer()
+
+        sleep(1)
+
+        task.stopTimer()
+
+        assertEquals(Duration.ofSeconds(2), task.getDurationLeft())
     }
 
 }

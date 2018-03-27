@@ -8,16 +8,19 @@ import java.util.concurrent.TimeUnit
 class Timer {
 
     private val thread = Schedulers.newThread()
-    private val timePeriod = 1L
+    private val timePeriod = 100L
     private val timeUnit = TimeUnit.MILLISECONDS
 
-    private var stopped = true
-    private var paused = false
-    private var running = false
+    var stopped = true
+        private set
+    var paused = false
+        private set
+    var running = false
+        private set
 
     private var lastTime = now()
 
-    var duration = Duration.ZERO
+    var duration: Duration = Duration.ZERO
         private set
 
     private val timer = Observable

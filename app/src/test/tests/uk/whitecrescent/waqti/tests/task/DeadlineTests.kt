@@ -134,7 +134,7 @@ class DeadlineTests {
         assertTrue(task.deadline.isVisible)
         assertFalse((task.deadline as Constraint).isMet)
 
-        sleep(3)
+        sleep(4)
 
         assertEquals(TaskState.FAILED, task.state)
         assertFalse((task.deadline as Constraint).isMet)
