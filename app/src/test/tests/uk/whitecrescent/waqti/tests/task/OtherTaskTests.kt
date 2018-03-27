@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.code.Checklist
+import uk.whitecrescent.waqti.code.Constraint
 import uk.whitecrescent.waqti.code.Label
 import uk.whitecrescent.waqti.code.MANDATORY
 import uk.whitecrescent.waqti.code.OPTIONAL
@@ -118,6 +119,7 @@ class OtherTaskTests {
 
         task1.fail()
 
+        assertTrue(task1.age == 1)
         assertNotEquals(task1.age, task2.age)
         assertNotEquals(task1.failedTimes, task2.failedTimes)
 
@@ -353,6 +355,76 @@ class OtherTaskTests {
                 "isKillable: ${task.isKillable} " +
                 "isFailable: ${task.isFailable} " +
                 "state: ${task.state}\n\tP:\n\tC:\n", task.toString())
+    }
+
+    @DisplayName("Task UnConstrainAll")
+    @Test
+    fun testTaskUnConstrainAll() {
+        val beforeTask = Task("Before")
+        val subTask1 = Task("SubTask1")
+        val subTask2 = Task("SubTask2")
+
+        val task = Task("My Task")
+                .setTimePropertyValue(Time.of(2018, 5, 5, 5, 5))
+                .setDurationPropertyValue(Duration.ofMinutes(30))
+                .setPriorityValue(Priority.getOrCreatePriority("Priority", 5))
+                .setLabelsValue(Label.getOrCreateLabel("Label1"), Label.getOrCreateLabel("Label2"))
+                .setOptionalValue(OPTIONAL)
+                .setDescriptionValue("Description")
+                .setChecklistPropertyValue(Checklist("ZERO", "ONE", "TWO"))
+                .setDeadlinePropertyValue(Time.of(2018, 6, 6, 6, 6))
+                .setTargetConstraintValue("My Target")
+                .setBeforePropertyValue(beforeTask)
+                .setSubTasksPropertyValue(arrayListOf(subTask1, subTask2).taskIDs())
+
+        task.unConstrainAll()
+
+        assertTrue(task.getAllShowingConstraints().isEmpty())
+        assertTrue(task.getAllUnmetAndShowingConstraints().isEmpty())
+
+        assertFalse(task.time is Constraint)
+        assertEquals(Time.of(2018, 5, 5, 5, 5), task.time.value)
+        assertTrue(task.time.isVisible)
+
+        assertFalse(task.duration is Constraint)
+        assertEquals(Duration.ofMinutes(30), task.duration.value)
+        assertTrue(task.duration.isVisible)
+
+        assertFalse(task.priority is Constraint)
+        assertEquals(Priority.getOrCreatePriority("Priority", 5), task.priority.value)
+        assertTrue(task.priority.isVisible)
+
+        assertFalse(task.labels is Constraint)
+        assertEquals(arrayListOf(Label.getOrCreateLabel("Label1"), Label.getOrCreateLabel("Label2")), task.labels.value)
+        assertTrue(task.labels.isVisible)
+
+        assertFalse(task.optional is Constraint)
+        assertEquals(OPTIONAL, task.optional.value)
+        assertTrue(task.optional.isVisible)
+
+        assertFalse(task.description is Constraint)
+        assertEquals("Description", task.description.value)
+        assertTrue(task.description.isVisible)
+
+        assertFalse(task.checklist is Constraint)
+        assertEquals(Checklist("ZERO", "ONE", "TWO"), task.checklist.value)
+        assertTrue(task.checklist.isVisible)
+
+        assertFalse(task.deadline is Constraint)
+        assertEquals(Time.of(2018, 6, 6, 6, 6), task.deadline.value)
+        assertTrue(task.deadline.isVisible)
+
+        assertFalse(task.target is Constraint)
+        assertEquals("My Target", task.target.value)
+        assertTrue(task.target.isVisible)
+
+        assertFalse(task.before is Constraint)
+        assertEquals(beforeTask.taskID, task.before.value)
+        assertTrue(task.before.isVisible)
+
+        assertFalse(task.subTasks is Constraint)
+        assertEquals(arrayListOf(subTask1, subTask2).taskIDs(), task.subTasks.value)
+        assertTrue(task.subTasks.isVisible)
     }
 
 }

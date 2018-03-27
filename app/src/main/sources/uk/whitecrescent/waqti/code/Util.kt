@@ -1,9 +1,6 @@
 package uk.whitecrescent.waqti.code
 
 import java.time.Duration
-import java.time.LocalDateTime
-
-fun now() = LocalDateTime.now()
 
 fun sleep(seconds: Int) = Thread.sleep((seconds) * 1000L)
 

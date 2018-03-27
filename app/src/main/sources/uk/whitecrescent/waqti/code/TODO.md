@@ -1,10 +1,17 @@
 # TODO
  
-* Finish documentation inside Task class
+* Finish Timer, we will use this to have duration work better
+
+* Fix Task Duration with Timer setting
 
 * Write stories tests to test as many possible scenarios, here we try to write tests to break the thing
 
-* Relative Time like tomorrow, next week etc
+* Finish documentation inside Task class
+
+* Anonymous Tasks is a good idea that can be done on the List level by checking that the passed in real Task matches 
+the Anonymous Task's Properties, this would be something similar to template in a way
+
+* Think of a way to implement Moments, if they're even that useful!
 
 * Priority collisions are not done on the Task level, they are done on the List level, specifically TimedLists which 
 will check all their elements and see for collisions
@@ -15,6 +22,8 @@ specific Tasks etc
 -------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Relative Time like tomorrow, next week etc~~
 
 * ~~Figure out a better way to implement Template Tasks, maybe have a function in Task to get this Task's information 
 and save it as a Template Task, using a state just for Template Tasks is a bad idea~~

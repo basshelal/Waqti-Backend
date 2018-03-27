@@ -65,8 +65,7 @@ class Task(var title: String = "") {
         }
 
     // The times a task has been failed
-    var failedTimes = arrayListOf<Time>()
-        private set
+    val failedTimes = arrayListOf<Time>()
 
     // The time a task is killed
     var killedTime = DEFAULT_TIME
@@ -398,6 +397,21 @@ class Task(var title: String = "") {
      */
     private fun isNotConstraint(property: Property<*>) = property !is Constraint
 
+    fun unConstrainAll(): Task {
+        if (time is Constraint) time = (time as Constraint).toProperty()
+        if (duration is Constraint) duration = (duration as Constraint).toProperty()
+        if (priority is Constraint) priority = (priority as Constraint).toProperty()
+        if (labels is Constraint) labels = (labels as Constraint).toProperty()
+        if (optional is Constraint) optional = (optional as Constraint).toProperty()
+        if (description is Constraint) description = (description as Constraint).toProperty()
+        if (checklist is Constraint) checklist = (checklist as Constraint).toProperty()
+        if (deadline is Constraint) deadline = (deadline as Constraint).toProperty()
+        if (target is Constraint) target = (target as Constraint).toProperty()
+        if (before is Constraint) before = (before as Constraint).toProperty()
+        if (subTasks is Constraint) subTasks = (subTasks as Constraint).toProperty()
+        return this
+    }
+
     //endregion Task Properties Functions
 
     //region Property setters for chaining
@@ -491,7 +505,7 @@ class Task(var title: String = "") {
         timeDurationSet = now()
         if (durationProperty is Constraint) {
             makeFailableIfConstraint(durationProperty)
-            durationConstraintTimeChecking()
+            durationConstraintTimeChecking() // TODO: 27-Mar-18 get rid of this and make it use the Timer
         }
         return this
     }
@@ -1147,6 +1161,15 @@ class Task(var title: String = "") {
         return this
     }
 
+    fun addSubTasksConstraint(vararg tasks: Task): Task {
+        val value = this.subTasks.value
+        val list = ArrayList<Task>()
+        list.addAll(tasks)
+        value.addAll(list.taskIDs())
+        setSubTasksProperty(Constraint(SHOWING, value, UNMET))
+        return this
+    }
+
     /**
      * Gets the ArrayList of TaskIDs of the sub-Tasks of this Task
      *
@@ -1455,6 +1478,8 @@ class Task(var title: String = "") {
                         }
                 )
     }
+
+    // TODO: 26-Mar-18 Have a timer to do duration checking
 
     /**
      * Checks this Task's checklist Property value (the actual checklist) on the `stateCheckingThread` to see if all
