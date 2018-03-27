@@ -1,15 +1,23 @@
 package uk.whitecrescent.waqti.tests.task
 
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.Checklist
-import uk.whitecrescent.waqti.code.Label
-import uk.whitecrescent.waqti.code.MANDATORY
-import uk.whitecrescent.waqti.code.Priority
-import uk.whitecrescent.waqti.code.Task
-import uk.whitecrescent.waqti.code.TaskStateException
-import uk.whitecrescent.waqti.code.today
+import uk.whitecrescent.waqti.now
+import uk.whitecrescent.waqti.sleep
+import uk.whitecrescent.waqti.task.Checklist
+import uk.whitecrescent.waqti.task.Constraint
+import uk.whitecrescent.waqti.task.Label
+import uk.whitecrescent.waqti.task.MANDATORY
+import uk.whitecrescent.waqti.task.MET
+import uk.whitecrescent.waqti.task.Priority
+import uk.whitecrescent.waqti.task.Task
+import uk.whitecrescent.waqti.task.TaskState
+import uk.whitecrescent.waqti.task.TaskStateException
+import uk.whitecrescent.waqti.tasks
+import uk.whitecrescent.waqti.today
+import java.time.Duration
 
 // TODO: 27-Mar-18 Finish this too
 @DisplayName("Task Stories")
@@ -23,11 +31,61 @@ class TaskStories {
                 .setOptionalValue(MANDATORY)
                 .setTargetConstraintValue("Find clear idea of how to structure system for Project")
 
+        // simulate time has come
+        task.setTimeConstraintValue(now().minusSeconds(30))
+
+        sleep(2)
+
+        assertEquals(TaskState.EXISTING, task.state)
+        assertThrows(TaskStateException::class.java, { task.kill() })
+
+        (task.target as Constraint).isMet = MET
+
+        task.kill()
+
+        assertEquals(TaskState.KILLED, task.state)
     }
 
     @DisplayName("Story 2")
     @Test
     fun testStory2() {
+        val eatTask = Task("Have Breakfast")
+                .setTimePropertyValue(today().atTime(9, 0))
+
+        val meditateTask = Task("Meditate after food")
+                .setBeforeConstraintValue(eatTask)
+                .setTimeConstraintValue(today().atTime(10, 0))
+                .setDurationConstraintValue(Duration.ofMinutes(10))
+                .setOptionalValue(MANDATORY)
+
+        // simulate eat is done and meditate time is here
+        eatTask.kill()
+        meditateTask.setTimeConstraintValue(now().minusMinutes(10))
+
+        sleep(2)
+
+        assertEquals(TaskState.EXISTING, meditateTask.state)
+        assertThrows(TaskStateException::class.java, { meditateTask.kill() })
+
+        // shorten duration for testing
+        meditateTask.setDurationConstraintValue(Duration.ofSeconds(2))
+
+        sleep(2)
+
+        assertThrows(TaskStateException::class.java, { meditateTask.kill() })
+
+        meditateTask.startTimer()
+
+        sleep(4)
+
+        meditateTask.kill()
+
+        assertEquals(TaskState.KILLED, meditateTask.state)
+    }
+
+    @DisplayName("Story 3")
+    @Test
+    fun testStory3() {
 
         val task = Task("Finish Software Engineering Assignment 1")
                 .setDeadlineConstraintValue(today().plusDays(7).atTime(16, 0))
@@ -47,6 +105,23 @@ class TaskStories {
                 )
 
         assertThrows(TaskStateException::class.java, { task.kill() })
-        // TODO: 26-Mar-18 Test Time and Duration together, will they work together ?
+
+        task.subTasks.value.tasks()[0].checklist.value.checkItem(0)
+        task.subTasks.value.tasks()[0].checklist.value.checkItem(1)
+
+        sleep(1)
+
+        task.subTasks.value.tasks()[0].kill()
+        task.subTasks.value.tasks()[1].kill()
+        task.subTasks.value.tasks()[2].kill()
+
+        //simulate time has gone past deadline for last subTask
+        task.subTasks.value.tasks()[3].setDeadlineConstraintValue(now().minusMinutes(30))
+
+        sleep(2)
+
+        assertEquals(TaskState.FAILED, task.subTasks.value.tasks()[3].state)
+        assertEquals(TaskState.FAILED, task.state)
+
     }
 }

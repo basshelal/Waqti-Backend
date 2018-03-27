@@ -6,17 +6,17 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.Checklist
-import uk.whitecrescent.waqti.code.Constraint
-import uk.whitecrescent.waqti.code.Label
-import uk.whitecrescent.waqti.code.MANDATORY
-import uk.whitecrescent.waqti.code.OPTIONAL
-import uk.whitecrescent.waqti.code.Priority
-import uk.whitecrescent.waqti.code.Task
-import uk.whitecrescent.waqti.code.Time
-import uk.whitecrescent.waqti.code.now
-import uk.whitecrescent.waqti.code.sleep
-import uk.whitecrescent.waqti.code.taskIDs
+import uk.whitecrescent.waqti.now
+import uk.whitecrescent.waqti.sleep
+import uk.whitecrescent.waqti.task.Checklist
+import uk.whitecrescent.waqti.task.Constraint
+import uk.whitecrescent.waqti.task.Label
+import uk.whitecrescent.waqti.task.MANDATORY
+import uk.whitecrescent.waqti.task.OPTIONAL
+import uk.whitecrescent.waqti.task.Priority
+import uk.whitecrescent.waqti.task.Task
+import uk.whitecrescent.waqti.task.Time
+import uk.whitecrescent.waqti.taskIDs
 import java.time.Duration
 
 @DisplayName("Other Task Tests")

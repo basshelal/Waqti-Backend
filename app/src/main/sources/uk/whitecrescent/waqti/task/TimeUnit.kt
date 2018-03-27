@@ -1,4 +1,4 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 import java.time.Duration
 

@@ -1,4 +1,4 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 class Constraint<V>(override var isVisible: Boolean, override val value: V, var isMet: Boolean) : Property<V>(isVisible, value) {
 

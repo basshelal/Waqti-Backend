@@ -1,4 +1,4 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 class TaskStateException(string: String, state: TaskState) : IllegalStateException("$string\n State: $state")
 

@@ -7,19 +7,20 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.Constraint
-import uk.whitecrescent.waqti.code.DEFAULT_DURATION
-import uk.whitecrescent.waqti.code.DEFAULT_DURATION_PROPERTY
-import uk.whitecrescent.waqti.code.HIDDEN
-import uk.whitecrescent.waqti.code.Property
-import uk.whitecrescent.waqti.code.SHOWING
-import uk.whitecrescent.waqti.code.TaskState
-import uk.whitecrescent.waqti.code.TaskStateException
-import uk.whitecrescent.waqti.code.TimeUnit
-import uk.whitecrescent.waqti.code.UNMET
-import uk.whitecrescent.waqti.code.sleep
+import uk.whitecrescent.waqti.sleep
+import uk.whitecrescent.waqti.task.Constraint
+import uk.whitecrescent.waqti.task.DEFAULT_DURATION
+import uk.whitecrescent.waqti.task.DEFAULT_DURATION_PROPERTY
+import uk.whitecrescent.waqti.task.HIDDEN
+import uk.whitecrescent.waqti.task.Property
+import uk.whitecrescent.waqti.task.SHOWING
+import uk.whitecrescent.waqti.task.TaskState
+import uk.whitecrescent.waqti.task.TaskStateException
+import uk.whitecrescent.waqti.task.TimeUnit
+import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.today
 import java.time.Duration
 
 @DisplayName("Duration Tests")
@@ -406,6 +407,55 @@ class DurationTests {
         task.stopTimer()
 
         assertEquals(Duration.ofSeconds(2), task.getDurationLeft())
+    }
+
+    @DisplayName("Task start Duration when SLEEPING")
+    @Test
+    fun testTaskStartDurationWhenSLEEPING() {
+        val task = testTask()
+                .setTimeConstraintValue(today().plusDays(1).atTime(16, 0))
+                .setDurationConstraintValue(Duration.ofSeconds(2))
+
+        assertThrows(IllegalStateException::class.java, { task.startTimer() })
+
+        sleep(4)
+
+        assertEquals(Duration.ofSeconds(2), task.getDurationLeft())
+    }
+
+    @DisplayName("Task start Duration when KILLED")
+    @Test
+    fun testTaskStartDurationWhenKILLED() {
+        val task = testTask()
+
+        task.kill()
+
+        task.setDurationConstraintValue(Duration.ofSeconds(2))
+
+        assertThrows(IllegalStateException::class.java, { task.startTimer() })
+
+        sleep(4)
+
+        assertEquals(Duration.ofSeconds(2), task.getDurationLeft())
+        assertEquals(TaskState.KILLED, task.state)
+    }
+
+    @DisplayName("Task start Duration when FAILED")
+    @Test
+    fun testTaskStartDurationWhenFAILED() {
+        val task = testTask()
+        task.isFailable = true
+
+        task.fail()
+
+        task.setDurationConstraintValue(Duration.ofSeconds(2))
+
+        assertThrows(IllegalStateException::class.java, { task.startTimer() })
+
+        sleep(4)
+
+        assertEquals(Duration.ofSeconds(2), task.getDurationLeft())
+        assertEquals(TaskState.FAILED, task.state)
     }
 
 }

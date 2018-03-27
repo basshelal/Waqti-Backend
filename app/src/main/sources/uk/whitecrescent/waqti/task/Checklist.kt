@@ -1,4 +1,4 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 data class ListItem(val value: String, var isChecked: Boolean = false)
 

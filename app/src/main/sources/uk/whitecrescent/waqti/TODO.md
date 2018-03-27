@@ -1,10 +1,4 @@
 # TODO
- 
-* Finish Timer, we will use this to have duration work better
-
-* Make Bundle a "first class citizen"
-
-* Fix Task Duration with Timer setting
 
 * Write stories tests to test as many possible scenarios, here we try to write tests to break the thing
 
@@ -27,6 +21,12 @@ specific Tasks etc
 -----------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Fix Task Duration with Timer setting~~
+
+* ~~Make Bundle a "first class citizen"~~
+
+* ~~Finish Timer, we will use this to have duration work better~~
 
 * ~~Relative Time like tomorrow, next week etc~~
 

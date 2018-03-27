@@ -1,7 +1,8 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import uk.whitecrescent.waqti.now
 import java.time.Duration
 import java.util.concurrent.TimeUnit
 

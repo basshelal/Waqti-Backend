@@ -1,6 +1,6 @@
 package uk.whitecrescent.waqti.tests
 
-import uk.whitecrescent.waqti.code.Task
+import uk.whitecrescent.waqti.task.Task
 
 object TestUtils {
 

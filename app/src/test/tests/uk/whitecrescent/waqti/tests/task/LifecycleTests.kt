@@ -4,11 +4,11 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.TaskState
-import uk.whitecrescent.waqti.code.TaskStateException
-import uk.whitecrescent.waqti.code.Time
-import uk.whitecrescent.waqti.code.now
-import uk.whitecrescent.waqti.code.sleep
+import uk.whitecrescent.waqti.now
+import uk.whitecrescent.waqti.sleep
+import uk.whitecrescent.waqti.task.TaskState
+import uk.whitecrescent.waqti.task.TaskStateException
+import uk.whitecrescent.waqti.task.Time
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Lifecycle Tests")

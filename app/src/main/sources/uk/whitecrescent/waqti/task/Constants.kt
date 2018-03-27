@@ -1,4 +1,4 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 import io.reactivex.schedulers.Schedulers
 import java.time.Duration
@@ -21,8 +21,8 @@ typealias Bundle<K, V> = HashMap<K, V>
 const val NUMBER_OF_PROPERTIES = 11
 
 // Used for how often will Observers check stuff on the background threads
-const val TIME_CHECKING_PERIOD = 1L
-val TIME_CHECKING_UNIT = TimeUnit.SECONDS
+const val TIME_CHECKING_PERIOD = 100L
+val TIME_CHECKING_UNIT = TimeUnit.MILLISECONDS
 
 // Used for Properties and Constraints
 const val HIDDEN = false

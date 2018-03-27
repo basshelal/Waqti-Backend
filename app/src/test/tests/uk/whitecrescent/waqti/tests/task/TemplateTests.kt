@@ -5,25 +5,25 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.Checklist
-import uk.whitecrescent.waqti.code.DEFAULT_BEFORE_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_CHECKLIST_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_DEADLINE_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_DESCRIPTION_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_DURATION_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_LABELS_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_OPTIONAL_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_PRIORITY_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_SUB_TASKS_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_TARGET_PROPERTY
-import uk.whitecrescent.waqti.code.DEFAULT_TIME_PROPERTY
-import uk.whitecrescent.waqti.code.Label
-import uk.whitecrescent.waqti.code.OPTIONAL
-import uk.whitecrescent.waqti.code.Priority
-import uk.whitecrescent.waqti.code.TEMPLATE_DATABASE
-import uk.whitecrescent.waqti.code.Task
-import uk.whitecrescent.waqti.code.Time
-import uk.whitecrescent.waqti.code.taskIDs
+import uk.whitecrescent.waqti.task.Checklist
+import uk.whitecrescent.waqti.task.DEFAULT_BEFORE_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_CHECKLIST_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_DEADLINE_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_DESCRIPTION_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_DURATION_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_LABELS_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_OPTIONAL_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_PRIORITY_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_SUB_TASKS_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_TARGET_PROPERTY
+import uk.whitecrescent.waqti.task.DEFAULT_TIME_PROPERTY
+import uk.whitecrescent.waqti.task.Label
+import uk.whitecrescent.waqti.task.OPTIONAL
+import uk.whitecrescent.waqti.task.Priority
+import uk.whitecrescent.waqti.task.TEMPLATE_DATABASE
+import uk.whitecrescent.waqti.task.Task
+import uk.whitecrescent.waqti.task.Time
+import uk.whitecrescent.waqti.taskIDs
 import java.time.Duration
 
 @DisplayName("Template Task Tests")
@@ -149,6 +149,38 @@ class TemplateTests {
         assertTrue(task.target == taskFromTemplate.target && taskFromTemplate.target == DEFAULT_TARGET_PROPERTY)
         assertTrue(task.before == taskFromTemplate.before && taskFromTemplate.before == DEFAULT_BEFORE_PROPERTY)
         assertTrue(task.subTasks == taskFromTemplate.subTasks && taskFromTemplate.subTasks == DEFAULT_SUB_TASKS_PROPERTY)
+    }
+
+    @DisplayName("Bundles Are Subset")
+    @Test
+    fun testTaskBundlesAreSubset() {
+        val anonTask = Task()
+                .setTimePropertyValue(Time.of(2018, 5, 5, 5, 5))
+                .setDurationPropertyValue(Duration.ofMinutes(30))
+                .setLabelsValue(Label.getOrCreateLabel("Label1"), Label.getOrCreateLabel("Label2"))
+                .setDeadlinePropertyValue(Time.of(2018, 6, 6, 6, 6))
+
+        val realTask = Task("My Task")
+                .setTimePropertyValue(Time.of(2018, 5, 5, 5, 5))
+                .setDurationPropertyValue(Duration.ofMinutes(30))
+                .setPriorityValue(Priority.getOrCreatePriority("Priority", 5))
+                .setLabelsValue(Label.getOrCreateLabel("Label1"), Label.getOrCreateLabel("Label2"))
+                .setOptionalValue(OPTIONAL)
+                .setDescriptionValue("Description")
+                .setChecklistPropertyValue(Checklist("ZERO", "ONE", "TWO"))
+                .setDeadlinePropertyValue(Time.of(2018, 6, 6, 6, 6))
+                .setTargetConstraintValue("My Target")
+                .setBeforePropertyValue(Task("Before"))
+                .setSubTasksPropertyValue(arrayListOf(Task("SubTask1"), Task("SubTask2")).taskIDs())
+
+
+        assertTrue(Task.Template.taskBundlesAreSubset(anonTask, realTask))
+        assertTrue(Task.Template.bundlesAreSubset(anonTask.bundle(), realTask.bundle()))
+
+        val fromTemplate = Task.Template.fromTemplate(anonTask.toTemplate())
+
+        assertTrue(Task.Template.taskBundlesAreSubset(anonTask, fromTemplate))
+        assertTrue(Task.Template.bundlesAreSubset(anonTask.bundle(), fromTemplate.bundle()))
     }
 
 }

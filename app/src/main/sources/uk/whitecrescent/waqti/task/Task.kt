@@ -1,11 +1,14 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 import io.reactivex.Observable
+import uk.whitecrescent.waqti.now
+import uk.whitecrescent.waqti.taskIDs
+import uk.whitecrescent.waqti.tasks
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.Random
 
-//TODO make sure KDoc is up to date
+// TODO: 27-Mar-18 Make sure all KDoc is up to date!!!
 class Task(var title: String = "") {
 
     //region Class Properties
@@ -47,14 +50,6 @@ class Task(var title: String = "") {
      */
     var taskID = Math.abs(Random().nextLong())
         private set
-
-    /**
-     * The point in time at which the duration Property was set, used to calculate duration left by adding the
-     * duration set to the time it was set to get the time it is due and then getting the duration between now and
-     * the time it is due. This means that duration left is calculated when requested and not ongoing as the duration
-     * decreases.
-     */
-    private var timeDurationSet = DEFAULT_TIME
 
     // TODO: 26-Mar-18 Document this stuff!
 
@@ -441,9 +436,11 @@ class Task(var title: String = "") {
      */
     fun setTimeProperty(timeProperty: Property<Time>): Task {
         this.time = timeProperty
-        if (timeProperty.value.isAfter(now()) && timeProperty is Constraint) {
-            if (canSleep()) sleep()
-            makeFailableIfConstraint(timeProperty)
+        if (timeProperty is Constraint) {
+            if (timeProperty.value.isAfter(now())) {
+                if (canSleep()) sleep()
+                makeFailableIfConstraint(timeProperty)
+            }
             timeConstraintTimeChecking()
         }
         return this
@@ -505,7 +502,6 @@ class Task(var title: String = "") {
      */
     fun setDurationProperty(durationProperty: Property<Duration>): Task {
         this.duration = durationProperty
-        timeDurationSet = now()
         if (durationProperty is Constraint) {
             makeFailableIfConstraint(durationProperty)
         }
@@ -1362,11 +1358,16 @@ class Task(var title: String = "") {
     //region Timer
 
     // Timer is independent of Duration Constraint, but Duration Constraint needs the timer to run to be MET
+    // TODO: 27-Mar-18 Document this stuff
 
     fun startTimer() {
-        timer.start()
-        if (duration is Constraint) {
-            durationConstraintTimerChecking()
+        if (state != TaskState.EXISTING) {
+            throw TaskStateException("Task must be EXISTING to start Timer!", state)
+        } else {
+            timer.start()
+            if (duration is Constraint) {
+                durationConstraintTimerChecking()
+            }
         }
     }
 
@@ -1506,9 +1507,6 @@ class Task(var title: String = "") {
                         }
                 )
     }
-
-
-    // TODO: 26-Mar-18 Have a timer to do duration checking
 
     /**
      * Checks this Task's checklist Property value (the actual checklist) on the `stateCheckingThread` to see if all
@@ -1824,6 +1822,14 @@ class Task(var title: String = "") {
      * @see Task.Template.toTemplate
      * @return the Bundle representing this Task's Properties information
      */
+    fun bundle() = this.toTemplate()
+
+    /**
+     * Returns the information of this Task's Properties in the form of a [Bundle]
+     *
+     * @see Task.Template.toTemplate
+     * @return the Bundle representing this Task's Properties information
+     */
     fun toTemplate() = Task.Template.toTemplate(this)
 
     /**
@@ -1933,6 +1939,61 @@ class Task(var title: String = "") {
             bundle[subTasks] = task.subTasks
             return bundle
         }
+
+        fun bundlesAreSubset(superBundle: Bundle<String, Property<*>>, subBundle: Bundle<String, Property<*>>):
+                Boolean {
+            var timeEq = true
+            var durationEq = true
+            var priorityEq = true
+            var labelsEq = true
+            var optionalEq = true
+            var descriptionEq = true
+            var checklistEq = true
+            var deadlineEq = true
+            var targetEq = true
+            var beforeEq = true
+            var subTasksEq = true
+
+            if (superBundle[time] != DEFAULT_TIME_PROPERTY) {
+                timeEq = subBundle[time] == superBundle[time]
+            }
+            if (superBundle[duration] != DEFAULT_DURATION_PROPERTY) {
+                durationEq = subBundle[time] == superBundle[time]
+            }
+            if (superBundle[priority] != DEFAULT_PRIORITY_PROPERTY) {
+                priorityEq = subBundle[priority] == superBundle[priority]
+            }
+            if (superBundle[labels] != DEFAULT_LABELS_PROPERTY) {
+                labelsEq = subBundle[labels] == superBundle[labels]
+            }
+            if (superBundle[optional] != DEFAULT_OPTIONAL_PROPERTY) {
+                optionalEq = subBundle[optional] == superBundle[optional]
+            }
+            if (superBundle[description] != DEFAULT_DESCRIPTION_PROPERTY) {
+                descriptionEq = subBundle[description] == superBundle[description]
+            }
+            if (superBundle[checklist] != DEFAULT_CHECKLIST_PROPERTY) {
+                checklistEq = subBundle[checklist] == superBundle[checklist]
+            }
+            if (superBundle[deadline] != DEFAULT_DEADLINE_PROPERTY) {
+                deadlineEq = subBundle[deadline] == superBundle[deadline]
+            }
+            if (superBundle[target] != DEFAULT_TARGET_PROPERTY) {
+                targetEq = subBundle[target] == superBundle[target]
+            }
+            if (superBundle[before] != DEFAULT_BEFORE_PROPERTY) {
+                beforeEq = subBundle[before] == superBundle[before]
+            }
+            if (superBundle[subTasks] != DEFAULT_SUB_TASKS_PROPERTY) {
+                subTasksEq = subBundle[subTasks] == superBundle[subTasks]
+            }
+            return timeEq && durationEq && priorityEq && labelsEq && optionalEq && descriptionEq &&
+                    checklistEq && deadlineEq && targetEq && beforeEq && subTasksEq
+        }
+
+        fun taskBundlesAreSubset(superTask: Task, subTask: Task) = bundlesAreSubset(superTask.bundle(), subTask.bundle())
+
+        //equivalence
     }
 
     //endregion Template Task

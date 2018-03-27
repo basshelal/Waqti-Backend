@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
-import uk.whitecrescent.waqti.code.Constraint
-import uk.whitecrescent.waqti.code.DEFAULT_DESCRIPTION
-import uk.whitecrescent.waqti.code.HIDDEN
-import uk.whitecrescent.waqti.code.Property
-import uk.whitecrescent.waqti.code.SHOWING
-import uk.whitecrescent.waqti.code.UNMET
+import uk.whitecrescent.waqti.task.Constraint
+import uk.whitecrescent.waqti.task.DEFAULT_DESCRIPTION
+import uk.whitecrescent.waqti.task.HIDDEN
+import uk.whitecrescent.waqti.task.Property
+import uk.whitecrescent.waqti.task.SHOWING
+import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Description Tests")

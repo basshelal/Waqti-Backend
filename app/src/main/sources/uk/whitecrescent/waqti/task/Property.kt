@@ -1,4 +1,4 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 open class Property<V>(open var isVisible: Boolean, open val value: V) {
 

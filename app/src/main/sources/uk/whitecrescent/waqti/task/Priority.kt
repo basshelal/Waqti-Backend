@@ -1,4 +1,4 @@
-package uk.whitecrescent.waqti.code
+package uk.whitecrescent.waqti.task
 
 /**
  * The user defined level of importance of a Task represented as a String with a number representing importance
