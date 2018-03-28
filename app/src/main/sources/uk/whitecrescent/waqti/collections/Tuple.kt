@@ -2,11 +2,41 @@ package uk.whitecrescent.waqti.collections
 
 import uk.whitecrescent.waqti.Listable
 import uk.whitecrescent.waqti.task.Task
-import java.util.Vector
 
 class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
 
-    val list = Vector<Task>() // TODO: 28-Mar-18 Vector or ArrayList? Do we need thread safety?
+    val list = ArrayList<Task>(tasks.size)
+
+    init {
+        list.addAll(tasks)
+        unConstrainAll()
+    }
+
+    constructor(tuple: Tuple) : this(*tuple.toTypedArray())
+
+    override val size: Int
+        get() = list.size
+
+    override operator fun get(index: Int) = list[index]
+
+    override operator fun get(element: Task) = list.find { it == element }
+
+    override fun merge(waqtiCollection: WaqtiCollection<Task>): WaqtiCollection<Task> {
+        if (waqtiCollection !is Tuple) {
+            throw ClassCastException("Cannot merge Tuple with non Tuple")
+        } else {
+            val result = Tuple(*this.toTypedArray())
+            result.addAll(waqtiCollection.getAll())
+            return result
+        }
+    }
+
+    override fun mergeToList(listable: Listable): List<Listable> {
+        val result = ArrayList<Listable>(listable.getAll().size + this.list.size)
+        result.addAll(this.list)
+        result.addAll(listable.getAll())
+        return result.toList()
+    }
 
     override fun addAll(collection: Collection<Task>) {
         addAll(*collection.toTypedArray())
@@ -17,28 +47,26 @@ class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
     }
 
     override fun remove(element: Task) {
-
+        list.remove(element)
     }
 
-    override fun removeAt(index: Int) {
+    override fun iterator() = list.iterator()
 
+    override fun removeAt(index: Int) {
+        list.removeAt(index)
     }
 
     override fun clear() {
-
+        list.clear()
     }
 
-    override fun sort(): WaqtiCollection<Task> {
-
-        return this
+    override fun move(fromIndex: Int, toIndex: Int) {
+        // TODO: 28-Mar-18 do this guy
     }
 
-    override fun toList(): List<Task> {
-        return list.toList()
-    }
+    override fun getList() = list.toList()
 
-    override val size: Int
-        get() = list.size
+    override fun getAll() = this.getList()
 
     override fun contains(element: Task) = list.contains(element)
 
@@ -46,39 +74,16 @@ class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
 
     override fun isEmpty() = list.isEmpty()
 
-    override operator fun set(index: Int, element: Task) {
-
-    }
-
-    override operator fun get(index: Int) = list[index]
-
-    override operator fun get(element: Task) = list.find { it == element }
-
-    init {
-        addAll(*tasks)
-    }
-
-    fun constrainAll() {
-        for (index in 1..list.lastIndex) {
-            list[index].setBeforeConstraintValue(list[index - 1].taskID)
-        }
-    }
-
-    fun unConstrainAll() {
-        for (index in 1..list.lastIndex) {
-            list[index].setBeforePropertyValue(list[index - 1].taskID)
-        }
-    }
-
     override fun addAll(vararg elements: Task) {
+
+
         when {
-            elements.size < 1 -> {
-                throw IllegalStateException("Tuple must have at least 1 Task!")
-            }
-            elements.size > 1 -> {
-                list.addAll(elements.asList())
-                for (index in 1..list.lastIndex) {
-                    list[index].setBeforePropertyValue(list[index - 1].taskID)
+            elements.isNotEmpty() -> {
+                list.addAll(elements)
+                if (list.size > 1) {
+                    for (index in 1..list.lastIndex) {
+                        list[index].setBeforePropertyValue(list[index - 1].taskID)
+                    }
                 }
             }
         }
@@ -90,8 +95,81 @@ class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
         list[index + 1].setBeforePropertyValue(list[index])
     }
 
-    // Adds the passed in Task to the end of the Tuple
-    fun addToEndAndConstrain(task: Task) {
+    fun constrainAll() {
+        if (list.size > 1) {
+            for (index in 1..list.lastIndex) {
+                list[index].setBeforeConstraintValue(list[index - 1].taskID)
+            }
+        }
+    }
+
+    fun constrainAt(index: Int) {
+        when {
+            index < 0 -> {
+                throw IndexOutOfBoundsException("Index cannot be 0")
+            }
+            index > list.size - 1 -> {
+                throw IndexOutOfBoundsException("Index cannot exceed ${list.size - 1}")
+            }
+            list.size == 1 -> {
+                throw IndexOutOfBoundsException("Cannot Constrain, there is only 1 Task in Tuple")
+            }
+            else -> {
+                list[index].setBeforeConstraintValue(list[index - 1])
+            }
+        }
+    }
+
+    fun constrain(element: Task) {
+        val found = get(element)
+        when {
+            found == null -> {
+                throw IllegalStateException("Task not found!")
+            }
+            else -> {
+                constrainAt(indexOf(found))
+            }
+        }
+    }
+
+    fun unConstrainAll() {
+        if (list.size > 1) {
+            for (index in 1..list.lastIndex) {
+                list[index].setBeforePropertyValue(list[index - 1].taskID)
+            }
+        }
+    }
+
+    fun unConstrainAt(index: Int) {
+        when {
+            index < 0 -> {
+                throw IndexOutOfBoundsException("Index cannot be 0")
+            }
+            index > list.size - 1 -> {
+                throw IndexOutOfBoundsException("Index cannot exceed ${list.size - 1}")
+            }
+            list.size == 1 -> {
+                throw IndexOutOfBoundsException("Cannot Constrain, there is only 1 Task in Tuple")
+            }
+            else -> {
+                list[index].setBeforePropertyValue(list[index - 1])
+            }
+        }
+    }
+
+    fun unConstrain(element: Task) {
+        val found = get(element)
+        when {
+            found == null -> {
+                throw IllegalStateException("Task not found!")
+            }
+            else -> {
+                unConstrainAt(indexOf(found))
+            }
+        }
+    }
+
+    fun addAndConstrain(task: Task) {
         addAndConstrainAt(list.lastIndex + 1, task)
     }
 
@@ -116,17 +194,27 @@ class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
     }
 
     fun killTask(task: Task) {
-        val task0 = get(task)
+        val found = get(task)
         when {
-            task0 == null -> {
+            found == null -> {
                 throw IllegalStateException("Task not found!")
             }
             else -> {
-                task0.kill()
+                found.kill()
             }
         }
     }
 
-    override fun iterator() = list.iterator()
+    // TODO: 28-Mar-18 I don't know how useful this even is at all
+    fun sort(): WaqtiCollection<Task> {
+        if (this.list.minus(this.list.first())
+                        .filterIndexed { index, _ -> this.list[index].before.value != this.list[index - 1].taskID }
+                        .isNotEmpty()) {
+            val tasks = this.getAll()
+            this.clear()
+            this.addAll(tasks)
+        }
+        return this
+    }
 
 }
