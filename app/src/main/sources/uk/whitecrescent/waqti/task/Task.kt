@@ -1,6 +1,7 @@
 package uk.whitecrescent.waqti.task
 
 import io.reactivex.Observable
+import uk.whitecrescent.waqti.Listable
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.taskIDs
 import uk.whitecrescent.waqti.tasks
@@ -9,7 +10,7 @@ import java.time.LocalDateTime
 import java.util.Random
 
 // TODO: 27-Mar-18 Make sure all KDoc is up to date!!!
-class Task(var title: String = "") {
+class Task(var title: String = "") : Listable {
 
     //region Class Properties
 
