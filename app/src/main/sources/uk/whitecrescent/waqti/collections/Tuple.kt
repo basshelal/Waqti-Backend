@@ -3,13 +3,15 @@ package uk.whitecrescent.waqti.collections
 import uk.whitecrescent.waqti.Listable
 import uk.whitecrescent.waqti.task.Task
 
-class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
-
-    val list = ArrayList<Task>(tasks.size)
+class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(*tasks), Listable {
 
     init {
         list.addAll(tasks)
         unConstrainAll()
+    }
+
+    override fun initAddAll(vararg elements: Task) {
+
     }
 
     constructor(tuple: Tuple) : this(*tuple.toTypedArray())
@@ -17,11 +19,8 @@ class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
     override val size: Int
         get() = list.size
 
-    override operator fun get(index: Int) = list[index]
 
-    override operator fun get(element: Task) = list.find { it == element }
-
-    override fun merge(waqtiCollection: WaqtiCollection<Task>): WaqtiCollection<Task> {
+    fun merge(waqtiCollection: WaqtiCollection<Task>): WaqtiCollection<Task> {
         if (waqtiCollection !is Tuple) {
             throw ClassCastException("Cannot merge Tuple with non Tuple")
         } else {
@@ -31,42 +30,14 @@ class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
         }
     }
 
-    override fun mergeToList(listable: Listable): List<Listable> {
+    fun mergeToList(listable: Listable): List<Listable> {
         val result = ArrayList<Listable>(listable.getAll().size + this.list.size)
         result.addAll(this.list)
         result.addAll(listable.getAll())
         return result.toList()
     }
 
-    override fun addAll(collection: Collection<Task>) {
-        addAll(*collection.toTypedArray())
-    }
-
-    override fun add(element: Task) {
-        addAt(list.lastIndex + 1, element)
-    }
-
-    override fun remove(element: Task) {
-        list.remove(element)
-    }
-
-    override fun iterator() = list.iterator()
-
-    override fun removeAt(index: Int) {
-        list.removeAt(index)
-    }
-
-    override fun clear() {
-        list.clear()
-    }
-
-    override fun move(fromIndex: Int, toIndex: Int) {
-        // TODO: 28-Mar-18 do this guy
-    }
-
-    override fun getList() = list.toList()
-
-    override fun getAll() = this.getList()
+    override fun getAll() = this.toList()
 
     override fun contains(element: Task) = list.contains(element)
 
@@ -75,8 +46,7 @@ class Tuple(vararg tasks: Task) : WaqtiCollection<Task>, Listable {
     override fun isEmpty() = list.isEmpty()
 
     override fun addAll(vararg elements: Task) {
-
-
+        // TODO: 29-Mar-18 fix this
         when {
             elements.isNotEmpty() -> {
                 list.addAll(elements)

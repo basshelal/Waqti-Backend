@@ -2,19 +2,13 @@ package uk.whitecrescent.waqti.collections
 
 interface WaqtiCollection<E> : Collection<E> {
 
-    operator fun set(index: Int, element: E) = addAt(index, element)
-
     operator fun plus(element: E) = add(element)
 
     operator fun minus(element: E) = remove(element)
 
-    operator fun get(index: Int): E
-
     operator fun get(element: E): E?
 
     fun add(element: E)
-
-    fun addAt(index: Int, element: E)
 
     fun addAll(vararg elements: E)
 
@@ -22,13 +16,17 @@ interface WaqtiCollection<E> : Collection<E> {
 
     fun remove(element: E)
 
-    fun removeAt(index: Int)
+    fun removeAll(vararg elements: E)
 
-    fun move(fromIndex: Int, toIndex: Int)
+    fun removeAll(collection: Collection<E>)
+
+    fun getAll(vararg elements: E): List<E>
+
+    fun getAll(collection: Collection<E>): List<E>
 
     fun clear()
 
-    fun merge(waqtiCollection: WaqtiCollection<E>): WaqtiCollection<E>
+    fun sort(comparator: Comparator<E>): WaqtiCollection<E>
 
-    fun getList(): List<E>
+    fun toList(): List<E>
 }

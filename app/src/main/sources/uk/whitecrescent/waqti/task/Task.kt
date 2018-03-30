@@ -1815,7 +1815,7 @@ class Task(var title: String = "") : Listable {
 
     override fun getAll() = listOf(this)
 
-    override fun mergeToList(listable: Listable): List<Listable> {
+    fun mergeToList(listable: Listable): List<Listable> {
         val result = ArrayList<Listable>()
         result.addAll(this.getAll())
         result.addAll(listable.getAll())
