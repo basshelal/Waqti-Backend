@@ -1813,12 +1813,12 @@ class Task(var title: String = "") : Listable {
         return result.toString()
     }
 
-    override fun getAll() = listOf(this)
+    override fun toListables() = listOf(this)
 
     fun mergeToList(listable: Listable): List<Listable> {
         val result = ArrayList<Listable>()
-        result.addAll(this.getAll())
-        result.addAll(listable.getAll())
+        result.addAll(this.toListables())
+        result.addAll(listable.toListables())
         return result.toList()
     }
 

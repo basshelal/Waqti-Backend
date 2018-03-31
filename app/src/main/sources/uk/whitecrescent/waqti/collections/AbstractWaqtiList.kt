@@ -2,9 +2,11 @@ package uk.whitecrescent.waqti.collections
 
 import java.util.function.Consumer
 
-abstract class AbstractWaqtiList<E>(vararg elements: E) : List<E>, WaqtiCollection<E> {
+abstract class AbstractWaqtiList<E> : List<E>, WaqtiCollection<E> {
 
-    protected val list = ArrayList<E>(elements.size)
+    private val initialSize = 15
+
+    protected val list = ArrayList<E>(initialSize)
 
     override val size: Int
         get() = list.size
@@ -12,13 +14,7 @@ abstract class AbstractWaqtiList<E>(vararg elements: E) : List<E>, WaqtiCollecti
     val nextIndex: Int
         get() = list.lastIndex + 1
 
-    init {
-        this.initAddAll(*elements)
-    }
-
-    abstract fun initAddAll(vararg elements: E)
-
-    operator fun set(index: Int, element: E) = addAt(index, element)
+    open operator fun set(index: Int, element: E) = addAt(index, element)
 
     override operator fun get(index: Int) = list[index]
 
@@ -38,11 +34,11 @@ abstract class AbstractWaqtiList<E>(vararg elements: E) : List<E>, WaqtiCollecti
         list.addAll(collection)
     }
 
-    fun addAllAt(index: Int, vararg elements: E) = list.addAll(index, elements.toList())
+    open fun addAllAt(index: Int, vararg elements: E) = list.addAll(index, elements.toList())
 
-    fun addAllAt(index: Int, collection: Collection<E>) = list.addAll(index, collection)
+    open fun addAllAt(index: Int, collection: Collection<E>) = list.addAll(index, collection)
 
-    override fun remove(element: E) {
+    override fun removeElement(element: E) {
         list.remove(element)
     }
 
@@ -96,7 +92,7 @@ abstract class AbstractWaqtiList<E>(vararg elements: E) : List<E>, WaqtiCollecti
 
     open fun swap(`this`: E, that: E) = swap(indexOf(`this`), indexOf(that))
 
-    fun moveAll(vararg elements: E, toIndex: Int = this.nextIndex) {
+    open fun moveAll(vararg elements: E, toIndex: Int = this.nextIndex) {
         val found = this.getAll(*elements)
         if (found.isNotEmpty()) {
             this.removeAll(found)
@@ -104,7 +100,7 @@ abstract class AbstractWaqtiList<E>(vararg elements: E) : List<E>, WaqtiCollecti
         }
     }
 
-    fun removeRange(fromIndex: Int, toIndex: Int) {
+    open fun removeRange(fromIndex: Int, toIndex: Int) {
         list.removeAll(this.subList(fromIndex, toIndex))
     }
 
@@ -143,7 +139,7 @@ abstract class AbstractWaqtiList<E>(vararg elements: E) : List<E>, WaqtiCollecti
             val found = listFrom[element]
             if (found != null) {
                 listTo.addAt(toIndex, found)
-                listFrom.remove(found)
+                listFrom.removeElement(found)
             }
         }
 

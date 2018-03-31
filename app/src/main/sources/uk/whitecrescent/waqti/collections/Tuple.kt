@@ -2,23 +2,25 @@ package uk.whitecrescent.waqti.collections
 
 import uk.whitecrescent.waqti.Listable
 import uk.whitecrescent.waqti.task.Task
+import uk.whitecrescent.waqti.toTasks
 
-class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(*tasks), Listable {
+class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
+    constructor(tuple: Tuple) : this(*tuple.toTypedArray())
+    constructor(collection: Collection<Task>) : this(*collection.toTypedArray())
+    constructor(list: List<Tuple>) : this(*list.toTasks())
 
     init {
         list.addAll(tasks)
         unConstrainAll()
     }
 
-    override fun initAddAll(vararg elements: Task) {
-
-    }
-
-    constructor(tuple: Tuple) : this(*tuple.toTypedArray())
-
     override val size: Int
         get() = list.size
 
+    override fun sort(comparator: Comparator<Task>): AbstractWaqtiList<Task> {
+        super.sort(comparator)
+        return this.order()
+    }
 
     fun merge(waqtiCollection: WaqtiCollection<Task>): WaqtiCollection<Task> {
         if (waqtiCollection !is Tuple) {
@@ -31,13 +33,13 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(*tasks), Listable {
     }
 
     fun mergeToList(listable: Listable): List<Listable> {
-        val result = ArrayList<Listable>(listable.getAll().size + this.list.size)
+        val result = ArrayList<Listable>(listable.toListables().size + this.list.size)
         result.addAll(this.list)
-        result.addAll(listable.getAll())
+        result.addAll(listable.toListables())
         return result.toList()
     }
 
-    override fun getAll() = this.toList()
+    override fun toListables() = this.toList()
 
     override fun contains(element: Task) = list.contains(element)
 
@@ -176,7 +178,7 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(*tasks), Listable {
     }
 
     // TODO: 28-Mar-18 I don't know how useful this even is at all
-    fun sort(): WaqtiCollection<Task> {
+    private fun order(): Tuple {
         if (this.list.minus(this.list.first())
                         .filterIndexed { index, _ -> this.list[index].before.value != this.list[index - 1].taskID }
                         .isNotEmpty()) {

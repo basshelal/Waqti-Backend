@@ -1,5 +1,7 @@
 package uk.whitecrescent.waqti
 
+import uk.whitecrescent.waqti.collections.TestTuple
+import uk.whitecrescent.waqti.collections.Tuple
 import uk.whitecrescent.waqti.task.DATABASE
 import uk.whitecrescent.waqti.task.GRACE_PERIOD
 import uk.whitecrescent.waqti.task.Task
@@ -45,4 +47,12 @@ fun ArrayList<TaskID>.tasks(): ArrayList<Task> {
         }
     }
     return tasks
+}
+
+fun List<Tuple>.toTasks(): Array<Task> {
+    val result = ArrayList<Task>(this.size)
+    for (tuple in this){
+        result.addAll(tuple.getAll())
+    }
+    return result.toTypedArray()
 }
