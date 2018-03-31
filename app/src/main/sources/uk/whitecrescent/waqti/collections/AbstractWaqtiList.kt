@@ -6,14 +6,16 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     private val initialSize = 10
 
-    protected val list = ArrayList<E>(initialSize)
+    open protected val list = ArrayList<E>(initialSize)
 
     override val size: Int
         get() = list.size
 
+    @NoOverride
     val nextIndex: Int
         get() = list.lastIndex + 1
 
+    @NoOverride
     override operator fun get(index: Int) = list[index]
 
     override operator fun get(element: E) = list.find { it == element }
@@ -80,6 +82,11 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     override fun clear(): WaqtiCollection<E> {
         list.clear()
+        return this
+    }
+
+    @Override
+    override fun join(collection: Collection<E>): WaqtiCollection<E> {
         return this
     }
 
@@ -173,20 +180,27 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         return result.toList()
     }
 
+    @NoOverride
     override fun toList() = list.toList()
 
+    @NoOverride
     override operator fun contains(element: E) = list.contains(element)
 
     override fun containsAll(elements: Collection<E>) = list.containsAll(elements)
 
+    @NoOverride
     override fun isEmpty() = list.isEmpty()
 
+    @NoOverride
     override fun iterator() = list.iterator()
 
+    @NoOverride
     override fun parallelStream() = list.parallelStream()
 
+    @NoOverride
     override fun spliterator() = list.spliterator()
 
+    @NoOverride
     override fun stream() = list.stream()
 
     override fun indexOf(element: E): Int {
@@ -197,12 +211,16 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     override fun lastIndexOf(element: E) = list.lastIndexOf(element)
 
+    @NoOverride
     override fun listIterator() = list.listIterator()
 
+    @NoOverride
     override fun listIterator(index: Int) = list.listIterator(index)
 
+    @NoOverride
     override fun subList(fromIndex: Int, toIndex: Int) = list.subList(fromIndex, toIndex)
 
+    @NoOverride
     override fun forEach(action: Consumer<in E>?) = list.forEach(action)
 
     companion object {
@@ -286,6 +304,4 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
             return result.toList()
         }
     }
-
-
 }

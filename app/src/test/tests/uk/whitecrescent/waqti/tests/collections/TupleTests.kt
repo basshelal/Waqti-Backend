@@ -16,20 +16,17 @@ class TupleTests {
     @Test
     fun testTupleCreationOneTask() {
 
-
     }
 
     @DisplayName("Tuple creation two Tasks")
     @Test
     fun testTupleCreationTwoTasks() {
 
-
     }
 
     @DisplayName("Tuple creation many Tasks")
     @Test
     fun testTupleCreationManyTasks() {
-
 
     }
 

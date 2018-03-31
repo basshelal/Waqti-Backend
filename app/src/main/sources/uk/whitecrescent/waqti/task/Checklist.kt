@@ -3,6 +3,7 @@ package uk.whitecrescent.waqti.task
 data class ListItem(val value: String, var isChecked: Boolean = false)
 
 // TODO: 30-Mar-18 Update this to look modern and idiomatic
+// TODO: 31-Mar-18 Update this to be a WaqtiList sometime!
 class Checklist(vararg itemValues: String) : Iterable<ListItem> {
 
     private val list = ArrayList<ListItem>()

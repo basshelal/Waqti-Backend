@@ -9,6 +9,8 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
     constructor(collection: Collection<Task>) : this(*collection.toTypedArray())
     constructor(list: List<Tuple>) : this(*list.toTasks())
 
+    override val list = ArrayList<Task>(tasks.size)
+
     init {
         list.addAll(tasks)
         unConstrainAll()
@@ -26,9 +28,9 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
         if (collection !is Tuple) {
             throw ClassCastException("Cannot merge Tuple with non Tuple")
         } else {
-            val result = Tuple(*this.toTypedArray())
-            result.addAll(collection.getAll())
-            return result
+            val newTuple = Tuple(*this.toTypedArray())
+            newTuple.addAll(collection.toList())
+            return newTuple
         }
     }
 
