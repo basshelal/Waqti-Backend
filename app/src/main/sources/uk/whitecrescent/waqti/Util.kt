@@ -1,6 +1,5 @@
 package uk.whitecrescent.waqti
 
-import uk.whitecrescent.waqti.collections.TestTuple
 import uk.whitecrescent.waqti.collections.Tuple
 import uk.whitecrescent.waqti.task.DATABASE
 import uk.whitecrescent.waqti.task.GRACE_PERIOD

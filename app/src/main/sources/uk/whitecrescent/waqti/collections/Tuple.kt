@@ -22,12 +22,12 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
         return this.order()
     }
 
-    fun merge(waqtiCollection: WaqtiCollection<Task>): WaqtiCollection<Task> {
-        if (waqtiCollection !is Tuple) {
+    override fun join(collection: Collection<Task>): WaqtiCollection<Task> {
+        if (collection !is Tuple) {
             throw ClassCastException("Cannot merge Tuple with non Tuple")
         } else {
             val result = Tuple(*this.toTypedArray())
-            result.addAll(waqtiCollection.getAll())
+            result.addAll(collection.getAll())
             return result
         }
     }
@@ -47,7 +47,7 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
 
     override fun isEmpty() = list.isEmpty()
 
-    override fun addAll(vararg elements: Task) {
+    override fun addAll(vararg elements: Task): WaqtiCollection<Task> {
         // TODO: 29-Mar-18 fix this
         when {
             elements.isNotEmpty() -> {
@@ -59,12 +59,14 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
                 }
             }
         }
+        return this
     }
 
-    override fun addAt(index: Int, element: Task) {
+    override fun addAt(index: Int, element: Task): WaqtiList<Task> {
         list.add(index, element)
         list[index].setBeforePropertyValue(list[index - 1])
         list[index + 1].setBeforePropertyValue(list[index])
+        return this
     }
 
     fun constrainAll() {
