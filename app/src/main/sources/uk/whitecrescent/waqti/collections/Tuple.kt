@@ -2,12 +2,8 @@ package uk.whitecrescent.waqti.collections
 
 import uk.whitecrescent.waqti.Listable
 import uk.whitecrescent.waqti.task.Task
-import uk.whitecrescent.waqti.toTasks
 
 class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
-    constructor(tuple: Tuple) : this(*tuple.toTypedArray())
-    constructor(collection: Collection<Task>) : this(*collection.toTypedArray())
-    constructor(list: List<Tuple>) : this(*list.toTasks())
 
     override val list = ArrayList<Task>(tasks.size)
 
@@ -42,12 +38,6 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
     }
 
     override fun toListables() = this.toList()
-
-    override fun contains(element: Task) = list.contains(element)
-
-    override fun containsAll(elements: Collection<Task>) = list.containsAll(elements)
-
-    override fun isEmpty() = list.isEmpty()
 
     override fun addAll(vararg elements: Task): WaqtiCollection<Task> {
         // TODO: 29-Mar-18 fix this
@@ -97,15 +87,7 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
     }
 
     fun constrain(element: Task) {
-        val found = get(element)
-        when {
-            found == null -> {
-                throw IllegalStateException("Task not found!")
-            }
-            else -> {
-                constrainAt(indexOf(found))
-            }
-        }
+        constrainAt(indexOf(get(element)))
     }
 
     fun unConstrainAll() {
@@ -134,15 +116,7 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
     }
 
     fun unConstrain(element: Task) {
-        val found = get(element)
-        when {
-            found == null -> {
-                throw IllegalStateException("Task not found!")
-            }
-            else -> {
-                unConstrainAt(indexOf(found))
-            }
-        }
+        unConstrainAt(indexOf(get(element)))
     }
 
     fun addAndConstrain(task: Task) {
@@ -170,15 +144,7 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
     }
 
     fun killTask(task: Task) {
-        val found = get(task)
-        when {
-            found == null -> {
-                throw IllegalStateException("Task not found!")
-            }
-            else -> {
-                found.kill()
-            }
-        }
+        get(task).kill()
     }
 
     // TODO: 28-Mar-18 I don't know how useful this even is at all
@@ -193,4 +159,11 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
         return this
     }
 
+    companion object {
+        fun fromTuples(vararg tuples: Tuple): Tuple {
+            val result = Tuple()
+            tuples.forEach { result.addAll(it.toList()) }
+            return result
+        }
+    }
 }

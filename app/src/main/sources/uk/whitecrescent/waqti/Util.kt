@@ -48,7 +48,7 @@ fun ArrayList<TaskID>.tasks(): ArrayList<Task> {
     return tasks
 }
 
-fun List<Tuple>.toTasks(): Array<Task> {
+fun Collection<Tuple>.toTasks(): Array<Task> {
     val result = ArrayList<Task>(this.size)
     for (tuple in this){
         result.addAll(tuple.getAll())

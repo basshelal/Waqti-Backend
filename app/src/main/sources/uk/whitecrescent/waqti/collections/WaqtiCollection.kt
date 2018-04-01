@@ -6,13 +6,17 @@ interface WaqtiCollection<E> : Collection<E> {
 
     operator fun minus(element: E) = remove(element)
 
-    operator fun get(element: E): E?
+    operator fun get(element: E): E
 
     fun add(element: E): WaqtiCollection<E>
 
     fun addAll(vararg elements: E): WaqtiCollection<E>
 
     fun addAll(collection: Collection<E>): WaqtiCollection<E>
+
+    fun update(old: E, new: E): WaqtiCollection<E>
+
+    fun updateAllTo(collection: Collection<E>, new: E): WaqtiCollection<E>
 
     fun remove(element: E): WaqtiCollection<E>
 

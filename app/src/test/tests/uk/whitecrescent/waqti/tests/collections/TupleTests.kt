@@ -9,7 +9,6 @@ class TupleTests {
     @DisplayName("Tuple creation zero Tasks")
     @Test
     fun testTupleCreationZeroTasks() {
-
     }
 
     @DisplayName("Tuple creation one Task")

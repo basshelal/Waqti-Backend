@@ -16,7 +16,7 @@ package uk.whitecrescent.waqti.collections
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
-annotation class Override
+annotation class OverrideRecommended
 
 /**
  * Used to indicate that is either not recommended or not necessary (or both) to override the function, property,
@@ -32,4 +32,4 @@ annotation class Override
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CLASS, AnnotationTarget.CONSTRUCTOR)
-annotation class NoOverride
+annotation class NoOverrideRecommended

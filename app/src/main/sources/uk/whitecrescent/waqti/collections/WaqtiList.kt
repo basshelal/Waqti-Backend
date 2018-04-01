@@ -2,25 +2,15 @@ package uk.whitecrescent.waqti.collections
 
 interface WaqtiList<E> : WaqtiCollection<E> {
 
-    //From kotlin.collections.List
-
-    operator fun get(index: Int): E
-
-    fun indexOf(element: E): Int
-
-    fun lastIndexOf(element: E): Int
-
-    fun listIterator(): ListIterator<E>
-
-    fun listIterator(index: Int): ListIterator<E>
-
-    fun subList(fromIndex: Int, toIndex: Int): List<E>
-
     //New functions
 
     operator fun set(index: Int, element: E) = addAt(index, element)
 
+    operator fun set(oldElement: E, newElement: E) = updateAt(indexOf(oldElement), newElement)
+
     fun addAt(index: Int, element: E): WaqtiList<E>
+
+    fun updateAt(oldIndex: Int, newElement: E): WaqtiList<E>
 
     fun addAllAt(index: Int, vararg elements: E): WaqtiList<E>
 
@@ -41,4 +31,20 @@ interface WaqtiList<E> : WaqtiCollection<E> {
     fun moveAllTo(vararg elements: E, toIndex: Int): WaqtiList<E>
 
     fun removeRange(fromIndex: Int, toIndex: Int): WaqtiList<E>
+
+    //region From kotlin.collections.List
+
+    operator fun get(index: Int): E
+
+    fun indexOf(element: E): Int
+
+    fun lastIndexOf(element: E): Int
+
+    fun listIterator(): ListIterator<E>
+
+    fun listIterator(index: Int): ListIterator<E>
+
+    fun subList(fromIndex: Int, toIndex: Int): List<E>
+
+    //endregion From kotlin.collections.List
 }
