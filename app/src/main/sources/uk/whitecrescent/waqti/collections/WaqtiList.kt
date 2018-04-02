@@ -30,7 +30,11 @@ interface WaqtiList<E> : WaqtiCollection<E> {
 
     fun moveAllTo(vararg elements: E, toIndex: Int): WaqtiList<E>
 
+    fun moveAllTo(collection: Collection<E>, toIndex: Int): WaqtiList<E>
+
     fun removeRange(fromIndex: Int, toIndex: Int): WaqtiList<E>
+
+    fun allIndexesOf(element: E): List<Int>
 
     //region From kotlin.collections.List
 

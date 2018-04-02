@@ -51,20 +51,14 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         return this
     }
 
-    override fun addAll(vararg elements: E): WaqtiCollection<E> {
-        list.addAll(elements)
-        return this
-    }
+    override fun addAll(vararg elements: E) = addAll(elements.toList())
 
     override fun addAll(collection: Collection<E>): WaqtiCollection<E> {
         list.addAll(collection)
         return this
     }
 
-    override fun addAllAt(index: Int, vararg elements: E): WaqtiList<E> {
-        list.addAll(index, elements.toList())
-        return this
-    }
+    override fun addAllAt(index: Int, vararg elements: E) = addAllAt(index, elements.toList())
 
     override fun addAllAt(index: Int, collection: Collection<E>): WaqtiList<E> {
         list.addAll(index, collection)
@@ -90,13 +84,16 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     }
 
     override fun updateAllTo(collection: Collection<E>, new: E): WaqtiCollection<E> {
+        val list = ArrayList<Int>(collection.size)
         for (toUpdate in collection) {
             for (element in this) {
                 if (element == toUpdate) {
-                    this[indexOf(element)] = new
+                    list.add(indexOf(element))
                 }
             }
         }
+        list.forEach { this.updateAt(it, new) }
+
         return this
     }
 
@@ -104,6 +101,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Remove
 
+    // Doesn't throw Exception if not found!
     override fun remove(element: E): WaqtiCollection<E> {
         list.remove(element)
         return this
@@ -114,10 +112,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         return this
     }
 
-    override fun removeAll(vararg elements: E): WaqtiCollection<E> {
-        list.removeAll(elements)
-        return this
-    }
+    override fun removeAll(vararg elements: E) = removeAll(elements.toList())
 
     override fun removeAll(collection: Collection<E>): WaqtiCollection<E> {
         list.removeAll(collection)
@@ -134,8 +129,12 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         return this
     }
 
+    //Removes including at fromIndex but excluding at toIndex, just like subList
+    //if numbers are equal won't do anything, again like subList
+    //if from > to, unlike subList will still work, will remove reversed, remove in the range, including from and
+    // excluding to see this.subList
     override fun removeRange(fromIndex: Int, toIndex: Int): WaqtiList<E> {
-        list.removeAll(this.subList(fromIndex, toIndex))
+        this.removeAll(this.subList(fromIndex, toIndex))
         return this
     }
 
@@ -143,17 +142,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Query
 
-    override fun getAll(vararg elements: E): List<E> {
-        val result = ArrayList<E>(elements.size)
-        for (fromElement in elements) {
-            for (thisElement in this) {
-                if (fromElement == thisElement) {
-                    result.add(thisElement)
-                }
-            }
-        }
-        return result.toList()
-    }
+    override fun getAll(vararg elements: E) = getAll(elements.toList())
 
     override fun getAll(collection: Collection<E>): List<E> {
         val result = ArrayList<E>(collection.size)
@@ -170,11 +159,14 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     @NoOverrideRecommended
     override fun toList() = list.toList()
 
+    override fun containsAll(vararg elements: E) = this.containsAll(elements.toList())
+
     override fun containsAll(elements: Collection<E>) = list.containsAll(elements)
 
     @NoOverrideRecommended
     override fun isEmpty() = list.isEmpty()
 
+    //first index of the element
     @NoOverrideRecommended
     override fun indexOf(element: E): Int {
         if (list.indexOf(element) == -1) {
@@ -190,7 +182,23 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     }
 
     @NoOverrideRecommended
-    override fun subList(fromIndex: Int, toIndex: Int) = list.subList(fromIndex, toIndex)
+    override fun allIndexesOf(element: E): List<Int> {
+        val result = ArrayList<Int>()
+        this.forEachIndexed { index, it -> if (it == element) result.add(index) }
+        return result.toList()
+    }
+
+    @NoOverrideRecommended
+    override fun subList(fromIndex: Int, toIndex: Int): List<E> {
+        when {
+            fromIndex < 0 || toIndex < 0 || fromIndex > nextIndex || toIndex > nextIndex -> {
+                throw  IndexOutOfBoundsException("Cannot SubList $fromIndex  to $toIndex, limits are 0 and $nextIndex")
+            }
+            fromIndex > toIndex -> return list.subList(toIndex + 1, fromIndex + 1)
+            fromIndex < toIndex -> return list.subList(fromIndex, toIndex)
+            else -> return emptyList()
+        }
+    }
 
     //endregion Query
 
@@ -199,8 +207,9 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     override fun move(fromIndex: Int, toIndex: Int): WaqtiList<E> {
         when {
             toIndex > size - 1 || toIndex < 0 || fromIndex > size - 1 || fromIndex < 0 -> {
-                throw IllegalArgumentException("Index doesn't exist!")
+                throw  IndexOutOfBoundsException("Cannot move $fromIndex  to $toIndex, limits are 0 and $nextIndex")
             }
+
             fromIndex == toIndex -> return this
 
             fromIndex < toIndex -> {
@@ -231,16 +240,18 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     override fun swap(thisIndex: Int, thatIndex: Int): WaqtiList<E> {
         val `this` = this[thisIndex]
         val that = this[thatIndex]
-        this.addAt(thatIndex, `this`)
-        this.addAt(thisIndex, that)
+        this.updateAt(thatIndex, `this`)
+        this.updateAt(thisIndex, that)
         return this
     }
 
     @NoOverrideRecommended
     override fun swap(`this`: E, that: E) = swap(indexOf(`this`), indexOf(that))
 
-    override fun moveAllTo(vararg elements: E, toIndex: Int): WaqtiList<E> {
-        val found = this.getAll(*elements)
+    override fun moveAllTo(vararg elements: E, toIndex: Int) = moveAllTo(elements.toList(), toIndex)
+
+    override fun moveAllTo(collection: Collection<E>, toIndex: Int): WaqtiList<E> {
+        val found = this.getAll(collection)
         if (found.isNotEmpty()) {
             this.removeAll(found)
             this.addAllAt(toIndex, found)
@@ -293,6 +304,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Companion
 
+    // TODO: 02-Apr-18 Test these!
     companion object {
         fun <E> moveElement(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
                             element: E, toIndex: Int = listTo.nextIndex) {
@@ -376,4 +388,16 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     }
 
     //endregion Companion
+
+    override fun hashCode(): Int {
+        return list.hashCode()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        return list.equals(other)
+    }
+
+    override fun toString(): String {
+        return list.toString()
+    }
 }

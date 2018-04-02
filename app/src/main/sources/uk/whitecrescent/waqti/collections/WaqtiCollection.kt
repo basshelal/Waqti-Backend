@@ -40,4 +40,6 @@ interface WaqtiCollection<E> : Collection<E> {
     fun sort(comparator: Comparator<E>): WaqtiCollection<E>
 
     fun toList(): List<E>
+
+    fun containsAll(vararg elements: E): Boolean
 }
