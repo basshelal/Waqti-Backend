@@ -28,7 +28,7 @@ interface WaqtiList<E> : WaqtiCollection<E> {
 
     fun swap(`this`: E, that: E): WaqtiList<E>
 
-    fun moveAllTo(vararg elements: E, toIndex: Int): WaqtiList<E>
+    fun moveAllTo(toIndex: Int, vararg elements: E): WaqtiList<E>
 
     fun moveAllTo(collection: Collection<E>, toIndex: Int): WaqtiList<E>
 

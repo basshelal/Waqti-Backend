@@ -106,6 +106,8 @@ class TaskStories {
 
         assertThrows(TaskStateException::class.java, { task.kill() })
 
+        sleep(1)
+
         task.subTasks.value.tasks()[0].checklist.value.checkItem(0)
         task.subTasks.value.tasks()[0].checklist.value.checkItem(1)
 

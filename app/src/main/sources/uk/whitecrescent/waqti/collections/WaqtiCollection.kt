@@ -28,6 +28,8 @@ interface WaqtiCollection<E> : Collection<E> {
 
     fun addIf(collection: Collection<E>, predicate: (E) -> Boolean): WaqtiCollection<E>
 
+    fun countOf(element: E): Int
+
     // Doesn't modify this, instead returns a new one
     fun join(collection: Collection<E>): WaqtiCollection<E>
 

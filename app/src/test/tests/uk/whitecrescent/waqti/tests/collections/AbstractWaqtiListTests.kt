@@ -2,6 +2,7 @@ package uk.whitecrescent.waqti.tests.collections
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
@@ -739,6 +740,19 @@ class AbstractWaqtiListTests {
         assertThrows(IndexOutOfBoundsException::class.java, { list.subList(0, 7) })
     }
 
+    @DisplayName("List Count Of")
+    @Test
+    fun testListCountOf() {
+        val list = AbstractWaqtiListDummy()
+                .addAll(
+                        "A", "B", "C", "A", "A", "B"
+                ) as AbstractWaqtiListDummy
+        assertEquals(3, list.countOf("A"))
+        assertEquals(2, list.countOf("B"))
+        assertEquals(1, list.countOf("C"))
+        assertEquals(0, list.countOf("X"))
+    }
+
     @DisplayName("List Move Index")
     @Test
     fun testListMoveIndex() {
@@ -839,7 +853,40 @@ class AbstractWaqtiListTests {
         assertThrows(ElementNotFoundException::class.java, { list.swap("NULL", "ONE") })
     }
 
-    @DisplayName("List Move All To")
+    @DisplayName("List Move All To vararg")
+    @Test
+    fun testListMoveAllToVararg() {
+        val list = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO",
+                        "THREE",
+                        "FOUR",
+                        "FIVE"
+                ) as AbstractWaqtiListDummy
+        list.moveAllTo(3, "FOUR", "FIVE")
+        assertEquals(listOf("ZERO", "ONE", "TWO", "FOUR", "FIVE", "THREE"), list.toList())
+
+        list.clear().addAll(
+                "ZERO",
+                "ONE",
+                "TWO",
+                "THREE",
+                "FOUR",
+                "FIVE"
+        )
+
+        list.moveAllTo(1, "THREE", "FOUR", "NULL")
+        assertEquals(listOf("ZERO", "THREE", "FOUR", "ONE", "TWO", "FIVE"), list.toList())
+
+        list.moveAllTo(4, "NULL")
+        assertEquals(listOf("ZERO", "THREE", "FOUR", "ONE", "TWO", "FIVE"), list.toList())
+
+        assertThrows(IndexOutOfBoundsException::class.java, { list.moveAllTo(7, "ONE") })
+    }
+
+    @DisplayName("List Move All To collection")
     @Test
     fun testListMoveAllTo() {
         val list = AbstractWaqtiListDummy()
@@ -1040,9 +1087,389 @@ class AbstractWaqtiListTests {
         assertEquals(list.toList(), list.join(listOf("THIS SHOULD BE OVERRIDDEN")).toList())
     }
 
-    @DisplayName("Test")
+    @DisplayName("List Companion Move Elements")
     @Test
-    fun test() {
+    fun testListCompanionMoveElements() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO"
+                ) as AbstractWaqtiListDummy
 
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "THREE",
+                        "FOUR",
+                        "FIVE"
+                ) as AbstractWaqtiListDummy
+        AbstractWaqtiList.moveElements(list2, list1, listOf("FOUR"))
+        assertEquals(listOf("ZERO", "ONE", "TWO", "FOUR"), list1.toList())
+        assertEquals(listOf("THREE", "FIVE"), list2.toList())
+
+        AbstractWaqtiList.moveElements(list2, list1, listOf("THREE"), 3)
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR"), list1.toList())
+        assertEquals(listOf("FIVE"), list2.toList())
+
+        AbstractWaqtiList.moveElements(list1, list2, listOf("ZERO", "ONE", "FOUR"))
+        assertEquals(listOf("TWO", "THREE"), list1.toList())
+        assertEquals(listOf("FIVE", "ZERO", "ONE", "FOUR"), list2.toList())
+
+        AbstractWaqtiList.moveElements(list2, list2, listOf("ZERO", "ONE", "FOUR"))
+        assertEquals(listOf("TWO", "THREE"), list1.toList())
+        assertEquals(listOf("FIVE", "ZERO", "ONE", "FOUR"), list2.toList())
+
+        assertThrows(IndexOutOfBoundsException::class.java, {
+            AbstractWaqtiList.moveElements(list2, list1, listOf("FIVE"), 7)
+        })
+    }
+
+    @DisplayName("List Companion Copy Elements")
+    @Test
+    fun testListCompanionCopyElements() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "THREE",
+                        "FOUR",
+                        "FIVE"
+                ) as AbstractWaqtiListDummy
+        AbstractWaqtiList.copyElements(list2, list1, listOf("FOUR"))
+        assertEquals(listOf("ZERO", "ONE", "TWO", "FOUR"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE"), list2.toList())
+
+        AbstractWaqtiList.copyElements(list2, list1, listOf("THREE"), 3)
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE"), list2.toList())
+
+        AbstractWaqtiList.copyElements(list1, list2, listOf("ZERO", "ONE", "FOUR"))
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE", "ZERO", "ONE", "FOUR"), list2.toList())
+
+        AbstractWaqtiList.copyElements(list2, list2, listOf("ZERO", "ONE", "FOUR"))
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE", "ZERO", "ONE", "FOUR"), list2.toList())
+
+        assertThrows(IndexOutOfBoundsException::class.java, {
+            AbstractWaqtiList.copyElements(list2, list1, listOf("FIVE"), 6)
+        })
+    }
+
+    // TODO: 02-Apr-18 Check that when the exceptions are thrown the List isn't modified at all
+
+    @DisplayName("List Companion Swap Elements")
+    @Test
+    fun testListCompanionSwapElements() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "THREE",
+                        "FOUR",
+                        "FIVE"
+                ) as AbstractWaqtiListDummy
+        AbstractWaqtiList.swapElements(list1, list2, listOf("ZERO"), listOf("FOUR"), 0, 0)
+        assertEquals(listOf("FOUR", "ONE", "TWO"), list1.toList())
+        assertEquals(listOf("ZERO", "THREE", "FIVE"), list2.toList())
+
+        AbstractWaqtiList.swapElements(list1, list2, listOf("FOUR", "TWO"), listOf("ZERO"), 0, 3)
+        assertEquals(listOf("ZERO", "ONE"), list1.toList())
+        assertEquals(listOf("THREE", "FIVE", "FOUR", "TWO"), list2.toList())
+
+        list1.clear().addAll("ZERO", "ONE", "TWO")
+        list2.clear().addAll("THREE", "FOUR", "FIVE")
+
+        AbstractWaqtiList.swapElements(list1, list2, listOf(), listOf("FIVE"))
+        assertEquals(listOf("ZERO", "ONE", "TWO", "FIVE"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR"), list2.toList())
+
+        AbstractWaqtiList.swapElements(list1, list2, listOf("FIVE"), listOf())
+        assertEquals(listOf("ZERO", "ONE", "TWO"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE"), list2.toList())
+
+        AbstractWaqtiList.swapElements(list2, list1, listOf(), listOf())
+        assertEquals(listOf("ZERO", "ONE", "TWO"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE"), list2.toList())
+
+        assertAll(
+                { AbstractWaqtiList.swapElements(list1, list2, listOf("NULL"), listOf("NULL")) }
+        )
+
+        assertThrows(IndexOutOfBoundsException::class.java, {
+            AbstractWaqtiList.swapElements(list1, list2, listOf
+            ("ZERO"), listOf("THREE"), 5, 0)
+        })
+    }
+
+    @DisplayName("List Companion Join")
+    @Test
+    fun testListCompanionJoin() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "THREE",
+                        "FOUR",
+                        "FIVE"
+                ) as AbstractWaqtiListDummy
+
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE"), AbstractWaqtiList.join(list1, list2))
+        assertEquals(listOf("ZERO", "ONE", "TWO"),
+                AbstractWaqtiList.join(list1, AbstractWaqtiListDummy()))
+        assertEquals(listOf("THREE", "FOUR", "FIVE"),
+                AbstractWaqtiList.join(AbstractWaqtiListDummy(), list2))
+        assertEquals(listOf<String>(), AbstractWaqtiList.join(AbstractWaqtiListDummy(), AbstractWaqtiListDummy()))
+    }
+
+    @DisplayName("List Companion Intersection")
+    @Test
+    fun testListCompanionIntersection() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "A",
+                        "B",
+                        "C"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "B",
+                        "B",
+                        "E"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("B", "B", "B"), AbstractWaqtiList.intersection(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("D", "E", "F")
+        assertEquals(listOf<String>(), AbstractWaqtiList.intersection(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("A", "B", "C")
+        assertEquals(listOf("A", "B", "C", "A", "B", "C"), AbstractWaqtiList.intersection(list1, list2))
+
+        list1.clear().addAll("A", "A", "A")
+        list2.clear().addAll("A", "A", "A")
+        assertEquals(listOf("A", "A", "A", "A", "A", "A"), AbstractWaqtiList.intersection(list1, list2))
+
+    }
+
+    @DisplayName("List Companion Intersection Distinct")
+    @Test
+    fun testListCompanionIntersectionDistinct() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "A",
+                        "B",
+                        "C"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "B",
+                        "B",
+                        "E"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("B"), AbstractWaqtiList.intersectionDistinct(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("D", "E", "F")
+        assertEquals(listOf<String>(), AbstractWaqtiList.intersectionDistinct(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("A", "B", "C")
+        assertEquals(listOf("A", "B", "C"), AbstractWaqtiList.intersectionDistinct(list1, list2))
+
+        list1.clear().addAll("A", "A", "A")
+        list2.clear().addAll("A", "A", "A")
+        assertEquals(listOf("A"), AbstractWaqtiList.intersectionDistinct(list1, list2))
+        assertEquals(6, AbstractWaqtiListDummy().addAll(list1 + list2).countOf("A"))
+
+    }
+
+    @DisplayName("List Companion Difference")
+    @Test
+    fun testListCompanionDifference() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "A",
+                        "B",
+                        "C"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "B",
+                        "B",
+                        "E"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("A", "C"), AbstractWaqtiList.difference(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("D", "E", "F")
+        assertEquals(listOf("A", "B", "C"), AbstractWaqtiList.difference(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("A", "B", "C")
+        assertEquals(listOf<String>(), AbstractWaqtiList.difference(list1, list2))
+
+        list1.clear().addAll("A", "A", "A")
+        list2.clear().addAll("B", "B", "B")
+        assertEquals(listOf("A", "A", "A"), AbstractWaqtiList.difference(list1, list2))
+    }
+
+    @DisplayName("List Companion Difference Distinct")
+    @Test
+    fun testListCompanionDifferenceDistinct() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "A",
+                        "B",
+                        "C"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "B",
+                        "B",
+                        "E"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("A", "C"), AbstractWaqtiList.differenceDistinct(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("D", "E", "F")
+        assertEquals(listOf("A", "B", "C"), AbstractWaqtiList.differenceDistinct(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("A", "B", "C")
+        assertEquals(listOf<String>(), AbstractWaqtiList.differenceDistinct(list1, list2))
+
+        list1.clear().addAll("A", "A", "A")
+        list2.clear().addAll("B", "B", "B")
+        assertEquals(listOf("A"), AbstractWaqtiList.differenceDistinct(list1, list2))
+    }
+
+    @DisplayName("List Companion Union")
+    @Test
+    fun testListCompanionUnion() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "A",
+                        "B",
+                        "C"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "B",
+                        "B",
+                        "E"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("A", "B", "C", "B", "B", "E"), AbstractWaqtiList.union(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("D", "E", "F")
+        assertEquals(listOf("A", "B", "C", "D", "E", "F"), AbstractWaqtiList.union(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("A", "B", "C")
+        assertEquals(listOf("A", "B", "C", "A", "B", "C"), AbstractWaqtiList.union(list1, list2))
+
+        list1.clear().addAll("A", "A", "A")
+        list2.clear().addAll("B", "B", "B")
+        assertEquals(listOf("A", "A", "A", "B", "B", "B"), AbstractWaqtiList.union(list1, list2))
+
+        assertEquals(listOf("A", "A", "A"), AbstractWaqtiList.union(list1))
+    }
+
+    @DisplayName("List Companion Union Distinct")
+    @Test
+    fun testListCompanionUnionDistinct() {
+        val list1 = AbstractWaqtiListDummy()
+                .addAll(
+                        "A",
+                        "B",
+                        "C"
+                ) as AbstractWaqtiListDummy
+
+        val list2 = AbstractWaqtiListDummy()
+                .addAll(
+                        "B",
+                        "B",
+                        "E"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("A", "B", "C", "E"), AbstractWaqtiList.unionDistinct(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("D", "E", "F")
+        assertEquals(listOf("A", "B", "C", "D", "E", "F"), AbstractWaqtiList.unionDistinct(list1, list2))
+
+        list1.clear().addAll("A", "B", "C")
+        list2.clear().addAll("A", "B", "C")
+        assertEquals(listOf("A", "B", "C"), AbstractWaqtiList.unionDistinct(list1, list2))
+
+        list1.clear().addAll("A", "A", "A")
+        list2.clear().addAll("B", "B", "B")
+        assertEquals(listOf("A", "B"), AbstractWaqtiList.unionDistinct(list1, list2))
+
+        assertEquals(listOf("A"), AbstractWaqtiList.unionDistinct(list1))
+    }
+
+    @DisplayName("List Hash Code")
+    @Test
+    fun testListHashCode() {
+        val list = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("ZERO", "ONE", "TWO").hashCode(), list.hashCode())
+        assertNotEquals(listOf("ZERO", "ONE ", "TWO").hashCode(), list.hashCode())
+        assertEquals(listOf<String>().hashCode(), AbstractWaqtiListDummy().hashCode())
+    }
+
+    @DisplayName("List Hash Equals")
+    @Test
+    fun testListEquals() {
+        val list = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO"
+                ) as AbstractWaqtiListDummy
+
+        assertTrue(AbstractWaqtiListDummy().addAll(listOf("ZERO", "ONE", "TWO")) == list)
+        assertFalse(AbstractWaqtiListDummy().addAll(listOf("ZERO", "ONE ", "TWO")) == list)
+        assertTrue(AbstractWaqtiListDummy() == AbstractWaqtiListDummy())
+    }
+
+    @DisplayName("List To String")
+    @Test
+    fun testListToString() {
+        val list = AbstractWaqtiListDummy()
+                .addAll(
+                        "ZERO",
+                        "ONE",
+                        "TWO"
+                ) as AbstractWaqtiListDummy
+        assertEquals(listOf("ZERO", "ONE", "TWO").toString(), list.toString())
+        assertNotEquals(listOf("ZERO", "ONE ", "TWO").toString(), list.toString())
+        assertEquals(listOf<String>().toString(), AbstractWaqtiListDummy().toString())
     }
 }

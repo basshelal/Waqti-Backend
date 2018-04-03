@@ -6,6 +6,9 @@
 
 * Finish documentation inside Task class
 
+* Make code more easily Java interoperable by having the correct annotations like @JvmStatic and @Throws etc, read 
+the kotlin lang site for more on this
+
 # Notes
 
 * Boards will contain Lists, there will be merger Boards which will contain the contents of one or more other Boards

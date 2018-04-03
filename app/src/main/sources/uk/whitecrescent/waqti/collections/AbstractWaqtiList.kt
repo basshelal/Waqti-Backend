@@ -1,12 +1,13 @@
 package uk.whitecrescent.waqti.collections
 
+import uk.whitecrescent.waqti.UnknownException
 import java.util.function.Consumer
 
 abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Properties
 
-    private val initialSize = 10
+    private val initialSize = 15
 
     @OverrideRecommended //for the initial size being done at construction time
     protected open val list = ArrayList<E>(initialSize)
@@ -200,6 +201,9 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         }
     }
 
+    @NoOverrideRecommended
+    override fun countOf(element: E) = this.count { it == element }
+
     //endregion Query
 
     //region Manipulate
@@ -229,7 +233,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
                 return this
             }
             else -> {
-                throw IllegalArgumentException("Unknown error when trying to move $fromIndex to $toIndex in $this ")
+                throw UnknownException("Unknown error when trying to move $fromIndex to $toIndex in $this ")
             }
         }
     }
@@ -248,7 +252,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     @NoOverrideRecommended
     override fun swap(`this`: E, that: E) = swap(indexOf(`this`), indexOf(that))
 
-    override fun moveAllTo(vararg elements: E, toIndex: Int) = moveAllTo(elements.toList(), toIndex)
+    override fun moveAllTo(toIndex: Int, vararg elements: E) = moveAllTo(elements.toList(), toIndex)
 
     override fun moveAllTo(collection: Collection<E>, toIndex: Int): WaqtiList<E> {
         val found = this.getAll(collection)
@@ -304,100 +308,119 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Companion
 
-    // TODO: 02-Apr-18 Test these!
     companion object {
-        fun <E> moveElement(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
-                            element: E, toIndex: Int = listTo.nextIndex) {
-            val found = listFrom[element]
-            if (found != null) {
-                listTo.addAt(toIndex, found)
-                listFrom.remove(found)
-            }
-        }
-
-        fun <E> moveElements(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
-                             vararg elements: E, toIndex: Int = listTo.nextIndex) {
-            val found = listFrom.getAll(*elements)
-            if (found.isNotEmpty()) {
-                listTo.addAllAt(toIndex, found)
-                listFrom.removeAll(found)
-            }
-        }
 
         fun <E> moveElements(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
                              elements: Collection<E>, toIndex: Int = listTo.nextIndex) {
             val found = listFrom.getAll(elements)
-            if (found.isNotEmpty()) {
-                listTo.addAllAt(toIndex, found)
-                listFrom.removeAll(found)
-            }
-        }
-
-        fun <E> copyElement(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
-                            element: E, toIndex: Int = listTo.nextIndex) {
-            val found = listFrom[element]
-            if (found != null) {
-                listTo.addAt(toIndex, found)
-            }
-        }
-
-        fun <E> copyElements(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
-                             vararg elements: E, toIndex: Int = listTo.nextIndex) {
-            val found = listFrom.getAll(*elements)
-            if (found.isNotEmpty()) {
-                listTo.addAllAt(toIndex, found)
+            when {
+                toIndex < 0 || toIndex > listTo.nextIndex -> {
+                    throw IndexOutOfBoundsException("Cannot move to $toIndex, limits are 0 and ${listTo.nextIndex}")
+                }
+                found.isNotEmpty() && listFrom !== listTo -> {
+                    listFrom.removeAll(found)
+                    listTo.addAllAt(toIndex, found)
+                }
             }
         }
 
         fun <E> copyElements(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
                              elements: Collection<E>, toIndex: Int = listTo.nextIndex) {
             val found = listFrom.getAll(elements)
-            if (found.isNotEmpty()) {
-                listTo.addAllAt(toIndex, found)
+            when {
+                toIndex < 0 || toIndex > listTo.nextIndex -> {
+                    throw IndexOutOfBoundsException("Cannot move to $toIndex, limits are 0 and ${listTo.nextIndex}")
+                }
+                found.isNotEmpty() && listFrom !== listTo -> {
+                    listTo.addAllAt(toIndex, found)
+                }
             }
         }
 
         fun <E> swapElements(listLeft: AbstractWaqtiList<E>, listRight: AbstractWaqtiList<E>,
-                             elementsLeft: List<E>, elementsRight: List<E>,
+                             elementsLeft: Collection<E>, elementsRight: Collection<E>,
                              indexIntoLeft: Int = listLeft.nextIndex, indexIntoRight: Int = listRight.nextIndex) {
+
             val foundLeft = listLeft.getAll(elementsLeft)
             val foundRight = listRight.getAll(elementsRight)
-            when {
-                foundLeft.isNotEmpty() && foundRight.isNotEmpty() -> {
-                    listLeft.addAllAt(indexIntoLeft, foundRight)
-                    listRight.addAllAt(indexIntoRight, foundLeft)
-                    listLeft.removeAll(foundLeft)
-                    listRight.removeAll(foundRight)
-                }
-                foundLeft.isEmpty() && foundRight.isNotEmpty() -> {
-                    moveElements(listRight, listLeft, foundRight, indexIntoLeft)
-                }
-                foundLeft.isNotEmpty() && foundRight.isEmpty() -> {
-                    moveElements(listLeft, listRight, foundLeft, indexIntoRight)
+
+            if (listLeft !== listRight) {
+                when {
+                    indexIntoLeft < 0 ||
+                            indexIntoRight < 0 ||
+                            indexIntoLeft > listLeft.nextIndex ||
+                            indexIntoRight > listRight.nextIndex -> {
+                        throw IndexOutOfBoundsException("Cannot swap $indexIntoLeft  and $indexIntoRight," +
+                                " limits are ${listLeft.nextIndex} and ${listRight.nextIndex} respectively")
+                    }
+
+                    foundLeft.isNotEmpty() && foundRight.isNotEmpty() -> {
+                        listLeft.addAllAt(indexIntoLeft, foundRight)
+                        listRight.addAllAt(indexIntoRight, foundLeft)
+                        listLeft.removeAll(foundLeft)
+                        listRight.removeAll(foundRight)
+                    }
+                    foundLeft.isEmpty() && foundRight.isNotEmpty() -> {
+                        moveElements(listRight, listLeft, foundRight, indexIntoLeft)
+                    }
+                    foundLeft.isNotEmpty() && foundRight.isEmpty() -> {
+                        moveElements(listLeft, listRight, foundLeft, indexIntoRight)
+                    }
                 }
             }
         }
 
-        fun <E> join(thisList: AbstractWaqtiList<E>, intoList: AbstractWaqtiList<E>): List<E> {
-            intoList.addAll(thisList)
-            val result = ArrayList<E>(intoList.size + thisList.size)
+        fun <E> join(intoList: AbstractWaqtiList<E>, thisList: AbstractWaqtiList<E>): List<E> {
+            val result = ArrayList<E>(thisList.size + thisList.size)
             result.addAll(intoList)
             result.addAll(thisList)
             return result.toList()
         }
+
+        fun <E> intersection(thisList: AbstractWaqtiList<E>, thatList: AbstractWaqtiList<E>) =
+                ArrayList<E>(thisList + thatList).filter { it in thisList && it in thatList }.toList()
+
+        fun <E> intersectionDistinct(thisList: AbstractWaqtiList<E>, thatList: AbstractWaqtiList<E>) =
+                ArrayList<E>(thisList + thatList).filter { it in thisList && it in thatList }.distinct().toList()
+
+        fun <E> difference(inThis: AbstractWaqtiList<E>, notInThis: AbstractWaqtiList<E>) =
+                ArrayList<E>(inThis + notInThis).filter { it in inThis && it !in notInThis }.toList()
+
+        fun <E> differenceDistinct(inThis: AbstractWaqtiList<E>, notInThis: AbstractWaqtiList<E>) =
+                ArrayList<E>(inThis + notInThis).filter { it in inThis && it !in notInThis }.distinct().toList()
+
+        fun <E> union(vararg lists: AbstractWaqtiList<E>): List<E> {
+            val result = ArrayList<E>(lists.size)
+            for (list in lists) {
+                for (element in list) {
+                    result.add(element)
+                }
+            }
+            return result.toList()
+        }
+
+        fun <E> unionDistinct(vararg lists: AbstractWaqtiList<E>): List<E> {
+            val result = ArrayList<E>(lists.size)
+            for (list in lists) {
+                for (element in list) {
+                    if (element !in result) result.add(element)
+                }
+            }
+            return result.toList()
+        }
+
     }
 
     //endregion Companion
 
-    override fun hashCode(): Int {
-        return list.hashCode()
-    }
+    //region Overriden from kotlin.Any
 
-    override fun equals(other: Any?): Boolean {
-        return list.equals(other)
-    }
+    override fun hashCode() = this.toList().hashCode()
 
-    override fun toString(): String {
-        return list.toString()
-    }
+    override fun equals(other: Any?) =
+            other is WaqtiCollection<*> && this.toList() == other.toList()
+
+    override fun toString() = this.toList().toString()
+
+    //endregion Overriden from kotlin.Any
 }
