@@ -1,8 +1,8 @@
 package uk.whitecrescent.waqti.collections
 
-import uk.whitecrescent.waqti.UnknownException
 import java.util.function.Consumer
 
+// TODO: 03-Apr-18 Document this!
 abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Properties
@@ -191,13 +191,13 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     @NoOverrideRecommended
     override fun subList(fromIndex: Int, toIndex: Int): List<E> {
-        when {
+        return when {
             fromIndex < 0 || toIndex < 0 || fromIndex > nextIndex || toIndex > nextIndex -> {
                 throw  IndexOutOfBoundsException("Cannot SubList $fromIndex  to $toIndex, limits are 0 and $nextIndex")
             }
-            fromIndex > toIndex -> return list.subList(toIndex + 1, fromIndex + 1)
-            fromIndex < toIndex -> return list.subList(fromIndex, toIndex)
-            else -> return emptyList()
+            fromIndex > toIndex -> list.subList(toIndex + 1, fromIndex + 1)
+            fromIndex < toIndex -> list.subList(fromIndex, toIndex)
+            else -> emptyList()
         }
     }
 
@@ -209,20 +209,17 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     //region Manipulate
 
     override fun move(fromIndex: Int, toIndex: Int): WaqtiList<E> {
-        when {
+        return when {
             toIndex > size - 1 || toIndex < 0 || fromIndex > size - 1 || fromIndex < 0 -> {
                 throw  IndexOutOfBoundsException("Cannot move $fromIndex  to $toIndex, limits are 0 and $nextIndex")
             }
-
-            fromIndex == toIndex -> return this
-
             fromIndex < toIndex -> {
                 val itemToMove = list[fromIndex]
                 for ((i, element) in list.filter { list.indexOf(it) in (fromIndex + 1)..toIndex }.withIndex()) {
                     list[fromIndex + i] = element
                 }
                 list[toIndex] = itemToMove
-                return this
+                this
             }
             fromIndex > toIndex -> {
                 val itemToMove = list[fromIndex]
@@ -230,11 +227,9 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
                     list[fromIndex - i] = element
                 }
                 list[toIndex] = itemToMove
-                return this
+                this
             }
-            else -> {
-                throw UnknownException("Unknown error when trying to move $fromIndex to $toIndex in $this ")
-            }
+            else -> this
         }
     }
 
@@ -256,9 +251,14 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     override fun moveAllTo(collection: Collection<E>, toIndex: Int): WaqtiList<E> {
         val found = this.getAll(collection)
-        if (found.isNotEmpty()) {
-            this.removeAll(found)
-            this.addAllAt(toIndex, found)
+        when {
+            toIndex < 0 || toIndex > nextIndex -> {
+                throw IndexOutOfBoundsException("Cannot move to $toIndex, limits are 0 to $nextIndex")
+            }
+            found.isNotEmpty() -> {
+                this.removeAll(found)
+                this.addAllAt(toIndex, found)
+            }
         }
         return this
     }
@@ -296,6 +296,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     @NoOverrideRecommended
     override fun listIterator(index: Int) = list.listIterator(index)
 
+    // Can never be called from Kotlin see kotlin.collections.Iterable.forEach
     @NoOverrideRecommended
     override fun forEach(action: Consumer<in E>?) = list.forEach(action)
 

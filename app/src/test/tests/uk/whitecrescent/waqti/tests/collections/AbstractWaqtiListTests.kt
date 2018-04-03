@@ -77,6 +77,8 @@ class AbstractWaqtiListTests {
         assertEquals("NEW ONE", list[1])
 
         assertThrows(IndexOutOfBoundsException::class.java, { list[6] = "SIX" })
+        assertEquals(4, list.size)
+        assertEquals("NEW ONE", list[1])
     }
 
     @DisplayName("List Set Operator Element")
@@ -96,6 +98,8 @@ class AbstractWaqtiListTests {
         assertEquals("NEW ONE", list[1])
 
         assertThrows(ElementNotFoundException::class.java, { list["FIVE"] = "NEW FIVE" })
+        assertEquals(3, list.size)
+        assertEquals("NEW ONE", list[1])
     }
 
     @DisplayName("List Get Operator Index")
@@ -110,6 +114,10 @@ class AbstractWaqtiListTests {
         assertEquals("TWO", list[2])
 
         assertThrows(IndexOutOfBoundsException::class.java, { list[6].length })
+        assertEquals(3, list.size)
+        assertEquals("ZERO", list[0])
+        assertEquals("ONE", list[1])
+        assertEquals("TWO", list[2])
     }
 
     @DisplayName("List Get Operator Element")
@@ -124,6 +132,10 @@ class AbstractWaqtiListTests {
         assertEquals("TWO", list["TWO"])
 
         assertThrows(ElementNotFoundException::class.java, { list["FIVE"] })
+        assertEquals(3, list.size)
+        assertEquals("ZERO", list["ZERO"])
+        assertEquals("ONE", list["ONE"])
+        assertEquals("TWO", list["TWO"])
     }
 
     @DisplayName("List Contains Operator")
@@ -344,6 +356,11 @@ class AbstractWaqtiListTests {
         assertEquals("W", list[3])
 
         assertThrows(ElementNotFoundException::class.java, { list.update("NULL", "NEW") })
+        assertEquals(4, list.size)
+        assertEquals("X", list[0])
+        assertEquals("E", list[1])
+        assertEquals("E", list[2])
+        assertEquals("W", list[3])
 
     }
 
@@ -363,6 +380,10 @@ class AbstractWaqtiListTests {
         assertEquals("TWO", list[2])
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.updateAt(6, "NEW") })
+        assertEquals(3, list.size)
+        assertEquals("ZERO", list[0])
+        assertEquals("1", list[1])
+        assertEquals("TWO", list[2])
     }
 
     @DisplayName("List Update All to")
@@ -447,6 +468,9 @@ class AbstractWaqtiListTests {
         assertEquals("TWO", list[1])
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.removeAt(5) })
+        assertEquals(2, list.size)
+        assertEquals("ZERO", list[0])
+        assertEquals("TWO", list[1])
     }
 
     @DisplayName("List Remove All vararg")
@@ -538,6 +562,9 @@ class AbstractWaqtiListTests {
         assertEquals("FOUR", list[1])
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.removeRange(5, 7) })
+        assertEquals(2, list.size)
+        assertEquals("ZERO", list[0])
+        assertEquals("FOUR", list[1])
 
         list.removeRange(0, 0)
         assertEquals(2, list.size)
@@ -557,6 +584,9 @@ class AbstractWaqtiListTests {
         assertEquals("ONE", list[1])
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.removeRange(5, 0) })
+        assertEquals(2, list.size)
+        assertEquals("ZERO", list[0])
+        assertEquals("ONE", list[1])
 
         assertAll({ list.removeRange(0, 0) })
         assertEquals(2, list.size)
@@ -679,6 +709,7 @@ class AbstractWaqtiListTests {
         assertEquals(0, list.indexOf("ZERO"))
 
         assertThrows(ElementNotFoundException::class.java, { list.indexOf("NULL") })
+        assertEquals(0, list.indexOf("ZERO"))
 
         list + "ZERO" + "ZERO"
         assertEquals(0, list.indexOf("ZERO"))
@@ -697,6 +728,7 @@ class AbstractWaqtiListTests {
         assertEquals(0, list.lastIndexOf("ZERO"))
 
         assertThrows(ElementNotFoundException::class.java, { list.lastIndexOf("NULL") })
+        assertEquals(0, list.lastIndexOf("ZERO"))
 
         list + "ZERO" + "ZERO"
         assertEquals(4, list.lastIndexOf("ZERO"))
@@ -738,6 +770,9 @@ class AbstractWaqtiListTests {
         assertEquals(listOf<String>(), list.subList(3, 3))
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.subList(0, 7) })
+        assertEquals(listOf("ZERO", "ONE"), list.subList(0, 2))
+        assertEquals(listOf("TWO", "THREE", "FOUR"), list.subList(4, 1))
+        assertEquals(listOf<String>(), list.subList(3, 3))
     }
 
     @DisplayName("List Count Of")
@@ -776,6 +811,7 @@ class AbstractWaqtiListTests {
         assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE"), list.toList())
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.move(7, 3) })
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE"), list.toList())
     }
 
     @DisplayName("List Move Element")
@@ -801,6 +837,7 @@ class AbstractWaqtiListTests {
         assertEquals(listOf("FOUR", "ONE", "TWO", "THREE", "ZERO", "FIVE"), list.toList())
 
         assertThrows(ElementNotFoundException::class.java, { list.move("SEVEN", "ZERO") })
+        assertEquals(listOf("FOUR", "ONE", "TWO", "THREE", "ZERO", "FIVE"), list.toList())
     }
 
     @DisplayName("List Swap Index")
@@ -826,6 +863,7 @@ class AbstractWaqtiListTests {
         assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE"), list.toList())
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.swap(7, 1) })
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE"), list.toList())
     }
 
     @DisplayName("List Swap Element")
@@ -851,6 +889,7 @@ class AbstractWaqtiListTests {
         assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE"), list.toList())
 
         assertThrows(ElementNotFoundException::class.java, { list.swap("NULL", "ONE") })
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE"), list.toList())
     }
 
     @DisplayName("List Move All To vararg")
@@ -884,6 +923,7 @@ class AbstractWaqtiListTests {
         assertEquals(listOf("ZERO", "THREE", "FOUR", "ONE", "TWO", "FIVE"), list.toList())
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.moveAllTo(7, "ONE") })
+        assertEquals(listOf("ZERO", "THREE", "FOUR", "ONE", "TWO", "FIVE"), list.toList())
     }
 
     @DisplayName("List Move All To collection")
@@ -920,6 +960,7 @@ class AbstractWaqtiListTests {
         assertEquals(listOf("ZERO", "THREE", "FOUR", "ONE", "TWO", "FIVE"), list.toList())
 
         assertThrows(IndexOutOfBoundsException::class.java, { list.moveAllTo(listOf("ONE"), 7) })
+        assertEquals(listOf("ZERO", "THREE", "FOUR", "ONE", "TWO", "FIVE"), list.toList())
     }
 
     @DisplayName("List Sort")
@@ -1122,6 +1163,8 @@ class AbstractWaqtiListTests {
         assertThrows(IndexOutOfBoundsException::class.java, {
             AbstractWaqtiList.moveElements(list2, list1, listOf("FIVE"), 7)
         })
+        assertEquals(listOf("TWO", "THREE"), list1.toList())
+        assertEquals(listOf("FIVE", "ZERO", "ONE", "FOUR"), list2.toList())
     }
 
     @DisplayName("List Companion Copy Elements")
@@ -1159,9 +1202,9 @@ class AbstractWaqtiListTests {
         assertThrows(IndexOutOfBoundsException::class.java, {
             AbstractWaqtiList.copyElements(list2, list1, listOf("FIVE"), 6)
         })
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE", "ZERO", "ONE", "FOUR"), list2.toList())
     }
-
-    // TODO: 02-Apr-18 Check that when the exceptions are thrown the List isn't modified at all
 
     @DisplayName("List Companion Swap Elements")
     @Test
@@ -1210,6 +1253,8 @@ class AbstractWaqtiListTests {
             AbstractWaqtiList.swapElements(list1, list2, listOf
             ("ZERO"), listOf("THREE"), 5, 0)
         })
+        assertEquals(listOf("ZERO", "ONE", "TWO"), list1.toList())
+        assertEquals(listOf("THREE", "FOUR", "FIVE"), list2.toList())
     }
 
     @DisplayName("List Companion Join")

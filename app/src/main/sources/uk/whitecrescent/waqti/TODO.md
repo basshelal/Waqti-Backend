@@ -1,5 +1,7 @@
 # TODO
 
+* AbstractWaqtiList Documentation and more Java usable using the right annotations like @JvmStatic and @Throws
+
 * Write broad specification for Tuple in a markdown file, then detail how the implementation will work in code
 
 * Write stories tests to test as many possible scenarios, here we try to write tests to break the thing

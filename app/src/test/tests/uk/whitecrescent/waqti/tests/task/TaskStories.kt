@@ -2,6 +2,7 @@ package uk.whitecrescent.waqti.tests.task
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.now
@@ -20,6 +21,7 @@ import uk.whitecrescent.waqti.today
 import java.time.Duration
 
 // TODO: 27-Mar-18 Finish this too
+@Disabled
 @DisplayName("Task Stories")
 class TaskStories {
 

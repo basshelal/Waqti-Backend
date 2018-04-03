@@ -27,10 +27,6 @@ fun setGracePeriod(duration: Duration) {
 
 // Extensions
 
-fun <T> List<T>.toArrayList(): ArrayList<T> {
-    return this as ArrayList<T>
-}
-
 fun ArrayList<Task>.taskIDs(): ArrayList<TaskID> {
     val ids = ArrayList<TaskID>(this.size)
     this.forEach { ids.add(it.taskID) }
