@@ -428,29 +428,49 @@ class AbstractWaqtiListTests {
         list.forEach { assertTrue(it == "A") }
     }
 
-    @DisplayName("List Remove")
+    @DisplayName("List Update If")
     @Test
-    fun testListRemove() {
+    fun testListUpdateIf() {
+        val list = AbstractWaqtiListDummy()
+                .addAll(
+                        "Bro",
+                        "Dog",
+                        "Bag",
+                        "Box",
+                        "Car",
+                        "Ant"
+                ) as AbstractWaqtiListDummy
+        list.updateIf({ it[0] == 'B' }, "NEW")
+
+        assertTrue(list.filter { it[0] == 'B' }.isEmpty())
+
+        assertEquals(6, list.size)
+        assertEquals(listOf("NEW", "Dog", "NEW", "NEW", "Car", "Ant"), list.toList())
+    }
+
+    @DisplayName("List Remove First")
+    @Test
+    fun testListRemoveFirst() {
         val list = AbstractWaqtiListDummy()
                 .addAll(
                         "ZERO",
                         "ONE",
                         "TWO"
                 ) as AbstractWaqtiListDummy
-        list.remove("ONE")
+        list.removeFirst("ONE")
         assertEquals(2, list.size)
         assertEquals("ZERO", list[0])
         assertEquals("TWO", list[1])
 
         list.addAll("NEW", "NEW", "NEW")
-        list.remove("NEW")
+        list.removeFirst("NEW")
         assertEquals(4, list.size)
         assertEquals("ZERO", list[0])
         assertEquals("TWO", list[1])
         assertEquals("NEW", list[2])
         assertEquals("NEW", list[3])
 
-        assertAll({ list.remove("NULL") })
+        assertAll({ list.removeFirst("NULL") })
     }
 
     @DisplayName("List Remove At")
@@ -491,6 +511,10 @@ class AbstractWaqtiListTests {
 
         assertAll({ list.removeAll("ZERO", "ONE", "NULL") })
         assertAll({ list.removeAll() })
+
+        list.clear().addAll("A", "A", "A", "B")
+        list.removeAll("A")
+        assertEquals(listOf("B"), list.toList())
     }
 
     @DisplayName("List Remove All collection")
@@ -786,6 +810,23 @@ class AbstractWaqtiListTests {
         assertEquals(2, list.countOf("B"))
         assertEquals(1, list.countOf("C"))
         assertEquals(0, list.countOf("X"))
+    }
+
+    @DisplayName("List Contains Any")
+    @Test
+    fun testListContainsAny() {
+        val list = AbstractWaqtiListDummy()
+                .addAll(
+                        "Bro",
+                        "Dog",
+                        "Bag",
+                        "Box",
+                        "Car",
+                        "Ant"
+                ) as AbstractWaqtiListDummy
+        assertTrue(list.containsAny { it[0] == 'A' })
+        assertFalse(list.containsAny { it.contains('z', true) })
+        assertEquals(listOf("Bro", "Dog", "Bag", "Box", "Car", "Ant"), list.toList())
     }
 
     @DisplayName("List Move Index")

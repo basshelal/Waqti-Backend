@@ -4,7 +4,7 @@ interface WaqtiCollection<E> : Collection<E> {
 
     operator fun plus(element: E) = add(element)
 
-    operator fun minus(element: E) = remove(element)
+    operator fun minus(element: E) = removeFirst(element)
 
     operator fun get(element: E): E
 
@@ -18,7 +18,9 @@ interface WaqtiCollection<E> : Collection<E> {
 
     fun updateAllTo(collection: Collection<E>, new: E): WaqtiCollection<E>
 
-    fun remove(element: E): WaqtiCollection<E>
+    fun updateIf(predicate: (E) -> Boolean, new: E): WaqtiCollection<E>
+
+    fun removeFirst(element: E): WaqtiCollection<E>
 
     fun removeAll(vararg elements: E): WaqtiCollection<E>
 
@@ -36,6 +38,8 @@ interface WaqtiCollection<E> : Collection<E> {
     fun getAll(vararg elements: E): List<E>
 
     fun getAll(collection: Collection<E>): List<E>
+
+    fun containsAny(predicate: (E) -> Boolean): Boolean
 
     fun clear(): WaqtiCollection<E>
 
