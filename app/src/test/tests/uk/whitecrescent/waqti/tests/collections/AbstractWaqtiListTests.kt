@@ -1147,9 +1147,10 @@ class AbstractWaqtiListTests {
                         "FOUR",
                         "FIVE"
                 ) as AbstractWaqtiListDummy
-        list.listIterator(4).add("SIX")
-        assertEquals(7, list.size)
-        assertEquals("SIX", list[4])
+        list.listIterator(4)
+        assertEquals(6, list.size)
+        assertEquals("FOUR", list[4])
+        assertThrows(IndexOutOfBoundsException::class.java, { list.listIterator(7) })
     }
 
     @DisplayName("List For Each")
@@ -1163,22 +1164,6 @@ class AbstractWaqtiListTests {
                         "A"
                 ) as AbstractWaqtiListDummy
         list.forEach({ assertTrue(it == "A") })
-    }
-
-    @DisplayName("List Join")
-    @Test
-    fun testListJoin() {
-        val list = AbstractWaqtiListDummy()
-                .addAll(
-                        "ZERO",
-                        "ONE",
-                        "TWO",
-                        "THREE",
-                        "FOUR",
-                        "FIVE"
-                ) as AbstractWaqtiListDummy
-        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "EXTRA"),
-                list.join(listOf("EXTRA").toList()).toList())
     }
 
     @DisplayName("List Companion Move Elements")

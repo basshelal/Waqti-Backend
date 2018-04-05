@@ -32,4 +32,4 @@ annotation class OverrideRecommended
 @Retention(AnnotationRetention.SOURCE)
 @MustBeDocumented
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CLASS, AnnotationTarget.CONSTRUCTOR)
-annotation class NoOverrideRecommended
+annotation class NoOverride

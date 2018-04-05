@@ -32,9 +32,6 @@ interface WaqtiCollection<E> : Collection<E> {
 
     fun countOf(element: E): Int
 
-    // Doesn't modify this, instead returns a new one
-    fun join(collection: Collection<E>): WaqtiCollection<E>
-
     fun getAll(vararg elements: E): List<E>
 
     fun getAll(collection: Collection<E>): List<E>

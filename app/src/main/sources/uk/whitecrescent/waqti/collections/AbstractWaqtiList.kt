@@ -2,8 +2,8 @@ package uk.whitecrescent.waqti.collections
 
 import java.util.function.Consumer
 
-// TODO: 03-Apr-18 Document this!
-// TODO: 04-Apr-18 Consider deleting all the made up annotations, I don't know if we need them
+// TODO: 05-Apr-18 Finish Documenting this and make sure documentation is up to date
+// TODO: 05-Apr-18 I'm not sure if this thing is Thread safe or not, and how do I check?
 abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Properties
@@ -18,12 +18,8 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * Override for changing the construction of the ArrayList to allow for an initial size or an initial collection,
      * this is recommended for efficiency reasons as the default construction may not be efficient.
      *
-     * If not overridden then the construction of the list will be an empty ArrayList with the capacity of 15 which
-     * can be slightly inefficient for certain applications.
-     *
      * @see java.util.ArrayList
      */
-    @OverrideRecommended
     protected open val list = ArrayList<E>(15)
 
     /**
@@ -37,7 +33,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      *
      * @see java.util.ArrayList.size
      */
-    @NoOverrideRecommended
+    @NoOverride
     override val size: Int
         get() = list.size
 
@@ -60,7 +56,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      *
      * @see List.lastIndex
      */
-    @NoOverrideRecommended
+    @NoOverride
     val nextIndex: Int
         get() = list.lastIndex + 1
 
@@ -81,7 +77,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return the element at the index passed in
      * @throws IndexOutOfBoundsException if the index is out of the bounds of this list
      */
-    @NoOverrideRecommended
+    @NoOverride
     @Throws(IndexOutOfBoundsException::class)
     override operator fun get(index: Int) = list[index]
 
@@ -115,7 +111,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param element the element to check if it has an equal contained in this list
      * @return true if this list contains an element equal to the passed in element and false otherwise
      */
-    @NoOverrideRecommended
+    @NoOverride
     override operator fun contains(element: E) = list.contains(element)
 
     //endregion Operators
@@ -243,7 +239,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return this list after updating the element
      * @throws ElementNotFoundException if no instance of an element equal to the `old` element can be found see [indexOf]
      */
-    @NoOverrideRecommended
+    @NoOverride
     @Throws(ElementNotFoundException::class)
     override fun update(old: E, new: E) = updateAt(indexOf(old), new)
 
@@ -309,7 +305,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * updated to
      * @return this list after updating
      */
-    @NoOverrideRecommended
+    @NoOverride
     override fun updateIf(predicate: (E) -> Boolean, new: E) = updateAllTo(this.filter(predicate), new)
 
     //endregion Update
@@ -461,7 +457,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @see List
      * @return this list as a read only kotlin [List]
      */
-    @NoOverrideRecommended
+    @NoOverride
     override fun toList() = list.toList()
 
     /**
@@ -498,7 +494,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @see java.util.ArrayList.isEmpty
      * @return true if this list is empty and false if it is not
      */
-    @NoOverrideRecommended
+    @NoOverride
     override fun isEmpty() = list.isEmpty()
 
     /**
@@ -511,7 +507,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return the index of the first instance of an element equal to the passed in element
      * @throws ElementNotFoundException if no instance is found that is equal to the passed in element
      */
-    @NoOverrideRecommended
+    @NoOverride
     @Throws(ElementNotFoundException::class)
     override fun indexOf(element: E): Int {
         if (list.indexOf(element) == -1) {
@@ -529,7 +525,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return the index of the last instance of an element equal to the passed in element
      * @throws ElementNotFoundException if no instance is found that is equal to the passed in element
      */
-    @NoOverrideRecommended
+    @NoOverride
     override fun lastIndexOf(element: E): Int {
         if (list.lastIndexOf(element) == -1) {
             throw ElementNotFoundException("$element")
@@ -545,7 +541,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return the list of integers representing the list of indexes of instances of elements in this list that are
      * equal to the passed in element
      */
-    @NoOverrideRecommended
+    @NoOverride
     override fun allIndexesOf(element: E): List<Int> {
         val result = ArrayList<Int>()
         this.forEachIndexed { index, it -> if (it == element) result.add(index) }
@@ -566,7 +562,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return the sublist from the `fromIndex` inclusive to the `toIndex` exclusive
      * @throws IndexOutOfBoundsException if either indexes are out of bounds
      */
-    @NoOverrideRecommended
+    @NoOverride
     @Throws(IndexOutOfBoundsException::class)
     override fun subList(fromIndex: Int, toIndex: Int): List<E> {
         return when {
@@ -586,7 +582,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param element the element to check the number of times it occurs in this list
      * @return the number of times the passed in element occurs in this list
      */
-    @NoOverrideRecommended
+    @NoOverride
     override fun countOf(element: E) = this.count { it == element }
 
     /**
@@ -597,7 +593,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param predicate the predicate to check whether any elements in this list satisfy it or not
      * @return true if at least one satisfies the passed in predicate and false if none do
      */
-    @NoOverrideRecommended
+    @NoOverride
     override fun containsAny(predicate: (E) -> Boolean) = this.any(predicate)
 
     //endregion Query
@@ -659,7 +655,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return this list after moving the element
      * @throws ElementNotFoundException if either element does not have instances equal to it in this list
      */
-    @NoOverrideRecommended
+    @NoOverride
     @Throws(ElementNotFoundException::class)
     override fun move(from: E, to: E) = move(indexOf(from), indexOf(to))
 
@@ -697,7 +693,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return this list after swapping the elements at the passed in indexes
      * @throws ElementNotFoundException if either element does not have an instance equal to it in this list
      */
-    @NoOverrideRecommended
+    @NoOverride
     @Throws(ElementNotFoundException::class)
     override fun swap(`this`: E, that: E) = swap(indexOf(`this`), indexOf(that))
 
@@ -753,39 +749,100 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region List Utils
 
-    @NoOverrideRecommended
+    /**
+     * Grows this list to ensure that it can hold at least the passed in size, see
+     * [java.util.ArrayList.ensureCapacity].
+     *
+     * @see java.util.ArrayList.ensureCapacity
+     * @param size the size to grow to
+     * @return this list after growing
+     */
+    @NoOverride
     override fun growTo(size: Int): WaqtiList<E> {
         list.ensureCapacity(size)
         return this
     }
 
-    @NoOverrideRecommended
+    /**
+     * Gets the iterator of this list.
+     *
+     * @see java.util.ArrayList.iterator
+     * @see java.util.Iterator
+     * @return the iterator of this list
+     */
+    @NoOverride
     override fun iterator() = list.iterator()
 
-    @NoOverrideRecommended
+    /**
+     * Returns a possibly parallel [java.util.stream.Stream] with this list as its source.
+     *
+     * @see java.util.stream.Stream
+     * @see java.util.ArrayList.parallelStream
+     * @return the possibly parallel Stream with this list as its source
+     */
+    @NoOverride
     override fun parallelStream() = list.parallelStream()
 
-    @NoOverrideRecommended
+    /**
+     * Returns the [java.util.Spliterator] of this list.
+     *
+     * @see java.util.ArrayList.spliterator
+     * @see java.util.Spliterator
+     * @return the Spliterator of this list
+     */
+    @NoOverride
     override fun spliterator() = list.spliterator()
 
-    @NoOverrideRecommended
+    /**
+     * Returns a sequential [java.util.stream.Stream] with this list as its source.
+     *
+     * @see java.util.stream.Stream
+     * @see java.util.ArrayList.stream
+     * @return a sequential Stream with this list as its source
+     */
+    @NoOverride
     override fun stream() = list.stream()
 
-    @NoOverrideRecommended
+    /**
+     * Returns a list iterator over the elements in this list (in proper
+     * sequence).
+     *
+     * @see java.util.ListIterator
+     * @see java.util.ArrayList.listIterator
+     * @return a list iterator over the elements in this list in orders
+     */
+    @NoOverride
     override fun listIterator() = list.listIterator()
 
-    @NoOverrideRecommended
-    override fun listIterator(index: Int) = list.listIterator(index)
-
-    // Can never be called from Kotlin see kotlin.collections.Iterable.forEach
-    @NoOverrideRecommended
-    override fun forEach(action: Consumer<in E>?) = list.forEach(action)
-
-    @OverrideRecommended
-    override fun join(collection: Collection<E>): WaqtiCollection<E> {
-        this.addAll(collection)
-        return this
+    /**
+     * Returns a list iterator over the elements in this list (in proper
+     * sequence), starting at the specified position in the list.
+     *
+     * @see java.util.ListIterator
+     * @see java.util.ArrayList.listIterator
+     * @param index the index to start the returned list iterator from
+     * @return a list iterator starting at the passed in index
+     * @throws IndexOutOfBoundsException if the index is out of bounds
+     */
+    @NoOverride
+    @Throws(IndexOutOfBoundsException::class)
+    override fun listIterator(index: Int): ListIterator<E> {
+        if (index < 0 || index > size) {
+            throw IndexOutOfBoundsException("Cannot return List Iterator with index $index, limits are 0 to $size")
+        }
+        return list.listIterator(index)
     }
+
+    /**
+     * Performs the passed in action over each element in this list, note that this function can never be called from
+     * kotlin since [kotlin.collections.forEach] for [Iterable] always wins an overload.
+     *
+     * @see java.lang.Iterable.forEach
+     * @see kotlin.collections.forEach
+     * @param action the action to perform over each element in this list
+     */
+    @NoOverride
+    override fun forEach(action: Consumer<in E>?) = list.forEach(action)
 
     //endregion List Utils
 
@@ -893,11 +950,31 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Overriden from kotlin.Any
 
+    /**
+     * Returns the hash code of this list, which is just the hash code of the backing list.
+     *
+     * @see java.util.ArrayList.hashCode
+     * @return the hash code of this list
+     */
     override fun hashCode() = this.toList().hashCode()
 
+    /**
+     * Checks to see whether the passed in Any is equal to this list or not, the other must be a [WaqtiCollection]
+     * and its data contents must be equal and in equal order.
+     *
+     * @param other the other Any to compare to this
+     * @return true if the other Any is a [WaqtiCollection] and its elements are equal to this and in the same order
+     * and false otherwise
+     */
     override fun equals(other: Any?) =
             other is WaqtiCollection<*> && this.toList() == other.toList()
 
+    /**
+     * Returns a String representation of this list, this just uses the backing list's toString
+     *
+     * @see java.util.ArrayList.toString
+     * @return the String representation of this list
+     */
     override fun toString() = this.toList().toString()
 
     //endregion Overriden from kotlin.Any
