@@ -14,6 +14,7 @@ import uk.whitecrescent.waqti.collections.ElementNotFoundException
 @DisplayName("Abstract Waqti List Tests")
 class AbstractWaqtiListTests {
 
+    // Dummy class for testing AbstractWaqtiList
     private class AbstractWaqtiListDummy : AbstractWaqtiList<String>()
 
     @DisplayName("Empty List")
@@ -297,6 +298,8 @@ class AbstractWaqtiListTests {
         assertEquals("NEW TWO", list[2])
         assertEquals("ONE", list[3])
         assertEquals("TWO", list[4])
+
+        assertThrows(IndexOutOfBoundsException::class.java, { list.addAllAt(7, hashSetOf("NULL")) })
     }
 
     @DisplayName("List Add If")
@@ -638,6 +641,9 @@ class AbstractWaqtiListTests {
         assertEquals(listOf<String>(), list.getAll("NULL"))
 
         assertEquals(listOf<String>(), list.getAll())
+
+        list.clear().addAll("ONE", "ONE", "TWO")
+        assertEquals(listOf("ONE", "ONE"), list.getAll("ONE"))
     }
 
     @DisplayName("List Get All collection")
@@ -660,6 +666,9 @@ class AbstractWaqtiListTests {
         assertEquals(listOf<String>(), list.getAll(listOf("NULL")))
 
         assertEquals(listOf<String>(), list.getAll(listOf()))
+
+        list.clear().addAll(listOf("ONE", "ONE", "TWO"))
+        assertEquals(listOf("ONE", "ONE"), list.getAll(listOf("ONE")))
     }
 
     @DisplayName("List to List")
@@ -690,6 +699,8 @@ class AbstractWaqtiListTests {
         assertTrue(list.containsAll())
         assertFalse(list.containsAll("FIVE", "NULL"))
         assertFalse(list.containsAll("NULL"))
+        list.clear()
+        assertTrue(list.containsAll())
     }
 
     @DisplayName("List Contains All collection")
@@ -1166,7 +1177,8 @@ class AbstractWaqtiListTests {
                         "FOUR",
                         "FIVE"
                 ) as AbstractWaqtiListDummy
-        assertEquals(list.toList(), list.join(listOf("THIS SHOULD BE OVERRIDDEN")).toList())
+        assertEquals(listOf("ZERO", "ONE", "TWO", "THREE", "FOUR", "FIVE", "EXTRA"),
+                list.join(listOf("EXTRA").toList()).toList())
     }
 
     @DisplayName("List Companion Move Elements")

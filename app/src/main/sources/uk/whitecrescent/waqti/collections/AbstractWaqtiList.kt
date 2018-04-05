@@ -23,7 +23,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      *
      * @see java.util.ArrayList
      */
-    @OverrideRecommended //for the initial size being done at construction time
+    @OverrideRecommended
     protected open val list = ArrayList<E>(15)
 
     /**
@@ -416,8 +416,31 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Query
 
+    /**
+     * Gets all the elements in this list that are equal to any of the elements passed in, if none are passed in
+     * nothing is returned, if elements are passed in that this list does not contain instances that are equal to
+     * them then no action is taken for them and they will not appear in the returned list. The returned list can
+     * contain duplicates.
+     *
+     * This operation does not modify this list, it only queries this list.
+     *
+     * @param elements the elements to check that this list contains elements that are equal to any of them
+     * @return the list of elements that this list contains that are from the passed in elements
+     */
     override fun getAll(vararg elements: E) = getAll(elements.toList())
 
+    /**
+     * Gets all the elements in this list that are equal to any of the elements of the collection passed in, if the
+     * collection is empty nothing is returned, if the collection contains elements that this list does not contain
+     * instances that are equal to them then no action is taken for them and they will not appear in the returned
+     * list. The returned list can contain duplicates.
+     *
+     * This operation does not modify this list, it only queries this list.
+     *
+     * @param collection the collection of elements to check that this list contains elements that are equal to any of
+     * them
+     * @return the list of elements that this list contains that are from the passed in collection of elements
+     */
     override fun getAll(collection: Collection<E>): List<E> {
         val result = ArrayList<E>(collection.size)
         for (fromElement in collection) {
@@ -430,24 +453,82 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         return result.toList()
     }
 
+    /**
+     * Returns this list as a read only kotlin [List]
+     *
+     * This operation does not modify this list, it only queries this list.
+     *
+     * @see List
+     * @return this list as a read only kotlin [List]
+     */
     @NoOverrideRecommended
     override fun toList() = list.toList()
 
+    /**
+     * Checks whether this list contains *all* of the passed in elements, returns true if every element passed in
+     * contains at least an instance equal to it and false otherwise, if no elements are passed in will always return
+     * true.
+     *
+     * @see java.util.ArrayList.containsAll
+     * @param elements the elements to check that they are contained in this list
+     * @return true if the elements passed in have at least a single instance that is equal to them and false otherwise
+     */
     override fun containsAll(vararg elements: E) = this.containsAll(elements.toList())
 
+    /**
+     * Checks whether this list contains *all* of the passed in collection's elements, returns true if every element
+     * in the passed collection contains at least an instance equal to it and false otherwise, if the passed in
+     * collection is empty then will always return true.
+     *
+     * @see java.util.ArrayList.containsAll
+     * @param elements the collection of elements to check that they are contained in this list
+     * @return true if the collection of elements passed in have at least a single instance that is equal to them and
+     * false otherwise
+
+     */
     override fun containsAll(elements: Collection<E>) = list.containsAll(elements)
 
+    /**
+     * Checks whether this list is empty, returns true if this list contains no elements and false otherwise.
+     *
+     * ## No Override Recommended:
+     * No Override is recommended since this implementation just uses the ArrayList's [java.util.ArrayList.isEmpty]
+     * method.
+     *
+     * @see java.util.ArrayList.isEmpty
+     * @return true if this list is empty and false if it is not
+     */
     @NoOverrideRecommended
     override fun isEmpty() = list.isEmpty()
 
-    //first index of the element
+    /**
+     * Returns the index of the first instance of an element equal to the passed in element, if no such instance is
+     * found will throw an [ElementNotFoundException]. This differs from [java.util.ArrayList.indexOf] which returns
+     * -1 if the element is not found.
+     *
+     * @see java.util.ArrayList.indexOf
+     * @param element the element to search for instances equal to it
+     * @return the index of the first instance of an element equal to the passed in element
+     * @throws ElementNotFoundException if no instance is found that is equal to the passed in element
+     */
     @NoOverrideRecommended
+    @Throws(ElementNotFoundException::class)
     override fun indexOf(element: E): Int {
         if (list.indexOf(element) == -1) {
             throw ElementNotFoundException("$element")
         } else return list.indexOf(element)
     }
 
+    /**
+     * Returns the index of the last instance of an element equal to the passed in element, if no such instance is
+     * found will throw an [ElementNotFoundException]. This differs from [java.util.ArrayList.lastIndexOf] which returns
+     * -1 if the element is not found.
+     *
+     * @see java.util.ArrayList.lastIndexOf
+     * @param element the element to search for instances equal to it
+     * @return the index of the last instance of an element equal to the passed in element
+     * @throws ElementNotFoundException if no instance is found that is equal to the passed in element
+     */
     @NoOverrideRecommended
     override fun lastIndexOf(element: E): Int {
         if (list.lastIndexOf(element) == -1) {
@@ -455,6 +536,15 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         } else return list.lastIndexOf(element)
     }
 
+    /**
+     * Gets a list of all the indexes of instances of elements that are equal to the passed in element, if this
+     * list does not contain any instances that are equal to the passed in element the returned read only kotlin
+     * [List] will be empty.
+     *
+     * @param element the element to search for all indexes of instances that are equal to it
+     * @return the list of integers representing the list of indexes of instances of elements in this list that are
+     * equal to the passed in element
+     */
     @NoOverrideRecommended
     override fun allIndexesOf(element: E): List<Int> {
         val result = ArrayList<Int>()
@@ -462,7 +552,22 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         return result.toList()
     }
 
+    /**
+     * Gets the elements from the passed in `fromIndex` inclusive to the passed in `toIndex` exclusive, if both
+     * are equal the returned list will be empty, if `fromIndex` is greater than `toIndex` then the operation still
+     * proceeds unlike [java.util.ArrayList.subList], the returned list will still be `fromIndex` inclusive and
+     * `toIndex` exclusive and show that portion of this list.
+     *
+     * This operation does not modify this list, it only queries this list.
+     *
+     * @see java.util.ArrayList.subList
+     * @param fromIndex the index inclusive to start the sublist
+     * @param toIndex the index exclusive to end the sublist
+     * @return the sublist from the `fromIndex` inclusive to the `toIndex` exclusive
+     * @throws IndexOutOfBoundsException if either indexes are out of bounds
+     */
     @NoOverrideRecommended
+    @Throws(IndexOutOfBoundsException::class)
     override fun subList(fromIndex: Int, toIndex: Int): List<E> {
         return when {
             fromIndex < 0 || toIndex < 0 || fromIndex > nextIndex || toIndex > nextIndex -> {
@@ -474,9 +579,24 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         }
     }
 
+    /**
+     * Gets the number of times the passed in element occurs in this list, if it does not occur any times will return
+     * zero, this should be the same as the size of the list returned by [allIndexesOf].
+     *
+     * @param element the element to check the number of times it occurs in this list
+     * @return the number of times the passed in element occurs in this list
+     */
     @NoOverrideRecommended
     override fun countOf(element: E) = this.count { it == element }
 
+    /**
+     * Checks whether this list contains any elements that satisfy the passed in predicate, returns true if
+     * there exists at least one element that satisfies the predicate and false if none do.
+     *
+     * @see any
+     * @param predicate the predicate to check whether any elements in this list satisfy it or not
+     * @return true if at least one satisfies the passed in predicate and false if none do
+     */
     @NoOverrideRecommended
     override fun containsAny(predicate: (E) -> Boolean) = this.any(predicate)
 
@@ -484,6 +604,20 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
     //region Manipulate
 
+    /**
+     * Moves the element at the passed in `fromIndex` to the passed in `toIndex`, if they are out of bounds an
+     * [IndexOutOfBoundsException] will be thrown. The list will accommodate to the movements as follows.
+     *
+     * `move(3,5)` in the list
+     * `(A, B, C, D, E, F, G)` will result in the list
+     * `(A, B, C, E, F, D, G)`.
+     *
+     * @param fromIndex the index of the element to move
+     * @param toIndex the index that the element to move will be moved to
+     * @return this list after moving the element
+     * @throws IndexOutOfBoundsException if either indexes are out of bounds
+     */
+    @Throws(IndexOutOfBoundsException::class)
     override fun move(fromIndex: Int, toIndex: Int): WaqtiList<E> {
         return when {
             toIndex > size - 1 || toIndex < 0 || fromIndex > size - 1 || fromIndex < 0 -> {
@@ -509,22 +643,85 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         }
     }
 
+    /**
+     * Moves the first instance of an element in this list equal to the passed in element `from` to the
+     * the first instance of an element in this list list equal to the passed in element `to` , if
+     * either of them cannot be found then an [ElementNotFoundException] will be thrown. The list will accommodate to
+     * the movements as follows.
+     *
+     * `move(D,F)` in the list
+     * `(A, B, C, D, E, F, G)` will result in the list
+     * `(A, B, C, E, F, D, G, F)`.
+     *
+     * @see indexOf
+     * @param from the element to move its first instance in this list
+     * @param to the element to use its index to move the element to be moved to
+     * @return this list after moving the element
+     * @throws ElementNotFoundException if either element does not have instances equal to it in this list
+     */
     @NoOverrideRecommended
+    @Throws(ElementNotFoundException::class)
     override fun move(from: E, to: E) = move(indexOf(from), indexOf(to))
 
+    /**
+     * Swaps the element at the passed in `thisIndex` to the element at the passed in `thatIndex`, effectively
+     * switching their places.
+     *
+     * @param thisIndex the index of the element to switch place with the other element
+     * @param thatIndex the index of the element to switch place with the other element
+     * @return this list after swapping the elements at the passed in indexes
+     * @throws IndexOutOfBoundsException if either index is out of bounds
+     */
+    @Throws(IndexOutOfBoundsException::class)
     override fun swap(thisIndex: Int, thatIndex: Int): WaqtiList<E> {
-        val `this` = this[thisIndex]
-        val that = this[thatIndex]
-        this.updateAt(thatIndex, `this`)
-        this.updateAt(thisIndex, that)
-        return this
+        when {
+            thisIndex < 0 || thisIndex > nextIndex || thatIndex < 0 || thatIndex > nextIndex -> {
+                throw IndexOutOfBoundsException("Cannot swap $thisIndex with $thatIndex, limits are 0 to $nextIndex")
+            }
+            else -> {
+                val `this` = this[thisIndex]
+                val that = this[thatIndex]
+                this.updateAt(thatIndex, `this`)
+                this.updateAt(thisIndex, that)
+                return this
+            }
+        }
     }
 
+    /**
+     * Swaps the element at the index of the first instance of the passed in ``this`` to the index of the first
+     * instance of the passed in `that`, effectively switching their places.
+     *
+     * @param `this` the element to get the index of the element to switch place with the other element
+     * @param that the element to get the index of the element to switch place with the other element
+     * @return this list after swapping the elements at the passed in indexes
+     * @throws ElementNotFoundException if either element does not have an instance equal to it in this list
+     */
     @NoOverrideRecommended
+    @Throws(ElementNotFoundException::class)
     override fun swap(`this`: E, that: E) = swap(indexOf(`this`), indexOf(that))
 
+    /**
+     * Moves all instances in this list that are equal to any of the passed in elements to the passed in index, if
+     * none are found this list is unchanged.
+     *
+     * @param toIndex the index to move all the elements to
+     * @param elements the elements to find instances in this list that are equal to any to be moved to the index
+     * @return this list after moving all elements
+     * @throws IndexOutOfBoundsException if the index passed in is out of bounds
+     */
     override fun moveAllTo(toIndex: Int, vararg elements: E) = moveAllTo(elements.toList(), toIndex)
 
+    /**
+     * Moves all instances in this list that are equal to any of the passed in collection's elements to the passed in
+     * index, if none are found this list is unchanged.
+     *
+     * @param collection the collection od elements to find instances in this list that are equal to any to be moved to
+     * the index
+     * @param toIndex the index to move all the elements to
+     * @return this list after moving all elements
+     * @throws IndexOutOfBoundsException if the index passed in is out of bounds
+     */
     override fun moveAllTo(collection: Collection<E>, toIndex: Int): WaqtiList<E> {
         val found = this.getAll(collection)
         when {
@@ -539,6 +736,14 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
         return this
     }
 
+    /**
+     * Sorts the elements of this list with the passed in [java.util.Comparator].
+     *
+     * @see java.util.Comparator
+     * @see MutableList.sortWith
+     * @param comparator the [java.util.Comparator] to use to sort the elements in this list
+     * @return this list after sorting the elements in it
+     */
     override fun sort(comparator: Comparator<E>): WaqtiCollection<E> {
         list.sortWith(comparator)
         return this
@@ -682,7 +887,6 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
             }
             return result.toList()
         }
-
     }
 
     //endregion Companion
