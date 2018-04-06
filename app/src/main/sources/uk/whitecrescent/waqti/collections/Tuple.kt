@@ -5,17 +5,75 @@ import uk.whitecrescent.waqti.task.Task
 
 class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
 
-    override val list = ArrayList<Task>(tasks.size)
-
     init {
-        addAll(tasks.toList())
-        unConstrainAll()
+        this.growTo(tasks.size)
+        this.addAll(tasks.toList())
     }
 
-    override fun sort(comparator: Comparator<Task>): AbstractWaqtiList<Task> {
-        super.sort(comparator)
-        return this.order()
+    //region Add
+
+    //Simple Override changes return type to be more specific
+    @SimpleOverride
+    override fun add(element: Task) = super.add(element) as Tuple
+
+    @Throws(IndexOutOfBoundsException::class)
+    override fun addAt(index: Int, element: Task): Tuple {
+        if (!inRange(index)) {
+            throw  IndexOutOfBoundsException("Cannot add $element at index $index, limits are 0 to $nextIndex")
+        } else {
+            if (this.isNotEmpty()) {
+                element.setBeforePropertyValue(this[index - 1])
+                if (index < size) {
+                    this[index].setBeforePropertyValue(element)
+                }
+            }
+            list.add(index, element)
+            return this
+        }
     }
+
+    @SimpleOverride
+    override fun addAll(vararg elements: Task) = super.addAll(*elements) as Tuple
+
+    @SimpleOverride
+    override fun addAll(collection: Collection<Task>) = super.addAll(collection) as Tuple
+
+    @SimpleOverride
+    override fun addAllAt(index: Int, vararg elements: Task) = super.addAllAt(index, *elements) as Tuple
+
+    //By default adds all unconstrained
+    @Throws(IndexOutOfBoundsException::class)
+    override fun addAllAt(index: Int, collection: Collection<Task>): Tuple {
+        when {
+            !inRange(index) -> {
+                throw  IndexOutOfBoundsException("Cannot add $collection at index $index, limits are 0 to $nextIndex")
+            }
+            collection.isNotEmpty() -> {
+                val collectionList = collection.toList()
+                if (collectionList.size > 1) {
+                    for (i in 1..collectionList.lastIndex) {
+                        collectionList[i]
+                                .setBeforePropertyValue(collectionList[i - 1])
+                    }
+                }
+                if (this.isNotEmpty()) {
+                    collectionList[0].setBeforePropertyValue(this[index - 1])
+                    if (index < size) {
+                        this[index].setBeforePropertyValue(collectionList.last())
+                    }
+                }
+                list.addAll(index, collectionList)
+            }
+        }
+        return this
+    }
+
+    @SimpleOverride
+    override fun addIf(collection: Collection<Task>, predicate: (Task) -> Boolean) =
+            super.addIf(collection, predicate) as Tuple
+
+    //endregion Add
+
 
     fun join(collection: Collection<Task>): WaqtiCollection<Task> {
         if (collection !is Tuple) {
@@ -28,32 +86,6 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
     }
 
     override fun toListables() = this.toList()
-
-    override fun addAll(collection: Collection<Task>): WaqtiCollection<Task> {
-        return super.addAll(collection)
-    }
-
-    override fun addAll(vararg elements: Task): WaqtiCollection<Task> {
-        // TODO: 29-Mar-18 fix this
-        when {
-            elements.isNotEmpty() -> {
-                list.addAll(elements)
-                if (list.size > 1) {
-                    for (index in 1..list.lastIndex) {
-                        list[index].setBeforePropertyValue(list[index - 1].taskID)
-                    }
-                }
-            }
-        }
-        return this
-    }
-
-    override fun addAt(index: Int, element: Task): WaqtiList<Task> {
-        list.add(index, element)
-        list[index].setBeforePropertyValue(list[index - 1])
-        list[index + 1].setBeforePropertyValue(list[index])
-        return this
-    }
 
     fun mergeToList(listable: Listable): List<Listable> {
         val result = ArrayList<Listable>(listable.toListables().size + this.list.size)

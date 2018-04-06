@@ -46,8 +46,16 @@ fun ArrayList<TaskID>.tasks(): ArrayList<Task> {
 
 fun Collection<Tuple>.toTasks(): Array<Task> {
     val result = ArrayList<Task>(this.size)
-    for (tuple in this){
+    for (tuple in this) {
         result.addAll(tuple.getAll())
     }
     return result.toTypedArray()
+}
+
+fun TaskID.task(): Task {
+    val found = DATABASE.get(this)
+    when {
+        found == null -> throw IllegalStateException("Task Not Found!")
+        else -> return found
+    }
 }

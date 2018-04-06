@@ -1,22 +1,22 @@
 package uk.whitecrescent.waqti.collections
 
-/**
- * Used primarily in abstract classes to indicate that it is recommended that the concrete class that will extend
- * this abstract class override this function or property with its own implementation since the default
- * implementation may not create the desired functionality and is instead with a default implementation for
- * convenience purposes and not necessarily for effectiveness.
- *
- * This should not be used on functions or properties where not overriding them will allow for a reasonable
- * implementation.
- *
- * The details of why it is recommended to override and the consequences if not overriden should be documented clearly.
- *
- * @author Bassam Helal
- */
-@Retention(AnnotationRetention.SOURCE)
-@MustBeDocumented
-@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
-annotation class OverrideRecommended
+///**
+// * Used primarily in abstract classes to indicate that it is recommended that the concrete class that will extend
+// * this abstract class override this function or property with its own implementation since the default
+// * implementation may not create the desired functionality and is instead with a default implementation for
+// * convenience purposes and not necessarily for effectiveness.
+// *
+// * This should not be used on functions or properties where not overriding them will allow for a reasonable
+// * implementation.
+// *
+// * The details of why it is recommended to override and the consequences if not overriden should be documented clearly.
+// *
+// * @author Bassam Helal
+// */
+//@Retention(AnnotationRetention.SOURCE)
+//@MustBeDocumented
+//@Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY)
+//annotation class OverrideRecommended
 
 /**
  * Used to indicate that is either not recommended or not necessary (or both) to override the function, property,
@@ -33,3 +33,9 @@ annotation class OverrideRecommended
 @MustBeDocumented
 @Target(AnnotationTarget.FUNCTION, AnnotationTarget.PROPERTY, AnnotationTarget.CLASS, AnnotationTarget.CONSTRUCTOR)
 annotation class NoOverride
+
+
+@Retention(AnnotationRetention.SOURCE)
+@MustBeDocumented
+@Target(AnnotationTarget.FUNCTION)
+annotation class SimpleOverride

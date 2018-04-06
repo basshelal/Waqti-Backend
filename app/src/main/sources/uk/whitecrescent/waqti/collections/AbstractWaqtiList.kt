@@ -14,12 +14,9 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * implementation like [java.util.ArrayList.indexOf] which returns -1 instead of an exception if the element is
      * not found.
      *
-     * ## Override Recommended:
-     * Override for changing the construction of the ArrayList to allow for an initial size or an initial collection,
-     * this is recommended for efficiency reasons as the default construction may not be efficient.
-     *
      * @see java.util.ArrayList
      */
+    @NoOverride
     protected open val list = ArrayList<E>(15)
 
     /**
@@ -90,6 +87,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return the first instance of an element equal to the one passed in
      * @throws ElementNotFoundException if no element was found equal to the element passed in
      */
+    @NoOverride
     @Throws(ElementNotFoundException::class)
     override operator fun get(element: E): E {
         val found = list.find { it == element }
@@ -125,10 +123,8 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param element the element to add to this list
      * @return this list after adding the element
      */
-    override fun add(element: E): WaqtiCollection<E> {
-        list.add(element)
-        return this
-    }
+    @NoOverride
+    override fun add(element: E) = addAt(nextIndex, element)
 
     /**
      * Adds the passed in element at the passed in index, this index must be within the bounds otherwise an
@@ -146,8 +142,8 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     @Throws(IndexOutOfBoundsException::class)
-    override fun addAt(index: Int, element: E): WaqtiList<E> {
-        if (index < 0 || index > nextIndex) {
+    override fun addAt(index: Int, element: E): AbstractWaqtiList<E> {
+        if (!inRange(index)) {
             throw  IndexOutOfBoundsException("Cannot add $element at index $index, limits are 0 to $nextIndex")
         } else {
             list.add(index, element)
@@ -162,6 +158,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param elements the elements to be added to this list, can be empty
      * @return this list after adding all the elements
      */
+    @NoOverride
     override fun addAll(vararg elements: E) = addAll(elements.toList())
 
     /**
@@ -171,10 +168,8 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param collection the [Collection] of elements to be added to this list, can be empty
      * @return this list after adding all the elements of the collection
      */
-    override fun addAll(collection: Collection<E>): WaqtiCollection<E> {
-        list.addAll(collection)
-        return this
-    }
+    @NoOverride
+    override fun addAll(collection: Collection<E>) = addAllAt(nextIndex, collection)
 
     /**
      * Adds all the passed in elements to this list at the passed in index in similar fashion to [addAt] making
@@ -186,6 +181,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return this list after adding the elements at the index
      * @throws IndexOutOfBoundsException if the passed in index is out of bounds
      */
+    @NoOverride
     @Throws(IndexOutOfBoundsException::class)
     override fun addAllAt(index: Int, vararg elements: E) = addAllAt(index, elements.toList())
 
@@ -200,8 +196,8 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @throws IndexOutOfBoundsException if the passed in index is out of bounds
      */
     @Throws(IndexOutOfBoundsException::class)
-    override fun addAllAt(index: Int, collection: Collection<E>): WaqtiList<E> {
-        if (index < 0 || index > nextIndex) {
+    override fun addAllAt(index: Int, collection: Collection<E>): AbstractWaqtiList<E> {
+        if (!inRange(index)) {
             throw  IndexOutOfBoundsException("Cannot add $collection at index $index, limits are 0 to $nextIndex")
         } else {
             list.addAll(index, collection)
@@ -219,7 +215,8 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * to this list
      * @return this list after adding the elements filtered from the collection
      */
-    override fun addIf(collection: Collection<E>, predicate: (E) -> Boolean): WaqtiCollection<E> {
+    @NoOverride
+    override fun addIf(collection: Collection<E>, predicate: (E) -> Boolean): AbstractWaqtiList<E> {
         this.addAll(collection.filter(predicate))
         return this
     }
@@ -253,7 +250,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     @Throws(IndexOutOfBoundsException::class)
-    override fun updateAt(oldIndex: Int, newElement: E): WaqtiList<E> {
+    override fun updateAt(oldIndex: Int, newElement: E): AbstractWaqtiList<E> {
         if (oldIndex < 0 || oldIndex > nextIndex) {
             throw  IndexOutOfBoundsException("Cannot update to $newElement at index $oldIndex, limits are 0 to $nextIndex")
         } else {
@@ -277,7 +274,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * updated to
      * @return this list after updating
      */
-    override fun updateAllTo(collection: Collection<E>, new: E): WaqtiCollection<E> {
+    override fun updateAllTo(collection: Collection<E>, new: E): AbstractWaqtiList<E> {
         val list = ArrayList<Int>(collection.size)
         for (toUpdate in collection) {
             for (element in this) {
@@ -321,7 +318,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param element the element to find the first occurrence equal to it to remove from this list
      * @return this list after removing the first instance of an element equal to the passed in element
      */
-    override fun removeFirst(element: E): WaqtiCollection<E> {
+    override fun removeFirst(element: E): AbstractWaqtiList<E> {
         list.remove(element)
         return this
     }
@@ -334,7 +331,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     @Throws(IndexOutOfBoundsException::class)
-    override fun removeAt(index: Int): WaqtiList<E> {
+    override fun removeAt(index: Int): AbstractWaqtiList<E> {
         if (index < 0 || index > nextIndex) {
             throw  IndexOutOfBoundsException("Cannot remove at index $index, limits are 0 to $nextIndex")
         } else {
@@ -363,7 +360,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param collection the collection of elements that all instances that are equal to any of them will be removed
      * @return this list after removing all the elements
      */
-    override fun removeAll(collection: Collection<E>): WaqtiCollection<E> {
+    override fun removeAll(collection: Collection<E>): AbstractWaqtiList<E> {
         list.removeAll(collection)
         return this
     }
@@ -376,7 +373,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param predicate the predicate that must be satisfied in order for elements to be removed from this list
      * @return this list after removing the elements that satisfy the predicate
      */
-    override fun removeIf(predicate: (E) -> Boolean): WaqtiCollection<E> {
+    override fun removeIf(predicate: (E) -> Boolean): AbstractWaqtiList<E> {
         list.removeIf(predicate)
         return this
     }
@@ -386,7 +383,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      *
      * @return this list after being cleared
      */
-    override fun clear(): WaqtiCollection<E> {
+    override fun clear(): AbstractWaqtiList<E> {
         list.clear()
         return this
     }
@@ -403,7 +400,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @throws IndexOutOfBoundsException if either indexes are out of bounds
      */
     @Throws(IndexOutOfBoundsException::class)
-    override fun removeRange(fromIndex: Int, toIndex: Int): WaqtiList<E> {
+    override fun removeRange(fromIndex: Int, toIndex: Int): AbstractWaqtiList<E> {
         this.removeAll(this.subList(fromIndex, toIndex))
         return this
     }
@@ -614,7 +611,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @throws IndexOutOfBoundsException if either indexes are out of bounds
      */
     @Throws(IndexOutOfBoundsException::class)
-    override fun move(fromIndex: Int, toIndex: Int): WaqtiList<E> {
+    override fun move(fromIndex: Int, toIndex: Int): AbstractWaqtiList<E> {
         return when {
             toIndex > size - 1 || toIndex < 0 || fromIndex > size - 1 || fromIndex < 0 -> {
                 throw  IndexOutOfBoundsException("Cannot move $fromIndex  to $toIndex, limits are 0 and $nextIndex")
@@ -669,9 +666,9 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @throws IndexOutOfBoundsException if either index is out of bounds
      */
     @Throws(IndexOutOfBoundsException::class)
-    override fun swap(thisIndex: Int, thatIndex: Int): WaqtiList<E> {
+    override fun swap(thisIndex: Int, thatIndex: Int): AbstractWaqtiList<E> {
         when {
-            thisIndex < 0 || thisIndex > nextIndex || thatIndex < 0 || thatIndex > nextIndex -> {
+            !inRange(thisIndex, thatIndex) -> {
                 throw IndexOutOfBoundsException("Cannot swap $thisIndex with $thatIndex, limits are 0 to $nextIndex")
             }
             else -> {
@@ -718,10 +715,10 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return this list after moving all elements
      * @throws IndexOutOfBoundsException if the index passed in is out of bounds
      */
-    override fun moveAllTo(collection: Collection<E>, toIndex: Int): WaqtiList<E> {
+    override fun moveAllTo(collection: Collection<E>, toIndex: Int): AbstractWaqtiList<E> {
         val found = this.getAll(collection)
         when {
-            toIndex < 0 || toIndex > nextIndex -> {
+            !inRange(toIndex) -> {
                 throw IndexOutOfBoundsException("Cannot move to $toIndex, limits are 0 to $nextIndex")
             }
             found.isNotEmpty() -> {
@@ -740,7 +737,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @param comparator the [java.util.Comparator] to use to sort the elements in this list
      * @return this list after sorting the elements in it
      */
-    override fun sort(comparator: Comparator<E>): WaqtiCollection<E> {
+    override fun sort(comparator: Comparator<E>): AbstractWaqtiList<E> {
         list.sortWith(comparator)
         return this
     }
@@ -758,7 +755,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      * @return this list after growing
      */
     @NoOverride
-    override fun growTo(size: Int): WaqtiList<E> {
+    override fun growTo(size: Int): AbstractWaqtiList<E> {
         list.ensureCapacity(size)
         return this
     }
@@ -844,17 +841,46 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     @NoOverride
     override fun forEach(action: Consumer<in E>?) = list.forEach(action)
 
+    /**
+     * Checks to see that the passed in indexes are in range, in this case meaning not less than 0 and not greater
+     * than the next index, ie this list's size + 1. Returns true if they are allowed or in range and false otherwise.
+     *
+     * @param indexes the indexes to check if they are in range
+     * @return true if all the indexes are in range of this list and false if any one of them is not
+     */
+    @NoOverride
+    protected fun inRange(vararg indexes: Int): Boolean {
+        for (index in indexes) {
+            if (index < 0 || index > nextIndex) {
+                return false
+            }
+        }
+        return true
+    }
+
     //endregion List Utils
 
     //region Companion
 
     companion object {
 
+        /**
+         * Moves the elements specified from one list to the other at the specified index.
+         *
+         * @param listFrom the list to move the elements from
+         * @param listTo the list to move the elements to
+         * @param elements the elements to move from one list to the other, if no elements are found that are equal
+         * to any of the passed in elements in the from list then no action is taken
+         * @param toIndex the index to move the elements to in the `listTo`, this is the next index by default
+         * meaning the elements will be added at the end of the list
+         * @throws IndexOutOfBoundsException if the `toIndex` is out of bounds
+         */
+        @Throws(IndexOutOfBoundsException::class)
         fun <E> moveElements(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
                              elements: Collection<E>, toIndex: Int = listTo.nextIndex) {
             val found = listFrom.getAll(elements)
             when {
-                toIndex < 0 || toIndex > listTo.nextIndex -> {
+                !listTo.inRange(toIndex) -> {
                     throw IndexOutOfBoundsException("Cannot move to $toIndex, limits are 0 and ${listTo.nextIndex}")
                 }
                 found.isNotEmpty() && listFrom !== listTo -> {
@@ -864,11 +890,23 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
             }
         }
 
+        /**
+         * Copies the elements specified from one list to the other at the specified index.
+         *
+         * @param listFrom the list to copy the elements from
+         * @param listTo the list to copy the elements to
+         * @param elements the elements to copy from one list to the other, if no elements are found that are equal
+         * to any of the passed in elements in the from list then no action is taken
+         * @param toIndex the index to move the elements to in the `listTo`, this is the next index by default
+         * meaning the elements will be added at the end of the list
+         * @throws IndexOutOfBoundsException if the `toIndex` is out of bounds
+         */
+        @Throws(IndexOutOfBoundsException::class)
         fun <E> copyElements(listFrom: AbstractWaqtiList<E>, listTo: AbstractWaqtiList<E>,
                              elements: Collection<E>, toIndex: Int = listTo.nextIndex) {
             val found = listFrom.getAll(elements)
             when {
-                toIndex < 0 || toIndex > listTo.nextIndex -> {
+                !listTo.inRange(toIndex) -> {
                     throw IndexOutOfBoundsException("Cannot move to $toIndex, limits are 0 and ${listTo.nextIndex}")
                 }
                 found.isNotEmpty() && listFrom !== listTo -> {
@@ -886,10 +924,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
 
             if (listLeft !== listRight) {
                 when {
-                    indexIntoLeft < 0 ||
-                            indexIntoRight < 0 ||
-                            indexIntoLeft > listLeft.nextIndex ||
-                            indexIntoRight > listRight.nextIndex -> {
+                    !listLeft.inRange(indexIntoLeft) || !listRight.inRange(indexIntoRight) -> {
                         throw IndexOutOfBoundsException("Cannot swap $indexIntoLeft  and $indexIntoRight," +
                                 " limits are ${listLeft.nextIndex} and ${listRight.nextIndex} respectively")
                     }
