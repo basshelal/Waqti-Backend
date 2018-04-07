@@ -17,6 +17,14 @@ import uk.whitecrescent.waqti.tests.TestUtils.testTask
 @DisplayName("Tuple Tests")
 class TupleTests {
 
+    private fun testOrdered(tuple: Tuple) =
+            (0 until tuple.size - 1).forEach {
+                if (it == 0) {
+                    assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[it].before)
+                }
+                assertEquals(tuple[it].taskID, tuple[it + 1].before.value)
+            }
+
     @DisplayName("Tuple creation zero Tasks")
     @Test
     fun testTupleCreationZeroTasks() {
@@ -119,11 +127,7 @@ class TupleTests {
 
         assertEquals(5, tuple.size)
 
-        assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[0].before)
-        assertEquals(tuple[0].taskID, tuple[1].before.value)
-        assertEquals(tuple[1].taskID, tuple[2].before.value)
-        assertEquals(tuple[2].taskID, tuple[3].before.value)
-        assertEquals(tuple[3].taskID, tuple[4].before.value)
+        testOrdered(tuple)
     }
 
     @DisplayName("Tuple Add All collection")
@@ -135,17 +139,11 @@ class TupleTests {
         tuple.addAll(tasks)
         assertEquals(5, tuple.size)
 
-        assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[0].before)
-        assertEquals(tuple[0].taskID, tuple[1].before.value)
-        assertEquals(tuple[1].taskID, tuple[2].before.value)
-        assertEquals(tuple[2].taskID, tuple[3].before.value)
-        assertEquals(tuple[3].taskID, tuple[4].before.value)
+        testOrdered(tuple)
 
         tuple.addAll(getTasks(3))
 
-        assertEquals(tuple[4].taskID, tuple[5].before.value)
-        assertEquals(tuple[5].taskID, tuple[6].before.value)
-        assertEquals(tuple[6].taskID, tuple[7].before.value)
+        testOrdered(tuple)
     }
 
     @DisplayName("Tuple Add All At Vararg")
@@ -155,18 +153,12 @@ class TupleTests {
 
         assertEquals(3, tuple.size)
 
-        assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[0].before)
-        assertEquals(tuple[0].taskID, tuple[1].before.value)
-        assertEquals(tuple[1].taskID, tuple[2].before.value)
+        testOrdered(tuple)
 
         @Suppress("USELESS_IS_CHECK")
         assertTrue(tuple.addAllAt(1, *getTasks(2).toTypedArray()) is Tuple)
 
-        assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[0].before)
-        assertEquals(tuple[0].taskID, tuple[1].before.value)
-        assertEquals(tuple[1].taskID, tuple[2].before.value)
-        assertEquals(tuple[2].taskID, tuple[3].before.value)
-        assertEquals(tuple[3].taskID, tuple[4].before.value)
+        testOrdered(tuple)
     }
 
     @DisplayName("Tuple Add All At collection")
@@ -176,17 +168,11 @@ class TupleTests {
 
         assertEquals(3, tuple.size)
 
-        assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[0].before)
-        assertEquals(tuple[0].taskID, tuple[1].before.value)
-        assertEquals(tuple[1].taskID, tuple[2].before.value)
+        testOrdered(tuple)
 
         tuple.addAllAt(1, getTasks(2))
 
-        assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[0].before)
-        assertEquals(tuple[0].taskID, tuple[1].before.value)
-        assertEquals(tuple[1].taskID, tuple[2].before.value)
-        assertEquals(tuple[2].taskID, tuple[3].before.value)
-        assertEquals(tuple[3].taskID, tuple[4].before.value)
+        testOrdered(tuple)
 
         assertThrows(IndexOutOfBoundsException::class.java, { tuple.addAllAt(7, getTasks(5)) })
     }
@@ -206,13 +192,87 @@ class TupleTests {
         )
 
         assertEquals(5, tuple.size)
-        assertEquals(DEFAULT_BEFORE_PROPERTY, tuple[0].before)
-        assertEquals(tuple[0].taskID, tuple[1].before.value)
-        assertEquals(tuple[1].taskID, tuple[2].before.value)
-        assertEquals(tuple[2].taskID, tuple[3].before.value)
-        assertEquals(tuple[3].taskID, tuple[4].before.value)
+        testOrdered(tuple)
 
         tuple.forEach { assertTrue(it.title.isNotBlank()) }
+    }
+
+    @DisplayName("Tuple Remove First")
+    @Test
+    fun testTupleRemoveFirst() {
+        val tasks = getTasks(3)
+        val tuple = Tuple()
+                .addAll(tasks)
+
+        tuple.removeFirst(tasks[1])
+        assertEquals(2, tuple.size)
+        assertEquals(tasks[0], tuple[0])
+        assertEquals(tasks[2], tuple[1])
+    }
+
+    @DisplayName("Tuple Remove At")
+    @Test
+    fun testTupleRemoveAt() {
+        val tasks = getTasks(6)
+        val tuple = Tuple()
+                .addAll(tasks)
+
+        tuple.removeAt(0)
+        assertEquals(5, tuple.size)
+        testOrdered(tuple)
+
+        tuple.removeAt(4)
+        assertEquals(4, tuple.size)
+        testOrdered(tuple)
+
+        tuple.removeAt(2)
+        assertEquals(3, tuple.size)
+        testOrdered(tuple)
+
+        tuple.removeAt(0).removeAt(0)
+        assertEquals(1, tuple.size)
+        testOrdered(tuple)
+
+        tuple.removeAt(0)
+        assertEquals(0, tuple.size)
+        assertTrue(tuple.isEmpty())
+        testOrdered(tuple)
+        tasks.forEach { assertTrue(it.before == DEFAULT_BEFORE_PROPERTY) }
+    }
+
+    @DisplayName("Tuple Remove All Vararg")
+    @Test
+    fun testTupleRemoveAllVararg() {
+        val tasks = getTasks(10)
+        val tasks0 = tasks.subList(5, 10)
+        val tasks1 = tasks.subList(0, 5)
+        val tuple = Tuple().addAll(tasks)
+
+        tuple.removeAll(*tasks0.toTypedArray())
+        assertEquals(5, tuple.size)
+        assertEquals(tasks1[0], tuple[0])
+        assertEquals(tasks1[1], tuple[1])
+        assertEquals(tasks1[2], tuple[2])
+        assertEquals(tasks1[3], tuple[3])
+        assertEquals(tasks1[4], tuple[4])
+
+        testOrdered(tuple)
+    }
+
+    @DisplayName("Tuple Remove All collection")
+    @Test
+    fun testTupleRemoveAllCollection() {
+        val tasks = getTasks(10)
+        val tasks0 = tasks.subList(5, 10)
+        val tasks1 = tasks.subList(0, 5)
+        val tuple = Tuple().addAll(tasks)
+
+        tuple.removeAll(tasks0)
+        assertEquals(5, tuple.size)
+        (0..4).forEach { assertEquals(tasks1[it], tuple[it]) }
+
+        testOrdered(tuple)
+        tasks0.forEach { assertTrue(it.before == DEFAULT_BEFORE_PROPERTY) }
     }
 
 }

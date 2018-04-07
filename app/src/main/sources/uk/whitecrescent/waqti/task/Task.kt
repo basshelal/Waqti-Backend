@@ -1813,15 +1813,6 @@ class Task(var title: String = "") : Listable {
         return result.toString()
     }
 
-    override fun toListables() = listOf(this)
-
-    fun mergeToList(listable: Listable): List<Listable> {
-        val result = ArrayList<Listable>()
-        result.addAll(this.toListables())
-        result.addAll(listable.toListables())
-        return result.toList()
-    }
-
     //endregion Overriden from kotlin.Any
 
     //region Template Task
