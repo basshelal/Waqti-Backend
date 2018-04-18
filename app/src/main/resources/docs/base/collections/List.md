@@ -1,4 +1,4 @@
-#List
+# List
 
 A List is an abstract Collection of Tasks that groups Tasks sequentially and shows only those that satisfy a given 
 List Property which may be Task Property(s).s

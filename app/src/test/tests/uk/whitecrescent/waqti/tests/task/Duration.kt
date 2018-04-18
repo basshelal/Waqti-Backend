@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import uk.whitecrescent.waqti.Duration
 import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.Constraint
 import uk.whitecrescent.waqti.task.DEFAULT_DURATION
@@ -21,10 +22,9 @@ import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 import uk.whitecrescent.waqti.today
-import java.time.Duration
 
 @DisplayName("Duration Tests")
-class DurationTests {
+class Duration {
 
     // Before All
     companion object {
@@ -413,7 +413,7 @@ class DurationTests {
     @Test
     fun testTaskStartDurationWhenSLEEPING() {
         val task = testTask()
-                .setTimeConstraintValue(today().plusDays(1).atTime(16, 0))
+                .setTimeConstraintValue(today.plusDays(1).atTime(16, 0))
                 .setDurationConstraintValue(Duration.ofSeconds(2))
 
         assertThrows(IllegalStateException::class.java, { task.startTimer() })

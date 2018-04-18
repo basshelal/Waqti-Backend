@@ -1,6 +1,6 @@
 package uk.whitecrescent.waqti.task
 
-import java.time.Duration
+import uk.whitecrescent.waqti.Duration
 
 class TimeUnit(val name: String, val duration: Duration) {
 

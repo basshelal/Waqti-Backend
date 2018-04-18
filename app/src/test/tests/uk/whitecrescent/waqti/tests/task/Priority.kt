@@ -17,7 +17,7 @@ import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Priority Tests")
-class PriorityTests {
+class Priority {
 
     //Before All
     companion object {

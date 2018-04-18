@@ -21,7 +21,7 @@ import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Checklist Tests")
-class ChecklistTests {
+class Checklist {
 
     @DisplayName("Checklist add and delete")
     @Test

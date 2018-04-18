@@ -4,15 +4,21 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertAll
+import uk.whitecrescent.waqti.ChronoUnit
+import uk.whitecrescent.waqti.Date
 import uk.whitecrescent.waqti.collections.Tuple
+import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task
 import uk.whitecrescent.waqti.task.DEFAULT_BEFORE_PROPERTY
 import uk.whitecrescent.waqti.task.Task
+import uk.whitecrescent.waqti.task.Timer
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.today
 
 @DisplayName("Tuple Tests")
 class TupleTests {
@@ -273,6 +279,64 @@ class TupleTests {
 
         testOrdered(tuple)
         tasks0.forEach { assertTrue(it.before == DEFAULT_BEFORE_PROPERTY) }
+
+        val tasks2 = listOf(Task("R1"), Task("R2"), Task("R3"))
+
+        tuple.clear().addAll(tasks2).addAll(Task("K1"), Task("K2"))
+        assertEquals(5, tuple.size)
+
+        tuple.removeAll(tasks2)
+        assertEquals(2, tuple.size)
+        testOrdered(tuple)
     }
 
+    @DisplayName("Tuple Move")
+    @Test
+    fun testTupleMove() {
+        val tuple = Tuple().addAll(getTasks(6))
+        tuple.move(1, 3)
+        val titles = listOf("TestTask0", "TestTask2", "TestTask3", "TestTask1", "TestTask4", "TestTask5")
+        titles.forEachIndexed { index, string -> assertTrue(string == tuple[index].title) }
+        testOrdered(tuple)
+    }
+
+    @Disabled
+    @DisplayName("Test")
+    @Test
+    fun testTimer() {
+        val timer = Timer()
+
+        val startTime = System.currentTimeMillis();timer.start()
+        for (i in 0..9) {
+            println("My Timer: ${timer.duration.toMillis()}")
+            println("System Timer: ${System.currentTimeMillis() - startTime}")
+            sleep(60)
+        }
+
+        println("END \n\n")
+        println("My Timer: ${timer.duration.toMillis()}")
+        println("System Timer: ${System.currentTimeMillis() - startTime}")
+        timer.stop()
+    }
+
+    // For Calendar using Days
+    @DisplayName("Test")
+    @Test
+    fun test() {
+        val map = HashMap<Int, Date>()
+        map.putAll(dates(today.minusYears(1), today.plusYears(1)))
+        //assertTrue(map.size == (731))
+        println(map.toList().first())
+        println(map.toList().last())
+    }
+
+
+    private fun dates(from: Date, to: Date): HashMap<Int, Date> {
+        val period = from.until(to.plusDays(1), ChronoUnit.DAYS)
+        val hashMap = HashMap<Int, Date>(period.toInt())
+        for (day in 0 until period.toInt()) {
+            hashMap[day] = Date.from(from.plusDays(day.toLong()))
+        }
+        return hashMap
+    }
 }

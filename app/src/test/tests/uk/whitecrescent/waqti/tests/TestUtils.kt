@@ -8,7 +8,7 @@ object TestUtils {
 
     fun getTasks(amount: Int): List<Task> {
         val list = ArrayList<Task>()
-        for (i in 0..amount - 1) {
+        for (i in 0 until amount) {
             list.add(Task("TestTask$i"))
         }
         return list.toList()

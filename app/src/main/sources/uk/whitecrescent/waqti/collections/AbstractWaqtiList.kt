@@ -251,7 +251,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      */
     @Throws(IndexOutOfBoundsException::class)
     override fun updateAt(oldIndex: Int, newElement: E): AbstractWaqtiList<E> {
-        if (oldIndex < 0 || oldIndex > nextIndex) {
+        if (!inRange(oldIndex)) {
             throw  IndexOutOfBoundsException("Cannot update to $newElement at index $oldIndex, limits are 0 to $nextIndex")
         } else {
             this.removeAt(oldIndex)
@@ -568,7 +568,7 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
     @Throws(IndexOutOfBoundsException::class)
     override fun subList(fromIndex: Int, toIndex: Int): List<E> {
         return when {
-            fromIndex < 0 || toIndex < 0 || fromIndex > nextIndex || toIndex > nextIndex -> {
+            !inRange(fromIndex, toIndex) -> {
                 throw  IndexOutOfBoundsException("Cannot SubList $fromIndex to $toIndex, limits are 0 and $nextIndex")
             }
             fromIndex > toIndex -> list.subList(toIndex + 1, fromIndex + 1)
@@ -617,29 +617,17 @@ abstract class AbstractWaqtiList<E> : WaqtiList<E> {
      */
     @NoOverride
     @Throws(IndexOutOfBoundsException::class)
-    // TODO: 07-Apr-18 This is unnecessary, just remove and add again like moveAllTo() to does!
     override fun move(fromIndex: Int, toIndex: Int): AbstractWaqtiList<E> {
-        return when {
-            toIndex > size - 1 || toIndex < 0 || fromIndex > size - 1 || fromIndex < 0 -> {
+        when {
+            !inRange(toIndex, fromIndex) -> {
                 throw  IndexOutOfBoundsException("Cannot move $fromIndex  to $toIndex, limits are 0 and $nextIndex")
             }
-            fromIndex < toIndex -> {
-                val itemToMove = list[fromIndex]
-                for ((i, element) in list.filter { list.indexOf(it) in (fromIndex + 1)..toIndex }.withIndex()) {
-                    list[fromIndex + i] = element
-                }
-                list[toIndex] = itemToMove
-                this
+            else -> {
+                val found = this[fromIndex]
+                removeAt(fromIndex)
+                addAt(toIndex, found)
+                return this
             }
-            fromIndex > toIndex -> {
-                val itemToMove = list[fromIndex]
-                for ((i, element) in list.filter { list.indexOf(it) in toIndex..(fromIndex - 1) }.asReversed().withIndex()) {
-                    list[fromIndex - i] = element
-                }
-                list[toIndex] = itemToMove
-                this
-            }
-            else -> this
         }
     }
 

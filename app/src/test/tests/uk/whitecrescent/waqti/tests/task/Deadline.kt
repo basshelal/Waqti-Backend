@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import uk.whitecrescent.waqti.Duration
+import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.Constraint
@@ -16,14 +18,13 @@ import uk.whitecrescent.waqti.task.Property
 import uk.whitecrescent.waqti.task.SHOWING
 import uk.whitecrescent.waqti.task.TaskState
 import uk.whitecrescent.waqti.task.TaskStateException
-import uk.whitecrescent.waqti.task.Time
 import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
-import java.time.Duration
+
 
 @DisplayName("Deadline Tests")
-class DeadlineTests {
+class Deadline {
 
     @DisplayName("Deadline Default Values")
     @Test
@@ -110,7 +111,7 @@ class DeadlineTests {
     @DisplayName("Set Deadline Property failable")
     @Test
     fun testTaskSetDeadlinePropertyFailable() {
-        val deadline = now().plusSeconds(10)
+        val deadline = now.plusSeconds(10)
         val task = testTask()
                 .setDeadlinePropertyValue(deadline)
 
@@ -123,7 +124,7 @@ class DeadlineTests {
     @DisplayName("Set Deadline Constraint failable")
     @Test
     fun testTaskSetDeadlineConstraintFailable() {
-        val deadline = now().plusSeconds(2)
+        val deadline = now.plusSeconds(2)
         val task = testTask()
                 .setDeadlineConstraint(Constraint(SHOWING, deadline, UNMET))
 
@@ -143,7 +144,7 @@ class DeadlineTests {
     @DisplayName("Kill with deadline Constraint past")
     @Test
     fun testTaskKillDeadlineConstraintPast() {
-        val deadline = now().plusSeconds(2)
+        val deadline = now.plusSeconds(2)
         val task = testTask()
                 .setDeadlineConstraint(Constraint(SHOWING, deadline, UNMET))
 
@@ -164,7 +165,7 @@ class DeadlineTests {
     @DisplayName("Kill with deadline Constraint later")
     @Test
     fun testTaskKillDeadlineConstraintLater() {
-        val deadline = now().plusSeconds(5)
+        val deadline = now.plusSeconds(5)
         val task = testTask()
                 .setDeadlineConstraint(Constraint(SHOWING, deadline, UNMET))
 
@@ -190,7 +191,7 @@ class DeadlineTests {
     @DisplayName("Set Deadline Constraint on many Tasks")
     @Test
     fun testTaskSetDeadlineConstraintOnManyTasks() {
-        val deadline = now().plusSeconds(5)
+        val deadline = now.plusSeconds(5)
         val tasks = getTasks(100)
         tasks.forEach { it.setDeadlineConstraintValue(deadline) }
 
@@ -203,13 +204,13 @@ class DeadlineTests {
     @DisplayName("Get Time Left until Deadline")
     @Test
     fun testTaskGetTimeLeftUntilDeadline() {
-        val deadline = now().plusSeconds(3)
+        val deadline = now.plusSeconds(3)
         val task = testTask().setDeadlineConstraintValue(deadline)
 
         sleep(2)
 
         assertTrue(Math.abs(
-                Duration.between(now(), deadline).seconds - task.getTimeUntilDeadline().seconds) <= 1
+                Duration.between(now, deadline).seconds - task.getTimeUntilDeadline().seconds) <= 1
         )
     }
 
@@ -224,7 +225,7 @@ class DeadlineTests {
     @Test
     fun testTaskDeadlineUnConstraining() {
         val task = testTask()
-                .setDeadlineConstraintValue(Time.from(now().plusDays(7)))
+                .setDeadlineConstraintValue(Time.from(now.plusDays(7)))
 
         sleep(1)
         task.setDeadlineProperty((task.deadline as Constraint).toProperty())
@@ -241,11 +242,11 @@ class DeadlineTests {
     @Test
     fun testTaskDeadlineConstraintReSet() {
         val task = testTask()
-                .setDeadlineConstraintValue(Time.from(now().plusDays(7)))
+                .setDeadlineConstraintValue(Time.from(now.plusDays(7)))
 
         sleep(1)
 
-        val newDeadline = Time.from(now().plusSeconds(1))
+        val newDeadline = Time.from(now.plusSeconds(1))
 
         task.setDeadlineConstraintValue(newDeadline)
         assertEquals(newDeadline, task.deadline.value)
@@ -258,7 +259,7 @@ class DeadlineTests {
     @DisplayName("Deadline Hiding")
     @Test
     fun testDeadlineHiding() {
-        val deadline = Time.from(now().plusDays(7))
+        val deadline = Time.from(now.plusDays(7))
 
         val task = testTask()
                 .setDeadlinePropertyValue(deadline)

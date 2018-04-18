@@ -1,10 +1,14 @@
 package uk.whitecrescent.waqti.collections
 
+import uk.whitecrescent.waqti.Duration
 import uk.whitecrescent.waqti.Listable
 import uk.whitecrescent.waqti.task.Constraint
 import uk.whitecrescent.waqti.task.Task
 
-class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
+// Name should change to something like Ordering or Series or Sequence
+class Tuple(tasks: Collection<Task>) : AbstractWaqtiList<Task>(), Listable {
+
+    constructor(vararg tasks: Task) : this(tasks.toList())
 
     init {
         this.growTo(tasks.size)
@@ -147,6 +151,7 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
 
     //region Manipulate
 
+    @Throws(IndexOutOfBoundsException::class)//from super.move
     override fun move(fromIndex: Int, toIndex: Int): Tuple {
         super.move(fromIndex, toIndex)
         adjust()
@@ -171,14 +176,95 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
     @SimpleOverride
     override fun sort(comparator: Comparator<Task>) = super.sort(comparator) as Tuple
 
-
     //endregion Manipulate
 
+    //region List Utils
 
     @SimpleOverride
     override fun growTo(size: Int) = super.growTo(size) as Tuple
 
+    //endregion
+
+    fun constrainAt(index: Int): Tuple {
+        when {
+            !inRange(index) -> {
+                throw IndexOutOfBoundsException("Cannot constrain at $index, limits are 0 to $nextIndex")
+            }
+            this.size > 1 -> {
+                list[index].setBeforeConstraintValue(list[index - 1])
+            }
+        }
+        return this
+    }
+
+    @Throws(ElementNotFoundException::class) //from indexOf
+    fun constrain(element: Task) = constrainAt(indexOf(this[element]))
+
+    fun constrainAll(): Tuple {
+        if (this.size > 1) {
+            for (index in 1..size - 1) {
+                this[index].setBeforeConstraintValue(this[index - 1])
+            }
+        }
+        return this
+    }
+
+    fun unConstrainAt(index: Int): Tuple {
+        when {
+            !inRange(index) -> {
+                throw IndexOutOfBoundsException("Cannot constrain at $index, limits are 0 to $nextIndex")
+            }
+            this.size > 1 -> {
+                list[index].setBeforePropertyValue(list[index - 1])
+            }
+        }
+        return this
+    }
+
+    @Throws(ElementNotFoundException::class) //from indexOf
+    fun unConstrain(element: Task) = unConstrainAt(indexOf(this[element]))
+
+    fun unConstrainAll(): Tuple {
+        if (this.size > 1) {
+            for (index in 1..size - 1) {
+                this[index].setBeforePropertyValue(this[index - 1])
+            }
+        }
+        return this
+    }
+
+    fun addAndConstrainAt(index: Int, task: Task): Tuple {
+        this.addAt(index, task)
+        this.constrainAt(index)
+        return this
+    }
+
+    fun addAndConstrain(task: Task) = addAndConstrainAt(nextIndex, task)
+
+    @Throws(IndexOutOfBoundsException::class)
+    fun killTaskAt(index: Int): Tuple {
+        when {
+            !inRange(index) -> {
+                throw IndexOutOfBoundsException("Cannot kill task at $index, limits are 0 to $nextIndex")
+            }
+            else -> {
+                list[index].kill()
+            }
+        }
+        return this
+    }
+
+    fun killTask(task: Task): Tuple {
+        this[task].kill()
+        return this
+    }
+
+    fun toHabit(interval: Duration) = Tuple.toHabit(this, interval)
+
     private fun adjust() = forEachIndexed { index, task ->
+        if (index == 0) {
+            task.hideBefore()
+        }
         if (index > 0) {
             when {
                 task.before is Constraint -> {
@@ -191,119 +277,26 @@ class Tuple(vararg tasks: Task) : AbstractWaqtiList<Task>(), Listable {
         }
     }
 
-    fun join(collection: Collection<Task>): WaqtiCollection<Task> {
-        if (collection !is Tuple) {
-            throw ClassCastException("Cannot merge Tuple with non Tuple")
-        } else {
-            val newTuple = Tuple(*this.toTypedArray())
-            newTuple.addAll(collection.toList())
-            return newTuple
-        }
-    }
-
-    fun constrainAll() {
-        if (list.size > 1) {
-            for (index in 1..list.lastIndex) {
-                list[index].setBeforeConstraintValue(list[index - 1].taskID)
-            }
-        }
-    }
-
-    fun constrainAt(index: Int) {
-        when {
-            index < 0 -> {
-                throw IndexOutOfBoundsException("Index cannot be 0")
-            }
-            index > list.size - 1 -> {
-                throw IndexOutOfBoundsException("Index cannot exceed ${list.size - 1}")
-            }
-            list.size == 1 -> {
-                throw IndexOutOfBoundsException("Cannot Constrain, there is only 1 Task in Tuple")
-            }
-            else -> {
-                list[index].setBeforeConstraintValue(list[index - 1])
-            }
-        }
-    }
-
-    fun constrain(element: Task) {
-        constrainAt(indexOf(get(element)))
-    }
-
-    fun unConstrainAll() {
-        if (list.size > 1) {
-            for (index in 1..list.lastIndex) {
-                list[index].setBeforePropertyValue(list[index - 1].taskID)
-            }
-        }
-    }
-
-    fun unConstrainAt(index: Int) {
-        when {
-            index < 0 -> {
-                throw IndexOutOfBoundsException("Index cannot be 0")
-            }
-            index > list.size - 1 -> {
-                throw IndexOutOfBoundsException("Index cannot exceed ${list.size - 1}")
-            }
-            list.size == 1 -> {
-                throw IndexOutOfBoundsException("Cannot Constrain, there is only 1 Task in Tuple")
-            }
-            else -> {
-                list[index].setBeforePropertyValue(list[index - 1])
-            }
-        }
-    }
-
-    fun unConstrain(element: Task) {
-        unConstrainAt(indexOf(get(element)))
-    }
-
-    fun addAndConstrain(task: Task) {
-        addAndConstrainAt(list.lastIndex + 1, task)
-    }
-
-    fun addAndConstrainAt(index: Int, task: Task) {
-        list.add(index, task)
-        list[index].setBeforeConstraintValue(list[index - 1])
-        list[index + 1].setBeforeConstraintValue(list[index])
-    }
-
-    fun killTaskAt(index: Int) {
-        when {
-            index < 0 -> {
-                throw IndexOutOfBoundsException("Index cannot be 0")
-            }
-            index > list.size - 1 -> {
-                throw IndexOutOfBoundsException("Index cannot exceed ${list.size - 1}")
-            }
-            else -> {
-                list[index].kill()
-            }
-        }
-    }
-
-    fun killTask(task: Task) {
-        get(task).kill()
-    }
-
-    // TODO: 28-Mar-18 I don't know how useful this even is at all
-    private fun order(): Tuple {
-        if (this.list.minus(this.list.first())
-                        .filterIndexed { index, _ -> this.list[index].before.value != this.list[index - 1].taskID }
-                        .isNotEmpty()) {
-            val tasks = this.getAll()
-            this.clear()
-            this.addAll(tasks)
-        }
-        return this
-    }
-
     companion object {
-        fun fromTuples(vararg tuples: Tuple): Tuple {
+
+        fun fromTuples(tuples: Collection<Tuple>): Tuple {
             val result = Tuple()
             tuples.forEach { result.addAll(it.toList()) }
             return result
         }
+
+        fun fromTuples(vararg tuples: Tuple) = fromTuples(tuples.toList())
+
+        fun toHabit(tuple: Tuple, interval: Duration) = Habit(tuple, interval)
     }
+
+    // TODO: 08-Apr-18 How do we do Routines?? Like Templates??
+    object Routine {
+
+        fun fromRoutine() {}
+
+        fun toRoutine(tuple: Tuple) {}
+
+    }
+
 }

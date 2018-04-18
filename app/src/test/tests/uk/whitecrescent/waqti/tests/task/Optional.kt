@@ -16,7 +16,7 @@ import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Optional Tests")
-class OptionalTests {
+class Optional {
 
     @DisplayName("Optional Default Values")
     @Test

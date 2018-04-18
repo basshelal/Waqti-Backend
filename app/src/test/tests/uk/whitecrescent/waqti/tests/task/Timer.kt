@@ -8,7 +8,8 @@ import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.Timer
 
 @DisplayName("Timer Tests")
-class TimerTests {
+class Timer {
+
     @DisplayName("Timer Test Start and Pause")
     @Test
     fun testTimerStartAndPause() {

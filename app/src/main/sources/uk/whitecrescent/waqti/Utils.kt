@@ -5,7 +5,6 @@ import uk.whitecrescent.waqti.task.DATABASE
 import uk.whitecrescent.waqti.task.GRACE_PERIOD
 import uk.whitecrescent.waqti.task.Task
 import uk.whitecrescent.waqti.task.TaskID
-import java.time.Duration
 
 fun sleep(seconds: Int) = Thread.sleep((seconds) * 1000L)
 

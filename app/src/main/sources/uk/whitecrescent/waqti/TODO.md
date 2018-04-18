@@ -1,15 +1,22 @@
-# TODO
+# TODO (Short)
 
-* AbstractWaqtiList Documentation and more Java usable using the right annotations like @JvmStatic and @Throws
+* Go over Task again by first going over the tests, documentation and then code of each segment of the class
 
-* Write broad specification for Tuple in a markdown file, then detail how the implementation will work in code
+# TODO (Long)
+
+* Write Markdown Documentation for Tuple
+
+* Write Markdown Documentation for Habit subsystem (Routine, Habit, Goal)
+
+* Write Markdown Documentation for Lists
+
+* Write Markdown Documentation for Habit subsystem (Routine, Habit, Goal)
 
 * Write stories tests to test as many possible scenarios, here we try to write tests to break the thing
 
 * Finish documentation inside Task class
 
-* Make code more easily Java interoperable by having the correct annotations like @JvmStatic and @Throws etc, read 
-the kotlin lang site for more on this
+* Update Task Markdown Documentation when Task is finalized
 
 # Notes
 
@@ -51,6 +58,10 @@ the anonymous Task's Properties
 -----------------------------------------------------------------------------------------------------------------------
 
 # Done
+
+* ~~Migrate all Time to use Jake Wharton's Time (or at least be easy to migrate it in the codebase)~~
+
+* ~~AbstractWaqtiList Documentation and more Java usable using the right annotations like @JvmStatic and @Throws~~
 
 * ~~Fix Task Duration with Timer setting~~
 

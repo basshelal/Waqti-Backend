@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.Constraint
@@ -16,13 +17,12 @@ import uk.whitecrescent.waqti.task.Property
 import uk.whitecrescent.waqti.task.SHOWING
 import uk.whitecrescent.waqti.task.TaskState
 import uk.whitecrescent.waqti.task.TaskStateException
-import uk.whitecrescent.waqti.task.Time
 import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Time Tests")
-class TimeTests {
+class Time {
 
     @DisplayName("Time Default Values")
     @Test
@@ -109,7 +109,7 @@ class TimeTests {
     @DisplayName("Set Time Property before now")
     @Test
     fun testTaskSetTimePropertyBeforeNow() {
-        val time = now().minusSeconds(3)
+        val time = now.minusSeconds(3)
         val task = testTask()
                 .setTimePropertyValue(time)
 
@@ -122,7 +122,7 @@ class TimeTests {
     @DisplayName("Set Time Property after now")
     @Test
     fun testTaskSetTimePropertyAfterNow() {
-        val time = now().plusSeconds(3)
+        val time = now.plusSeconds(3)
         val task = testTask()
                 .setTimePropertyValue(time)
 
@@ -135,7 +135,7 @@ class TimeTests {
     @DisplayName("Set Time Constraint after now")
     @Test
     fun testTaskSetTimeConstraintAfterNow() {
-        val time = now().plusSeconds(2)
+        val time = now.plusSeconds(2)
         val task = testTask()
                 .setTimeConstraint(Constraint(SHOWING, time, UNMET))
 
@@ -155,7 +155,7 @@ class TimeTests {
     @DisplayName("Set Time Constraint before now")
     @Test
     fun testTaskSetTimeConstraintBeforeNow() {
-        val time = now().minusSeconds(2)
+        val time = now.minusSeconds(2)
         val task = testTask()
                 .setTimeConstraint(Constraint(SHOWING, time, UNMET))
         assertTrue(task.state != TaskState.SLEEPING)
@@ -171,7 +171,7 @@ class TimeTests {
     @DisplayName("Set Time Constraint after now on many Tasks")
     @Test
     fun testTaskSetTimeConstraintAfterNowOnManyTasks() {
-        val time = now().plusSeconds(3)
+        val time = now.plusSeconds(3)
         val tasks = getTasks(100)
         tasks.forEach { it.setTimeConstraintValue(time) }
 
@@ -185,7 +185,7 @@ class TimeTests {
     @Test
     fun testTaskTimeUnConstraining() {
         val task = testTask()
-                .setTimeConstraintValue(Time.from(now().plusDays(7)))
+                .setTimeConstraintValue(Time.from(now.plusDays(7)))
         sleep(2)
         assertEquals(TaskState.SLEEPING, task.state)
         assertThrows(TaskStateException::class.java, { task.kill() })
@@ -202,13 +202,13 @@ class TimeTests {
     @Test
     fun testTaskTimeConstraintReSet() {
         val task = testTask()
-                .setTimeConstraintValue(Time.from(now().plusDays(7)))
+                .setTimeConstraintValue(Time.from(now.plusDays(7)))
 
         sleep(1)
         assertThrows(TaskStateException::class.java, { task.kill() })
         assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
 
-        val newTime = now().plusSeconds(2)
+        val newTime = now.plusSeconds(2)
 
         task.setTimeConstraintValue(newTime)
         assertEquals(newTime, task.time.value)
@@ -221,7 +221,7 @@ class TimeTests {
     @DisplayName("Time Hiding")
     @Test
     fun testTimeHiding() {
-        val time = Time.from(now().plusDays(7))
+        val time = Time.from(now.plusDays(7))
 
         val task = testTask()
                 .setTimePropertyValue(time)

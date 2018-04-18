@@ -1,0 +1,3 @@
+package uk.whitecrescent.waqti
+
+annotation class ChangeForImplementation

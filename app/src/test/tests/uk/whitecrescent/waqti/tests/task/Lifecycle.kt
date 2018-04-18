@@ -4,15 +4,15 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.TaskState
 import uk.whitecrescent.waqti.task.TaskStateException
-import uk.whitecrescent.waqti.task.Time
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Lifecycle Tests")
-class LifecycleTests {
+class Lifecycle {
 
     /*
      * The Task Lifecycle is as follows:
@@ -44,7 +44,7 @@ class LifecycleTests {
     @Test
     fun testTaskSleepingToExisting() {
         val task = testTask()
-                .setTimeConstraintValue(Time.from(now().plusSeconds(1)))
+                .setTimeConstraintValue(Time.from(now.plusSeconds(1)))
 
         assertEquals(TaskState.SLEEPING, task.state)
 
@@ -133,7 +133,7 @@ class LifecycleTests {
         assertThrows(TaskStateException::class.java, { task.fail() })
 
         assertEquals(TaskState.SLEEPING, task.state)
-        task.setTimeConstraintValue(Time.from(now().plusSeconds(1)))
+        task.setTimeConstraintValue(Time.from(now.plusSeconds(1)))
         assertEquals(TaskState.SLEEPING, task.state)
 
         sleep(3)
@@ -161,7 +161,7 @@ class LifecycleTests {
         assertEquals(TaskState.SLEEPING, task.state)
 
         // To go to EXISTING we go through SLEEPING
-        task.setTimeConstraintValue(Time.from(now().plusSeconds(1)))
+        task.setTimeConstraintValue(Time.from(now.plusSeconds(1)))
         assertEquals(TaskState.SLEEPING, task.state)
 
         sleep(3)
@@ -188,7 +188,7 @@ class LifecycleTests {
 
         assertThrows(TaskStateException::class.java, { task.sleep() })
 
-        task.setTimeConstraintValue(Time.from(now().plusSeconds(1)))
+        task.setTimeConstraintValue(Time.from(now.plusSeconds(1)))
         assertEquals(TaskState.KILLED, task.state)
         sleep(3)
         assertEquals(TaskState.KILLED, task.state)

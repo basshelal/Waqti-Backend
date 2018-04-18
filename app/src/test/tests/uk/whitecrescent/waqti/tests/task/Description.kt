@@ -15,7 +15,7 @@ import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Description Tests")
-class DescriptionTests {
+class Description {
 
     @DisplayName("Description Default Values")
     @Test

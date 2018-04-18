@@ -1,11 +1,12 @@
 package uk.whitecrescent.waqti.task
 
 import io.reactivex.Observable
+import uk.whitecrescent.waqti.Duration
 import uk.whitecrescent.waqti.Listable
+import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.taskIDs
 import uk.whitecrescent.waqti.tasks
-import java.time.Duration
 import java.time.LocalDateTime
 import java.util.Random
 
@@ -77,7 +78,7 @@ class Task(var title: String = "") : Listable {
         while (DATABASE.containsKey(this.taskID)) {
             this.taskID = Math.abs(Random().nextLong())
         }
-        DATABASE.put(this.taskID, this)
+        DATABASE[this.taskID] = this
     }
 
     /**
@@ -109,7 +110,7 @@ class Task(var title: String = "") : Listable {
      * store the parts that make up a Task's overall state
      */
     private fun equalityBundle(): Bundle<String, Any> {
-        val bundle = HashMap<String, Any>(20)
+        val bundle = HashMap<String, Any>(8)
         bundle["title"] = this.title
         bundle["state"] = this.state
         bundle["isFailable"] = this.isFailable
@@ -438,7 +439,7 @@ class Task(var title: String = "") : Listable {
     fun setTimeProperty(timeProperty: Property<Time>): Task {
         this.time = timeProperty
         if (timeProperty is Constraint) {
-            if (timeProperty.value.isAfter(now())) {
+            if (timeProperty.value.isAfter(now)) {
                 if (canSleep()) sleep()
                 makeFailableIfConstraint(timeProperty)
             }
@@ -892,7 +893,7 @@ class Task(var title: String = "") : Listable {
         if (deadline.value == DEFAULT_DEADLINE) {
             throw IllegalStateException("Deadline not set!")
         } else {
-            return Duration.between(now(), this.deadline.value)
+            return Duration.between(now, this.deadline.value)
         }
     }
 
@@ -1199,7 +1200,7 @@ class Task(var title: String = "") : Listable {
             for (task0 in task.subTasks.value.tasks()) {
                 list.add(getSubTasksLevelsDepth(task0) + 1)
             }
-            list.max() as Int
+            list.max()!!
         }
     }
 
@@ -1283,7 +1284,6 @@ class Task(var title: String = "") : Listable {
             this.state == TaskState.EXISTING &&
             getAllUnmetAndShowingConstraints().isEmpty()
 
-
     fun canFail() = isFailable &&
             this.state == TaskState.EXISTING
 
@@ -1305,7 +1305,7 @@ class Task(var title: String = "") : Listable {
         } else if (canFail()) {
             state = TaskState.FAILED
             age++
-            failedTimes.add(now())
+            failedTimes.add(now)
         } else {
             throw TaskStateException("Fail unsuccessful, unknown reason, remember only EXISTING tasks can be " +
                     "failed!", this.state)
@@ -1346,7 +1346,7 @@ class Task(var title: String = "") : Listable {
                     this.state)
         } else if (canKill()) {
             state = TaskState.KILLED
-            killedTime = now()
+            killedTime = now
         } else {
             throw TaskStateException(
                     "Kill unsuccessful, unknown reason, remember only EXISTING tasks can be killed!",
@@ -1361,7 +1361,7 @@ class Task(var title: String = "") : Listable {
     // Timer is independent of Duration Constraint, but Duration Constraint needs the timer to run to be MET
     // TODO: 27-Mar-18 Document this stuff
 
-    fun startTimer() {
+    fun startTimer(): Task {
         if (state != TaskState.EXISTING) {
             throw TaskStateException("Task must be EXISTING to start Timer!", state)
         } else {
@@ -1370,11 +1370,18 @@ class Task(var title: String = "") : Listable {
                 durationConstraintTimerChecking()
             }
         }
+        return this
     }
 
-    fun pauseTimer() = timer.pause()
+    fun pauseTimer(): Task {
+        timer.pause()
+        return this
+    }
 
-    fun stopTimer() = timer.stop()
+    fun stopTimer(): Task {
+        timer.stop()
+        return this
+    }
 
     fun timerDuration() = timer.duration
 
@@ -1384,7 +1391,7 @@ class Task(var title: String = "") : Listable {
 
     fun timerIsStopped() = timer.stopped
 
-    //endregion Timer
+    //endregion Timers
 
     //region Concurrency
 
@@ -1433,7 +1440,7 @@ class Task(var title: String = "") : Listable {
                                 this.time.value != originalValue -> {
                                     done = true
                                 }
-                                now().isAfter(this.time.value) -> {
+                                now.isAfter(this.time.value) -> {
                                     if (this.state == TaskState.SLEEPING) this.state = TaskState.EXISTING
                                     if (this.time is Constraint && (this.time as Constraint).isMet != MET) {
                                         (this.time as Constraint).isMet = MET
@@ -1610,7 +1617,7 @@ class Task(var title: String = "") : Listable {
                                 this.deadline.value != originalValue -> {
                                     done = true
                                 }
-                                now().isAfter(deadlineWithGrace) -> {
+                                now.isAfter(deadlineWithGrace) -> {
                                     if (canFail()) {
                                         this.fail()
                                         (deadline as Constraint).isMet = false
@@ -1817,6 +1824,8 @@ class Task(var title: String = "") : Listable {
 
     //region Template Task
 
+    // TODO: 15-Apr-18 Test this stuff better
+
     /**
      * Returns the information of this Task's Properties in the form of a [Bundle]
      *
@@ -1873,8 +1882,8 @@ class Task(var title: String = "") : Listable {
          * @return the Task with the Properties set from the passed in Bundle
          */
         @Suppress("UNCHECKED_CAST")
-        fun fromTemplate(bundle: Bundle<String, Property<*>>): Task {
-            val task = Task(initialName)
+        fun fromTemplate(bundle: Bundle<String, Property<*>>, title: String = initialName): Task {
+            val task = Task(title)
             if (bundle[time] != DEFAULT_TIME_PROPERTY) {
                 task.setTimeProperty(bundle[time] as Property<Time>)
             }
@@ -1897,7 +1906,7 @@ class Task(var title: String = "") : Listable {
                 task.setChecklistProperty(bundle[checklist] as Property<Checklist>)
             }
             if (bundle[deadline] != DEFAULT_DEADLINE_PROPERTY) {
-                task.setDeadlineProperty(bundle[deadline] as Property<LocalDateTime>)
+                task.setDeadlineProperty(bundle[deadline] as Property<Time>)
             }
             if (bundle[target] != DEFAULT_TARGET_PROPERTY) {
                 task.setTargetProperty(bundle[target] as Property<Target>)

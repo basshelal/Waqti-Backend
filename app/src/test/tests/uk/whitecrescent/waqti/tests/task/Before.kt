@@ -22,7 +22,7 @@ import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
 @DisplayName("Before Tests")
-class BeforeTests {
+class Before {
 
     @DisplayName("Before Default Values")
     @Test

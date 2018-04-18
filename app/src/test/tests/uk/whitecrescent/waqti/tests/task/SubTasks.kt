@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.sleep
@@ -23,8 +24,12 @@ import uk.whitecrescent.waqti.tasks
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
 
+// TODO: 18-Apr-18 Some tests in here fail, I believe it's a database issue with unpredictable values
 @DisplayName("SubTasks Tests")
-class SubTasksTests {
+class SubTasks {
+
+    @BeforeEach
+    fun before() = DATABASE.clear()
 
     @DisplayName("SubTasks Default Values")
     @Test
@@ -212,6 +217,8 @@ class SubTasksTests {
         )
 
         val subTasksIDs = task.getSubTasksList().taskIDs()
+        println("Expecting: ${subTasksIDs.tasks()}")
+        println("Actual: ${task.getSubTasksIDsList().tasks()}")
         assertEquals(subTasksIDs, task.getSubTasksIDsList())
         assertEquals(subTasksIDs.tasks(), task.getSubTasksList())
 

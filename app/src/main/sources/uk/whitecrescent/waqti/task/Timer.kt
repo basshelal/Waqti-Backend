@@ -2,8 +2,9 @@ package uk.whitecrescent.waqti.task
 
 import io.reactivex.Observable
 import io.reactivex.schedulers.Schedulers
+import uk.whitecrescent.waqti.Duration
 import uk.whitecrescent.waqti.now
-import java.time.Duration
+import uk.whitecrescent.waqti.till
 import java.util.concurrent.TimeUnit
 
 class Timer {
@@ -19,7 +20,7 @@ class Timer {
     var running = false
         private set
 
-    private var lastTime = now()
+    private var lastTime = now
 
     var duration: Duration = Duration.ZERO
         private set
@@ -30,14 +31,14 @@ class Timer {
             .takeWhile { running }
 
     fun start() {
-        if (paused || stopped) lastTime = now()
+        if (paused || stopped) lastTime = now
         running = true
         paused = false
         stopped = false
         timer.subscribe(
                 {
-                    duration = duration.plus(Duration.between(lastTime, now()))
-                    lastTime = now()
+                    duration += (lastTime till now)
+                    lastTime = now
                 },
                 {
                     throw  ConcurrentException("Timer Failed!")

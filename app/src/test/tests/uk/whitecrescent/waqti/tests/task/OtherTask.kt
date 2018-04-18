@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
+import uk.whitecrescent.waqti.Duration
+import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.Checklist
@@ -15,20 +17,21 @@ import uk.whitecrescent.waqti.task.MANDATORY
 import uk.whitecrescent.waqti.task.OPTIONAL
 import uk.whitecrescent.waqti.task.Priority
 import uk.whitecrescent.waqti.task.Task
-import uk.whitecrescent.waqti.task.Time
 import uk.whitecrescent.waqti.taskIDs
-import java.time.Duration
 
 @DisplayName("Other Task Tests")
-class OtherTaskTests {
+class OtherTask {
 
     @DisplayName("Task Title")
     @Test
     fun testTaskTitle() {
-        val task = Task("My Task")
-        assertEquals("My Task", task.title)
-        task.title = "My Task Updated"
-        assertEquals("My Task Updated", task.title)
+        val task = Task()
+        assertEquals("", task.title)
+
+        val task1 = Task("My Task")
+        assertEquals("My Task", task1.title)
+        task1.title = "My Task Updated"
+        assertEquals("My Task Updated", task1.title)
     }
 
     @DisplayName("Task HashCode Equal")
@@ -59,7 +62,7 @@ class OtherTaskTests {
     @DisplayName("Task Equals State")
     @Test
     fun testTaskEqualsState() {
-        val time = Time.from(now().plusDays(7))
+        val time = Time.from(now.plusDays(7))
         val task1 = Task("Task").setTimeConstraintValue(time)
         val task2 = Task("Task")
 
@@ -147,7 +150,7 @@ class OtherTaskTests {
     @DisplayName("Task Equals Time")
     @Test
     fun testTaskEqualsTime() {
-        val time = Time.from(now().plusDays(7))
+        val time = Time.from(now.plusDays(7))
         val task1 = Task("Task").setTimePropertyValue(time)
         val task2 = Task("Task").setTimePropertyValue(time)
 
@@ -269,7 +272,7 @@ class OtherTaskTests {
     @DisplayName("Task Equals Deadline")
     @Test
     fun testTaskEqualsDeadline() {
-        val deadline = Time.from(now().plusDays(7))
+        val deadline = Time.from(now.plusDays(7))
         val task1 = Task("Task").setDeadlinePropertyValue(deadline)
         val task2 = Task("Task").setDeadlinePropertyValue(deadline)
 
