@@ -1,6 +1,5 @@
 package uk.whitecrescent.waqti.collections
 
-
 /**
  * Used to indicate that is either not recommended or not necessary (or both) to override the function, property,
  * constructor or class (even though it is allowed). This would usually be because the current implementation should

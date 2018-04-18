@@ -1,3 +1,6 @@
 package uk.whitecrescent.waqti
 
-annotation class ChangeForImplementation
+@Retention(AnnotationRetention.SOURCE)
+@Target(AnnotationTarget.CONSTRUCTOR, AnnotationTarget.PROPERTY, AnnotationTarget.FUNCTION, AnnotationTarget.EXPRESSION)
+@MustBeDocumented
+annotation class ImplementationVariable

@@ -32,6 +32,13 @@ fun ArrayList<Task>.taskIDs(): ArrayList<TaskID> {
     return ids
 }
 
+val ArrayList<Task>.taskIDs: ArrayList<TaskID>
+    get() {
+        val ids = ArrayList<TaskID>(this.size)
+        this.forEach { ids.add(it.taskID) }
+        return ids
+    }
+
 fun ArrayList<TaskID>.tasks(): ArrayList<Task> {
     val tasks = ArrayList<Task>(this.size)
     for (id in this) {
@@ -43,6 +50,18 @@ fun ArrayList<TaskID>.tasks(): ArrayList<Task> {
     return tasks
 }
 
+val ArrayList<TaskID>.tasks: ArrayList<Task>
+    get() {
+        val tasks = ArrayList<Task>(this.size)
+        for (id in this) {
+            val task = DATABASE.get(id)
+            if (task != null) {
+                tasks.add(task)
+            }
+        }
+        return tasks
+    }
+
 fun Collection<Tuple>.toTasks(): Array<Task> {
     val result = ArrayList<Task>(this.size)
     for (tuple in this) {
@@ -51,6 +70,15 @@ fun Collection<Tuple>.toTasks(): Array<Task> {
     return result.toTypedArray()
 }
 
+val Collection<Tuple>.toTasks: Array<Task>
+    get() {
+        val result = ArrayList<Task>(this.size)
+        for (tuple in this) {
+            result.addAll(tuple.getAll())
+        }
+        return result.toTypedArray()
+    }
+
 fun TaskID.task(): Task {
     val found = DATABASE.get(this)
     when {
@@ -58,3 +86,12 @@ fun TaskID.task(): Task {
         else -> return found
     }
 }
+
+val TaskID.task: Task
+    get() {
+        val found = DATABASE.get(this)
+        return when {
+            found == null -> throw IllegalStateException("Task Not Found!")
+            else -> found
+        }
+    }
