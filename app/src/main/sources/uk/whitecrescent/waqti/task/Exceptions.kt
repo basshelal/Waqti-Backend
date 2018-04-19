@@ -1,5 +1,7 @@
 package uk.whitecrescent.waqti.task
 
-class TaskStateException(string: String, state: TaskState) : IllegalStateException("$string\n State: $state")
+open class TaskException(string: String) : IllegalStateException(string)
 
-class ConcurrentException(string: String) : IllegalStateException(string)
+class TaskStateException(string: String, state: TaskState) : TaskException("$string\n State: $state")
+
+class ConcurrentException(string: String) : TaskException(string)

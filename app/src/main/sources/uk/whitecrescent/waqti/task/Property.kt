@@ -15,8 +15,14 @@ open class Property<V>(open var isVisible: Boolean, open val value: V) {
             value!!.hashCode() + isVisible.hashCode()
 
     override fun equals(other: Any?) =
-            other is Property<*> && this.value!!.equals(other.value) && this.isVisible == other.isVisible
+            other is Property<*> &&
+                    this.value == other.value &&
+                    this.isVisible == other.isVisible
 
     override fun toString() =
-            "isVisible = $isVisible value = ${value}"
+            "isVisible = $isVisible value = $value"
+
+    operator fun component1() = isVisible
+
+    operator fun component2() = value
 }

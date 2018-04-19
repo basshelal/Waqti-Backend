@@ -7,7 +7,6 @@ import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.taskIDs
 import uk.whitecrescent.waqti.tasks
-import java.time.LocalDateTime
 import java.util.Random
 
 // TODO: 27-Mar-18 Make sure all KDoc is up to date!!!
@@ -17,14 +16,14 @@ class Task(var title: String = "") : Listable {
 
     /**
      * The Task State is the state in which the task is in at this point in time.
-     * By default this is set to EXISTING.
+     * By default this is initialized to EXISTING.
+     * The Task State changes according to Lifecycle changes such as [sleep], [kill], [fail],
+     * such changes can also occur due to Constraints.
      * See The Task Lifecycle Documentation for more information
      * @see TaskState
      */
     var state = DEFAULT_TASK_STATE
-        private set(state) {
-            field = state
-        }
+        private set
 
     /**
      * Boolean value representing whether it is possible for this Task to be failed at any arbitrary point in time.
@@ -54,22 +53,17 @@ class Task(var title: String = "") : Listable {
         private set
 
     // TODO: 26-Mar-18 Document this stuff!
-    //Some change
 
     // A Task ages when it is failed
     var age = 0
-        private set(age) {
-            field = age
-        }
+        private set
 
     // The times a task has been failed
     val failedTimes = arrayListOf<Time>()
 
     // The time a task is killed
     var killedTime = DEFAULT_TIME
-        private set(killedTime) {
-            field = killedTime
-        }
+        private set
 
     // Used for Duration Constraint
     private val timer = Timer()
@@ -101,8 +95,8 @@ class Task(var title: String = "") : Listable {
      *
      * For [getAllProperties] see [java.util.ArrayList.equals], essentially all Properties must be equal in order for
      * this to be satisfied see [Property.equals] meaning even the values must be equal, this will differ depending
-     * on the type of value, for example any [LocalDateTime] is equal to another if and only if they are exactly the
-     * same to the nanosecond precision see [LocalDateTime.equals] whereas [StringBuilder] checks for equality using
+     * on the type of value, for example any [Time] is equal to another if and only if they are exactly the
+     * same to the nanosecond precision see [Time.equals] whereas [StringBuilder] checks for equality using
      * identity meaning two different StringBuilder instances can have the exact same value and be consider unequal
      * see [java.lang.StringBuilder] (it does not override equals, hence this default implementation)
      *
@@ -136,12 +130,10 @@ class Task(var title: String = "") : Listable {
      * killed freely and will be in its previous state meaning no lifecycle change will be made. If time is a
      * Property then it has no rules on killing the Task.
      *
-     * @see LocalDateTime
+     * @see Time
      */
     var time: Property<Time> = DEFAULT_TIME_PROPERTY
-        private set(time) {
-            field = time
-        }
+        private set
 
     /**
      * The estimated amount of time that this Task will take, this can also be referred to as minimum duration.
@@ -155,9 +147,7 @@ class Task(var title: String = "") : Listable {
      * @see TimeUnit
      */
     var duration: Property<Duration> = DEFAULT_DURATION_PROPERTY
-        private set(duration) {
-            field = duration
-        }
+        private set
 
     /**
      * The user defined level of importance of a Task represented as a String with a number representing importance
@@ -174,9 +164,7 @@ class Task(var title: String = "") : Listable {
      * @see Priority
      */
     var priority: Property<Priority> = DEFAULT_PRIORITY_PROPERTY
-        private set(priority) {
-            field = priority
-        }
+        private set
 
     /**
      * The user defined category(s) that this Task belongs to.
@@ -190,9 +178,7 @@ class Task(var title: String = "") : Listable {
      * @see Label
      */
     var labels: Property<ArrayList<Label>> = DEFAULT_LABELS_PROPERTY
-        private set(label) {
-            field = label
-        }
+        private set
 
     /**
      * Shows whether the Task is optional or not.
@@ -207,9 +193,7 @@ class Task(var title: String = "") : Listable {
      * @see Boolean
      */
     var optional: Property<Optional> = DEFAULT_OPTIONAL_PROPERTY
-        private set(optional) {
-            field = optional
-        }
+        private set
 
     /**
      * A textual description of this Task, useful for if the Task is complex or requires further information that the
@@ -220,9 +204,7 @@ class Task(var title: String = "") : Listable {
      * @see StringBuilder
      */
     var description: Property<Description> = DEFAULT_DESCRIPTION_PROPERTY
-        private set(description) {
-            field = description
-        }
+        private set
 
     /**
      * A list of checkable items that this Task may have.
@@ -241,9 +223,7 @@ class Task(var title: String = "") : Listable {
      * @see ListItem
      */
     var checklist: Property<Checklist> = DEFAULT_CHECKLIST_PROPERTY
-        private set(checklist) {
-            field = checklist
-        }
+        private set
 
     /**
      * The point in natural time after which this Task can no longer be killed and thus is FAILED.
@@ -253,13 +233,11 @@ class Task(var title: String = "") : Listable {
      *
      * If deadline is a Property it has no rules on failing or killing the Task.
      *
-     * @see LocalDateTime
+     * @see Time
      * @see GRACE_PERIOD
      */
     var deadline: Property<Time> = DEFAULT_DEADLINE_PROPERTY
-        private set(deadline) {
-            field = deadline
-        }
+        private set
 
     /**
      * The user defined textual representation of a desirable target to be achieved by the user before killing this
@@ -271,9 +249,7 @@ class Task(var title: String = "") : Listable {
      * @see String
      */
     var target: Property<Target> = DEFAULT_TARGET_PROPERTY
-        private set(target) {
-            field = target
-        }
+        private set
 
     /**
      * The Task that occurs before this Task.
@@ -288,9 +264,7 @@ class Task(var title: String = "") : Listable {
      * @see Long
      */
     var before: Property<TaskID> = DEFAULT_BEFORE_PROPERTY
-        private set(before) {
-            field = before
-        }
+        private set
 
     /**
      * The list of sub-Tasks this Task has, a Task can have zero to potentially many sub-Tasks but has zero by
@@ -308,9 +282,7 @@ class Task(var title: String = "") : Listable {
      * @see Long
      */
     var subTasks: Property<ArrayList<TaskID>> = DEFAULT_SUB_TASKS_PROPERTY
-        private set(subTasks) {
-            field = subTasks
-        }
+        private set
 
     //endregion Task Properties
 
@@ -519,11 +491,11 @@ class Task(var title: String = "") : Listable {
      * require duration to be a Constraint but is of not much interest if duration is not a Constraint.
      *
      * @return the Duration left until this Task's duration Constraint is met
-     * @throws IllegalStateException if the Duration has not been set
+     * @throws TaskException if the Duration has not been set
      */
     fun getDurationLeft(): Duration {
         if (duration.value == DEFAULT_DURATION) {
-            throw IllegalStateException("Duration not set!")
+            throw TaskException("Duration not set!")
         } else {
             return duration.value.minus(timer.duration)
         }
@@ -872,7 +844,7 @@ class Task(var title: String = "") : Listable {
      * will not fail automatically.
      *
      * @see Task.deadlineConstraintChecking
-     * @param deadlineProperty the `Property` of type `java.time.LocalDateTime` that this Task's deadline will be set to
+     * @param deadlineProperty the `Property` of type `java.time.Time` that this Task's deadline will be set to
      * @return this Task after setting the Task's deadline Property
      */
     fun setDeadlineProperty(deadlineProperty: Property<Time>): Task {
@@ -888,11 +860,11 @@ class Task(var title: String = "") : Listable {
      * Gets the duration left until this Task's deadline will occur, this ignores the grace period.
      *
      * @return the Duration left until this Task's deadline occurs, ignores the grace period
-     * @throws IllegalStateException if the deadline has not been set
+     * @throws TaskException if the deadline has not been set
      */
     fun getTimeUntilDeadline(): Duration {
         if (deadline.value == DEFAULT_DEADLINE) {
-            throw IllegalStateException("Deadline not set!")
+            throw TaskException("Deadline not set!")
         } else {
             return Duration.between(now, this.deadline.value)
         }
@@ -902,7 +874,7 @@ class Task(var title: String = "") : Listable {
      * Sets this Task's deadline Constraint.
      *
      * @see Task.setDeadlineProperty
-     * @param deadlineConstraint the `Constraint` of type `java.time.LocalDateTime` that this Task's deadline will be
+     * @param deadlineConstraint the `Constraint` of type `java.time.Time` that this Task's deadline will be
      * set to
      * @return this Task after setting the Task's deadline Constraint
      */
@@ -916,7 +888,7 @@ class Task(var title: String = "") : Listable {
      * This is a shorthand of writing `setDeadlineProperty(Property(SHOWING, myDeadline))`.
      *
      * @see Task.setDeadlineProperty
-     * @param deadline the java.time.LocalDateTime value that this Task's deadline value will be set to
+     * @param deadline the java.time.Time value that this Task's deadline value will be set to
      * @return this Task after setting the Task's deadline Property
      */
     fun setDeadlinePropertyValue(deadline: Time): Task {
@@ -929,7 +901,7 @@ class Task(var title: String = "") : Listable {
      * This is a shorthand of writing `setDeadlineConstraint(Constraint(SHOWING, myDeadline, UNMET))`.
      *
      * @see Task.setDeadlineProperty
-     * @param deadline the java.time.LocalDateTime value that this Task's deadline value will be set to
+     * @param deadline the java.time.Time value that this Task's deadline value will be set to
      * @return this Task after setting the Task's deadline Constraint
      */
     fun setDeadlineConstraintValue(deadline: Time): Task {
@@ -1213,67 +1185,67 @@ class Task(var title: String = "") : Listable {
     fun hideTime() {
         if (isNotConstraint(time)) {
             time = DEFAULT_TIME_PROPERTY
-        } else throw IllegalStateException("Cannot hide, time is Constraint")
+        } else throw TaskException("Cannot hide, time is Constraint")
     }
 
     fun hideDuration() {
         if (isNotConstraint(duration)) {
             duration = DEFAULT_DURATION_PROPERTY
-        } else throw IllegalStateException("Cannot hide, duration is Constraint")
+        } else throw TaskException("Cannot hide, duration is Constraint")
     }
 
     fun hidePriority() {
         if (isNotConstraint(priority)) {
             priority = DEFAULT_PRIORITY_PROPERTY
-        } else throw IllegalStateException("Cannot hide, priority is Constraint")
+        } else throw TaskException("Cannot hide, priority is Constraint")
     }
 
     fun hideLabel() {
         if (isNotConstraint(labels)) {
             labels = DEFAULT_LABELS_PROPERTY
-        } else throw IllegalStateException("Cannot hide, labels is Constraint")
+        } else throw TaskException("Cannot hide, labels is Constraint")
     }
 
     fun hideOptional() {
         if (isNotConstraint(optional)) {
             optional = DEFAULT_OPTIONAL_PROPERTY
-        } else throw IllegalStateException("Cannot hide, optional is Constraint")
+        } else throw TaskException("Cannot hide, optional is Constraint")
     }
 
     fun hideDescription() {
         if (isNotConstraint(description)) {
             description = DEFAULT_DESCRIPTION_PROPERTY
-        } else throw IllegalStateException("Cannot hide, description is Constraint")
+        } else throw TaskException("Cannot hide, description is Constraint")
     }
 
     fun hideChecklist() {
         if (isNotConstraint(checklist)) {
             checklist = DEFAULT_CHECKLIST_PROPERTY
-        } else throw IllegalStateException("Cannot hide, checklist is Constraint")
+        } else throw TaskException("Cannot hide, checklist is Constraint")
     }
 
     fun hideDeadline() {
         if (isNotConstraint(deadline)) {
             deadline = DEFAULT_DEADLINE_PROPERTY
-        } else throw IllegalStateException("Cannot hide, deadline is Constraint")
+        } else throw TaskException("Cannot hide, deadline is Constraint")
     }
 
     fun hideTarget() {
         if (isNotConstraint(target)) {
             target = DEFAULT_TARGET_PROPERTY
-        } else throw IllegalStateException("Cannot hide, target is Constraint")
+        } else throw TaskException("Cannot hide, target is Constraint")
     }
 
     fun hideBefore() {
         if (isNotConstraint(before)) {
             before = DEFAULT_BEFORE_PROPERTY
-        } else throw IllegalStateException("Cannot hide, before is Constraint")
+        } else throw TaskException("Cannot hide, before is Constraint")
     }
 
     fun hideSubTasks() {
         if (isNotConstraint(subTasks)) {
             subTasks = DEFAULT_SUB_TASKS_PROPERTY
-        } else throw IllegalStateException("Cannot hide, subTasks is Constraint")
+        } else throw TaskException("Cannot hide, subTasks is Constraint")
     }
 
     //endregion Hide Properties
