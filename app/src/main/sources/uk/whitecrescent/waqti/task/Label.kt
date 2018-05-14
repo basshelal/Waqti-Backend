@@ -1,6 +1,8 @@
 package uk.whitecrescent.waqti.task
 
-class Label private constructor(var name: String) {
+import uk.whitecrescent.waqti.Cacheable
+
+class Label private constructor(var name: String) : Cacheable {
 
     var children = arrayListOf<Label>()
 
@@ -35,6 +37,10 @@ class Label private constructor(var name: String) {
             allLabels.remove(getLabel(name))
         }
 
+    }
+
+    override fun id(): ID {
+        return System.currentTimeMillis()
     }
 
     override fun hashCode() = name.hashCode()

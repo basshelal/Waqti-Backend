@@ -3,16 +3,7 @@ package uk.whitecrescent.waqti.task
 import io.reactivex.schedulers.Schedulers
 import uk.whitecrescent.waqti.Duration
 import uk.whitecrescent.waqti.Time
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
-
-//region Persistence
-
-// When implementing this API, change usages of this to use your database system appropriately
-val DATABASE = ConcurrentHashMap<TaskID, Task>(5000)
-val TEMPLATE_DATABASE = ConcurrentHashMap<String, Bundle<String, Property<*>>>()
-
-//endregion Persistence
 
 //region Type Aliases
 
@@ -20,8 +11,8 @@ val TEMPLATE_DATABASE = ConcurrentHashMap<String, Bundle<String, Property<*>>>()
 typealias Description = String
 typealias Optional = Boolean
 typealias Target = String
-typealias TaskID = Long
 typealias Bundle<K, V> = HashMap<K, V>
+typealias ID = Long
 
 //endregion Type Aliases
 
@@ -64,7 +55,7 @@ val DEFAULT_CHECKLIST = Checklist()
 const val DEFAULT_TARGET = ""
 val DEFAULT_DEADLINE: Time = Time.MAX
 const val DEFAULT_TASK_ID: Long = 0L
-val DEFAULT_SUB_TASKS = arrayListOf<TaskID>()
+val DEFAULT_SUB_TASKS = arrayListOf<ID>()
 
 //endregion Default Property Values
 
@@ -85,7 +76,7 @@ val DEFAULT_SUB_TASKS_PROPERTY = Property(HIDDEN, DEFAULT_SUB_TASKS)
 //endregion Default Properties
 
 // Used for deadlines
-var GRACE_PERIOD: Duration = Duration.ofSeconds(0)
+var GRACE_PERIOD: Duration = Duration.ZERO
 
 //region Concurrency
 

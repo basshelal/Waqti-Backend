@@ -1,3 +1,3 @@
 package uk.whitecrescent.waqti
 
-class UnknownException(string: String = "Unknown exception!") : IllegalStateException(string)
+class CacheElementNotFoundException(element: Any) : NoSuchElementException("Element $element not found")

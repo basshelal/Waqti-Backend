@@ -234,5 +234,4 @@ class Time {
         assertEquals(time, task.time.value)
         assertThrows(IllegalStateException::class.java, { task.hideTime() })
     }
-
 }

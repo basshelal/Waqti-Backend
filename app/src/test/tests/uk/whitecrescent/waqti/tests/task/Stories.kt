@@ -166,21 +166,21 @@ class Stories {
 
         sleep(1)
 
-        task.subTasks.value.tasks()[0].checklist.value.checkItem(0)
-        task.subTasks.value.tasks()[0].checklist.value.checkItem(1)
+        task.subTasks.value.tasks[0].checklist.value.checkItem(0)
+        task.subTasks.value.tasks[0].checklist.value.checkItem(1)
 
         sleep(1)
 
-        task.subTasks.value.tasks()[0].kill()
-        task.subTasks.value.tasks()[1].kill()
-        task.subTasks.value.tasks()[2].kill()
+        task.subTasks.value.tasks[0].kill()
+        task.subTasks.value.tasks[1].kill()
+        task.subTasks.value.tasks[2].kill()
 
         //simulate time has gone past deadline for last subTask
-        task.subTasks.value.tasks()[3].setDeadlineConstraintValue(now.minusMinutes(30))
+        task.subTasks.value.tasks[3].setDeadlineConstraintValue(now.minusMinutes(30))
 
         sleep(2)
 
-        assertEquals(TaskState.FAILED, task.subTasks.value.tasks()[3].state)
+        assertEquals(TaskState.FAILED, task.subTasks.value.tasks[3].state)
         assertEquals(TaskState.FAILED, task.state)
 
     }

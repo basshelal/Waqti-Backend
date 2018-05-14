@@ -1,16 +1,21 @@
 package uk.whitecrescent.waqti.task
 
 import io.reactivex.Observable
+import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
+import uk.whitecrescent.waqti.Cache
+import uk.whitecrescent.waqti.Cacheable
 import uk.whitecrescent.waqti.Duration
 import uk.whitecrescent.waqti.Listable
 import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.taskIDs
 import uk.whitecrescent.waqti.tasks
-import java.util.Random
 
 // TODO: 27-Mar-18 Make sure all KDoc is up to date!!!
-class Task(var title: String = "") : Listable {
+// TODO: 14-May-18 After any changes, tell the Cache
+// TODO: 14-May-18 Can Task be extended?
+class Task(var title: String = "") : Listable, Cacheable {
 
     //region Class Properties
 
@@ -49,8 +54,7 @@ class Task(var title: String = "") : Listable {
      * The list of all currently used IDs should be stored persistently.
      * @see java.util.Random.nextLong
      */
-    var taskID = Math.abs(Random().nextLong())
-        private set
+    val taskID = Cache.newTaskID()
 
     // TODO: 26-Mar-18 Document this stuff!
 
@@ -68,12 +72,13 @@ class Task(var title: String = "") : Listable {
     // Used for Duration Constraint
     private val timer = Timer()
 
+    // Used to compile all Observables
+    private val composite = CompositeDisposable()
+
     // Put this in the Database and make sure this' key is unique
     init {
-        while (DATABASE.containsKey(this.taskID)) {
-            this.taskID = Math.abs(Random().nextLong())
-        }
-        DATABASE[this.taskID] = this
+        Cache.putTask(this)
+        checkNotDead()
     }
 
     /**
@@ -263,7 +268,7 @@ class Task(var title: String = "") : Listable {
      *
      * @see Long
      */
-    var before: Property<TaskID> = DEFAULT_BEFORE_PROPERTY
+    var before: Property<ID> = DEFAULT_BEFORE_PROPERTY
         private set
 
     /**
@@ -281,7 +286,7 @@ class Task(var title: String = "") : Listable {
      * @see ArrayList
      * @see Long
      */
-    var subTasks: Property<ArrayList<TaskID>> = DEFAULT_SUB_TASKS_PROPERTY
+    var subTasks: Property<ArrayList<ID>> = DEFAULT_SUB_TASKS_PROPERTY
         private set
 
     //endregion Task Properties
@@ -418,6 +423,7 @@ class Task(var title: String = "") : Listable {
             }
             timeConstraintTimeChecking()
         }
+        update()
         return this
     }
 
@@ -428,9 +434,7 @@ class Task(var title: String = "") : Listable {
      * @param timeConstraint the `Constraint` of type `Time` that this Task's time will be set to
      * @return this Task after setting the Task's time Constraint
      */
-    fun setTimeConstraint(timeConstraint: Constraint<Time>): Task {
-        return setTimeProperty(timeConstraint)
-    }
+    fun setTimeConstraint(timeConstraint: Constraint<Time>) = setTimeProperty(timeConstraint)
 
     /**
      * Sets this Task's time Property with the given value and makes the Property showing.
@@ -441,9 +445,7 @@ class Task(var title: String = "") : Listable {
      * @param time the Time value that this Task's time value will be set to
      * @return this Task after setting the Task's time Property
      */
-    fun setTimePropertyValue(time: Time): Task {
-        return setTimeProperty(Property(SHOWING, time))
-    }
+    fun setTimePropertyValue(time: Time) = setTimeProperty(Property(SHOWING, time))
 
     /**
      * Sets this Task's time Constraint with the given value and makes the Constraint showing and unmet.
@@ -454,9 +456,7 @@ class Task(var title: String = "") : Listable {
      * @param time the Time value that this Task's time value will be set to
      * @return this Task after setting the Task's time Constraint
      */
-    fun setTimeConstraintValue(time: Time): Task {
-        return setTimeProperty(Constraint(SHOWING, time, UNMET))
-    }
+    fun setTimeConstraintValue(time: Time) = setTimeProperty(Constraint(SHOWING, time, UNMET))
 
     /**
      * Sets this Task's duration Property, the passed in Property can be a Constraint.
@@ -480,6 +480,7 @@ class Task(var title: String = "") : Listable {
         if (durationProperty is Constraint) {
             makeFailableIfConstraint(durationProperty)
         }
+        update()
         return this
     }
 
@@ -508,9 +509,7 @@ class Task(var title: String = "") : Listable {
      * @param durationConstraint the `Constraint` of type `java.time.Duration` that this Task's duration will be set to
      * @return this Task after setting the Task's duration Constraint
      */
-    fun setDurationConstraint(durationConstraint: Constraint<Duration>): Task {
-        return setDurationProperty(durationConstraint)
-    }
+    fun setDurationConstraint(durationConstraint: Constraint<Duration>) = setDurationProperty(durationConstraint)
 
     /**
      * Sets this Task's duration Property with the given value and makes the Property showing.
@@ -521,9 +520,7 @@ class Task(var title: String = "") : Listable {
      * @param duration the java.time.Duration value that this Task's duration value will be set to
      * @return this Task after setting the Task's duration Property
      */
-    fun setDurationPropertyValue(duration: Duration): Task {
-        return setDurationProperty(Property(SHOWING, duration))
-    }
+    fun setDurationPropertyValue(duration: Duration) = setDurationProperty(Property(SHOWING, duration))
 
     /**
      * Sets this Task's duration Constraint with the given value and makes the Constraint showing and unmet.
@@ -534,9 +531,7 @@ class Task(var title: String = "") : Listable {
      * @param duration the java.time.Duration value that this Task's duration value will be set to
      * @return this Task after setting the Task's duration Constraint
      */
-    fun setDurationConstraintValue(duration: Duration): Task {
-        return setDurationProperty(Constraint(SHOWING, duration, UNMET))
-    }
+    fun setDurationConstraintValue(duration: Duration) = setDurationProperty(Constraint(SHOWING, duration, UNMET))
 
     /**
      * Sets this Task's duration Property with the duration of the TimeUnit multiplied by the `count` as the Property's
@@ -555,8 +550,9 @@ class Task(var title: String = "") : Listable {
         val duration = TimeUnit.toJavaDuration(timeUnitProperty.value, count)
         if (timeUnitProperty is Constraint) {
             setDurationProperty(Constraint(timeUnitProperty.isVisible, duration, UNMET))
-        } else setDurationProperty(Property(timeUnitProperty.isVisible, duration))
-
+        } else {
+            setDurationProperty(Property(timeUnitProperty.isVisible, duration))
+        }
         return this
     }
 
@@ -594,9 +590,8 @@ class Task(var title: String = "") : Listable {
      * @param count the number of times the `TimeUnit` occurs
      * @return this Task after setting the Task's duration Property
      */
-    fun setDurationPropertyTimeUnitsValue(timeUnit: TimeUnit, count: Int): Task {
-        return setDurationProperty(Property(SHOWING, TimeUnit.toJavaDuration(timeUnit, count)))
-    }
+    fun setDurationPropertyTimeUnitsValue(timeUnit: TimeUnit, count: Int) =
+            setDurationProperty(Property(SHOWING, TimeUnit.toJavaDuration(timeUnit, count)))
 
     /**
      * Sets this Task's duration Constraint with the duration of the TimeUnit multiplied by the `count` as the
@@ -612,9 +607,8 @@ class Task(var title: String = "") : Listable {
      * @param count the number of times the `TimeUnit` occurs
      * @return this Task after setting the Task's duration Constraint
      */
-    fun setDurationConstraintTimeUnitsValue(timeUnit: TimeUnit, count: Int): Task {
-        return setDurationProperty(Constraint(SHOWING, TimeUnit.toJavaDuration(timeUnit, count), UNMET))
-    }
+    fun setDurationConstraintTimeUnitsValue(timeUnit: TimeUnit, count: Int) =
+            setDurationProperty(Constraint(SHOWING, TimeUnit.toJavaDuration(timeUnit, count), UNMET))
 
     /**
      * Sets this Task's priority Property.
@@ -628,6 +622,7 @@ class Task(var title: String = "") : Listable {
      */
     fun setPriorityProperty(priorityProperty: Property<Priority>): Task {
         this.priority = Property(priorityProperty.isVisible, priorityProperty.value)
+        update()
         return this
     }
 
@@ -640,9 +635,7 @@ class Task(var title: String = "") : Listable {
      * @param priority the Priority value that this Task's priority value will be set to
      * @return this Task after setting the Task's priority Property
      */
-    fun setPriorityValue(priority: Priority): Task {
-        return setPriorityProperty(Property(SHOWING, priority))
-    }
+    fun setPriorityValue(priority: Priority) = setPriorityProperty(Property(SHOWING, priority))
 
     /**
      * Sets this Task's labels Property.
@@ -657,6 +650,7 @@ class Task(var title: String = "") : Listable {
      */
     fun setLabelsProperty(labelProperty: Property<ArrayList<Label>>): Task {
         this.labels = Property(labelProperty.isVisible, labelProperty.value)
+        update()
         return this
     }
 
@@ -669,9 +663,7 @@ class Task(var title: String = "") : Listable {
      * @param labels the list of labels that this Task's labels Property will be set to
      * @return this Task after setting the Task's labels Property
      */
-    fun setLabelsValue(vararg labels: Label): Task {
-        return setLabelsProperty(Property(SHOWING, arrayListOf(*labels)))
-    }
+    fun setLabelsValue(vararg labels: Label) = setLabelsProperty(Property(SHOWING, arrayListOf(*labels)))
 
     /**
      * Adds the passed in labels to this Task's labels Property and makes this Task's labels Property showing if it
@@ -686,6 +678,7 @@ class Task(var title: String = "") : Listable {
             this.labels.isVisible = SHOWING
         }
         this.labels.value.addAll(labels)
+        update()
         return this
     }
 
@@ -698,6 +691,7 @@ class Task(var title: String = "") : Listable {
      */
     fun removeLabel(label: Label): Task {
         this.labels.value.remove(label)
+        update()
         return this
     }
 
@@ -712,6 +706,7 @@ class Task(var title: String = "") : Listable {
      */
     fun setOptionalProperty(optionalProperty: Property<Optional>): Task {
         this.optional = Property(optionalProperty.isVisible, optionalProperty.value)
+        update()
         return this
     }
 
@@ -724,9 +719,7 @@ class Task(var title: String = "") : Listable {
      * @param optional the Optional value that this Task's optional value will be set to
      * @return this Task after setting the Task's optional Property
      */
-    fun setOptionalValue(optional: Optional): Task {
-        return setOptionalProperty(Property(SHOWING, optional))
-    }
+    fun setOptionalValue(optional: Optional) = setOptionalProperty(Property(SHOWING, optional))
 
     /**
      * Sets this Task's description Property.
@@ -741,6 +734,7 @@ class Task(var title: String = "") : Listable {
      */
     fun setDescriptionProperty(descriptionProperty: Property<Description>): Task {
         this.description = Property(descriptionProperty.isVisible, descriptionProperty.value)
+        update()
         return this
     }
 
@@ -753,9 +747,7 @@ class Task(var title: String = "") : Listable {
      * @param description the description that this Task's description Property will be set to
      * @return this Task after setting the Task's description Property
      */
-    fun setDescriptionValue(description: Description): Task {
-        return setDescriptionProperty(Property(SHOWING, description))
-    }
+    fun setDescriptionValue(description: Description) = setDescriptionProperty(Property(SHOWING, description))
 
     /**
      * Sets this Task's checklist Property, the passed in Property can be a Constraint.
@@ -785,6 +777,7 @@ class Task(var title: String = "") : Listable {
             makeFailableIfConstraint(checklistProperty)
             checklistConstraintChecking()
         }
+        update()
         return this
     }
 
@@ -795,9 +788,7 @@ class Task(var title: String = "") : Listable {
      * @param checklistConstraint the `Constraint` of type `Checklist` that this Task's checklist will be set to
      * @return this Task after setting the Task's checklist Constraint
      */
-    fun setChecklistConstraint(checklistConstraint: Constraint<Checklist>): Task {
-        return setChecklistProperty(checklistConstraint)
-    }
+    fun setChecklistConstraint(checklistConstraint: Constraint<Checklist>) = setChecklistProperty(checklistConstraint)
 
     /**
      * Sets this Task's checklist Property with the given value and makes the Property showing.
@@ -808,9 +799,7 @@ class Task(var title: String = "") : Listable {
      * @param checklist the Checklist value that this Task's checklist value will be set to
      * @return this Task after setting the Task's checklist Property
      */
-    fun setChecklistPropertyValue(checklist: Checklist): Task {
-        return setChecklistProperty(Property(SHOWING, checklist))
-    }
+    fun setChecklistPropertyValue(checklist: Checklist) = setChecklistProperty(Property(SHOWING, checklist))
 
     /**
      * Sets this Task's checklist Constraint with the given value and makes the Constraint showing and unmet.
@@ -821,9 +810,7 @@ class Task(var title: String = "") : Listable {
      * @param checklist the Checklist value that this Task's checklist value will be set to
      * @return this Task after setting the Task's checklist Constraint
      */
-    fun setChecklistConstraintValue(checklist: Checklist): Task {
-        return setChecklistProperty(Constraint(SHOWING, checklist, UNMET))
-    }
+    fun setChecklistConstraintValue(checklist: Checklist) = setChecklistProperty(Constraint(SHOWING, checklist, UNMET))
 
     /**
      * Sets this Task's deadline Property, the passed in Property can be a Constraint.
@@ -853,6 +840,7 @@ class Task(var title: String = "") : Listable {
             makeFailableIfConstraint(deadlineProperty)
             deadlineConstraintChecking()
         }
+        update()
         return this
     }
 
@@ -878,9 +866,7 @@ class Task(var title: String = "") : Listable {
      * set to
      * @return this Task after setting the Task's deadline Constraint
      */
-    fun setDeadlineConstraint(deadlineConstraint: Constraint<Time>): Task {
-        return setDeadlineProperty(deadlineConstraint)
-    }
+    fun setDeadlineConstraint(deadlineConstraint: Constraint<Time>) = setDeadlineProperty(deadlineConstraint)
 
     /**
      * Sets this Task's deadline Property with the given value and makes the Property showing.
@@ -891,9 +877,7 @@ class Task(var title: String = "") : Listable {
      * @param deadline the java.time.Time value that this Task's deadline value will be set to
      * @return this Task after setting the Task's deadline Property
      */
-    fun setDeadlinePropertyValue(deadline: Time): Task {
-        return setDeadlineProperty(Property(SHOWING, deadline))
-    }
+    fun setDeadlinePropertyValue(deadline: Time) = setDeadlineProperty(Property(SHOWING, deadline))
 
     /**
      * Sets this Task's deadline Constraint with the given value and makes the Constraint showing and unmet.
@@ -904,9 +888,7 @@ class Task(var title: String = "") : Listable {
      * @param deadline the java.time.Time value that this Task's deadline value will be set to
      * @return this Task after setting the Task's deadline Constraint
      */
-    fun setDeadlineConstraintValue(deadline: Time): Task {
-        return setDeadlineProperty(Constraint(SHOWING, deadline, UNMET))
-    }
+    fun setDeadlineConstraintValue(deadline: Time) = setDeadlineProperty(Constraint(SHOWING, deadline, UNMET))
 
     /**
      * Sets this Task's target Property, the passed in Property can be a Constraint.
@@ -920,6 +902,7 @@ class Task(var title: String = "") : Listable {
     fun setTargetProperty(targetProperty: Property<Target>): Task {
         this.target = targetProperty
         makeFailableIfConstraint(targetProperty)
+        update()
         return this
     }
 
@@ -930,9 +913,7 @@ class Task(var title: String = "") : Listable {
      * @param targetConstraint the `Constraint` of type `Target` that this Task's target will be set to
      * @return this Task after setting the Task's target Constraint
      */
-    fun setTargetConstraint(targetConstraint: Constraint<Target>): Task {
-        return setTargetProperty(targetConstraint)
-    }
+    fun setTargetConstraint(targetConstraint: Constraint<Target>) = setTargetProperty(targetConstraint)
 
     /**
      * Sets this Task's target Property with the given value and makes the Property showing.
@@ -943,9 +924,7 @@ class Task(var title: String = "") : Listable {
      * @param target the Target value that this Task's target value will be set to
      * @return this Task after setting the Task's target Property
      */
-    fun setTargetPropertyValue(target: Target): Task {
-        return setTargetProperty(Property(SHOWING, target))
-    }
+    fun setTargetPropertyValue(target: Target) = setTargetProperty(Property(SHOWING, target))
 
     /**
      * Sets this Task's target Constraint with the given value and makes the Constraint showing and unmet.
@@ -956,9 +935,7 @@ class Task(var title: String = "") : Listable {
      * @param target the Target value that this Task's checklist value will be set to
      * @return this Task after setting the Task's checklist Constraint
      */
-    fun setTargetConstraintValue(target: Target): Task {
-        return setTargetProperty(Constraint(SHOWING, target, UNMET))
-    }
+    fun setTargetConstraintValue(target: Target) = setTargetProperty(Constraint(SHOWING, target, UNMET))
 
     /**
      * Sets this Task's before Property, the passed in Property can be a Constraint.
@@ -975,16 +952,17 @@ class Task(var title: String = "") : Listable {
      * If the passed in `beforeProperty` is not a Constraint then the Task's state will remain the same.
      *
      * @see Task.beforeConstraintChecking
-     * @param beforeProperty the `Property` of type `TaskID` that this Task's before property will be set to, this is
-     * the before Task's TaskID
+     * @param beforeProperty the `Property` of type `uk.whitecrescent.waqti.task.ID` that this Task's before property will be set to, this is
+     * the before Task's uk.whitecrescent.waqti.task.ID
      * @return this Task after setting the Task's before Property
      */
-    fun setBeforeProperty(beforeProperty: Property<TaskID>): Task {
+    fun setBeforeProperty(beforeProperty: Property<ID>): Task {
         this.before = beforeProperty
         if (beforeProperty is Constraint) {
             makeFailableIfConstraint(beforeProperty)
             beforeConstraintChecking()
         }
+        update()
         return this
     }
 
@@ -992,38 +970,32 @@ class Task(var title: String = "") : Listable {
      * Sets this Task's before Constraint.
      *
      * @see Task.setBeforeProperty
-     * @param beforeConstraint the `Constraint` of type `TaskID` that this Task's before will be set to
+     * @param beforeConstraint the `Constraint` of type `uk.whitecrescent.waqti.task.ID` that this Task's before will be set to
      * @return this Task after setting the Task's before Constraint
      */
-    fun setBeforeConstraint(beforeConstraint: Constraint<TaskID>): Task {
-        return setBeforeProperty(beforeConstraint)
-    }
+    fun setBeforeConstraint(beforeConstraint: Constraint<ID>) = setBeforeProperty(beforeConstraint)
 
     /**
-     * Sets this Task's before Property with the given TaskID value and makes the Property showing.
+     * Sets this Task's before Property with the given uk.whitecrescent.waqti.task.ID value and makes the Property showing.
      *
      * This is a shorthand of writing `setBeforeProperty(Property(SHOWING, myBefore))`.
      *
      * @see Task.setBeforeProperty
-     * @param beforeTaskID the TaskID of the Task that is before this one that this Task's before value will be set to
+     * @param beforeuk.whitecrescent.waqti.task.ID the uk.whitecrescent.waqti.task.ID of the Task that is before this one that this Task's before value will be set to
      * @return this Task after setting the Task's before Property
      */
-    fun setBeforePropertyValue(beforeTaskID: TaskID): Task {
-        return setBeforeProperty(Property(SHOWING, beforeTaskID))
-    }
+    fun setBeforePropertyValue(beforeID: ID) = setBeforeProperty(Property(SHOWING, beforeID))
 
     /**
-     * Sets this Task's before Constraint with the given TaskID value and makes the Constraint showing and unmet.
+     * Sets this Task's before Constraint with the given uk.whitecrescent.waqti.task.ID value and makes the Constraint showing and unmet.
      *
      * This is a shorthand of writing `setBeforeConstraint(Constraint(SHOWING, myBefore, UNMET))`.
      *
      * @see Task.setBeforeProperty
-     * @param beforeTaskID the TaskID of the Task that is before this one that this Task's before value will be set to
+     * @param beforeuk.whitecrescent.waqti.task.ID the uk.whitecrescent.waqti.task.ID of the Task that is before this one that this Task's before value will be set to
      * @return this Task after setting the Task's before Constraint
      */
-    fun setBeforeConstraintValue(beforeTaskID: TaskID): Task {
-        return setBeforeProperty(Constraint(SHOWING, beforeTaskID, UNMET))
-    }
+    fun setBeforeConstraintValue(beforeID: ID) = setBeforeProperty(Constraint(SHOWING, beforeID, UNMET))
 
     /**
      * Sets this Task's before Property with the given Task value and makes the Property showing.
@@ -1034,9 +1006,7 @@ class Task(var title: String = "") : Listable {
      * @param beforeTask the Task that is before this one that this Task's before value will be set to
      * @return this Task after setting the Task's before Property
      */
-    fun setBeforePropertyValue(beforeTask: Task): Task {
-        return setBeforeProperty(Property(SHOWING, beforeTask.taskID))
-    }
+    fun setBeforePropertyValue(beforeTask: Task) = setBeforeProperty(Property(SHOWING, beforeTask.taskID))
 
     /**
      * Sets this Task's before Constraint with the given Task value and makes the Constraint showing and unmet.
@@ -1047,9 +1017,7 @@ class Task(var title: String = "") : Listable {
      * @param beforeTask the Task that is before this one that this Task's before value will be set to
      * @return this Task after setting the Task's before Constraint
      */
-    fun setBeforeConstraintValue(beforeTask: Task): Task {
-        return setBeforeProperty(Constraint(SHOWING, beforeTask.taskID, UNMET))
-    }
+    fun setBeforeConstraintValue(beforeTask: Task) = setBeforeProperty(Constraint(SHOWING, beforeTask.taskID, UNMET))
 
     /**
      * Sets this Task's sub-Tasks Property, the passed in Property can be a Constraint.
@@ -1066,16 +1034,17 @@ class Task(var title: String = "") : Listable {
      * If the passed in `subTasksProperty` is not a Constraint then the Task's state will remain the same.
      *
      * @see Task.subTasksConstraintChecking
-     * @param subTasksProperty the `Property` of type `ArrayList<TaskID>` that this Task's subTasks property will be
-     * set to, this is the list of TaskIDs of the sub-Tasks
+     * @param subTasksProperty the `Property` of type `ArrayList<uk.whitecrescent.waqti.task.ID>` that this Task's subTasks property will be
+     * set to, this is the list of uk.whitecrescent.waqti.task.IDs of the sub-Tasks
      * @return this Task after setting the Task's subTasks Property
      */
-    fun setSubTasksProperty(subTasksProperty: Property<ArrayList<TaskID>>): Task {
+    fun setSubTasksProperty(subTasksProperty: Property<ArrayList<ID>>): Task {
         this.subTasks = subTasksProperty
         if (subTasksProperty is Constraint) {
             makeFailableIfConstraint(subTasksProperty)
             subTasksConstraintChecking()
         }
+        update()
         return this
     }
 
@@ -1083,39 +1052,33 @@ class Task(var title: String = "") : Listable {
      * Sets this Task's subTasks Constraint.
      *
      * @see Task.setSubTasksProperty
-     * @param subTasksConstraint the `Constraint` of type `ArrayList<TaskID>` that this Task's subTasks will be set to
+     * @param subTasksConstraint the `Constraint` of type `ArrayList<uk.whitecrescent.waqti.task.ID>` that this Task's subTasks will be set to
      * @return this Task after setting the Task's subTasks Constraint
      */
-    fun setSubTasksConstraint(subTasksConstraint: Constraint<ArrayList<TaskID>>): Task {
-        return setSubTasksProperty(subTasksConstraint)
-    }
+    fun setSubTasksConstraint(subTasksConstraint: Constraint<ArrayList<ID>>) = setSubTasksProperty(subTasksConstraint)
 
     /**
-     * Sets this Task's subTasks Property with the given ArrayList of TaskIDs and makes the Property showing.
+     * Sets this Task's subTasks Property with the given ArrayList of uk.whitecrescent.waqti.task.IDs and makes the Property showing.
      *
      * This is a shorthand of writing `setSubTasksProperty(Property(SHOWING, mySubTasks))`.
      *
      * @see Task.setSubTasksProperty
-     * @param subTasks the ArrayList of TaskIDs of the subTasks that this Task's subTasks value will be set to
+     * @param subTasks the ArrayList of uk.whitecrescent.waqti.task.IDs of the subTasks that this Task's subTasks value will be set to
      * @return this Task after setting the Task's subTasks Property
      */
-    fun setSubTasksPropertyValue(subTasks: ArrayList<TaskID>): Task {
-        return setSubTasksProperty(Property(SHOWING, subTasks))
-    }
+    fun setSubTasksPropertyValue(subTasks: ArrayList<ID>) = setSubTasksProperty(Property(SHOWING, subTasks))
 
     /**
-     * Sets this Task's subTasks Constraint with the given ArrayList of TaskIDs and makes the Constraint showing and
+     * Sets this Task's subTasks Constraint with the given ArrayList of uk.whitecrescent.waqti.task.IDs and makes the Constraint showing and
      * unmet.
      *
      * This is a shorthand of writing `setSubTasksConstraint(Constraint(SHOWING, mySubTasks, UNMET))`.
      *
      * @see Task.setSubTasksProperty
-     * @param subTasks he ArrayList of TaskIDs of the subTasks that this Task's subTasks value will be set to
+     * @param subTasks he ArrayList of uk.whitecrescent.waqti.task.IDs of the subTasks that this Task's subTasks value will be set to
      * @return this Task after setting the Task's subTasks Constraint
      */
-    fun setSubTasksConstraintValue(subTasks: ArrayList<TaskID>): Task {
-        return setSubTasksProperty(Constraint(SHOWING, subTasks, UNMET))
-    }
+    fun setSubTasksConstraintValue(subTasks: ArrayList<ID>) = setSubTasksProperty(Constraint(SHOWING, subTasks, UNMET))
 
     /**
      * Adds the given subTasks to this Task's subTasks Property and makes this Task's subTasks Property showing if it
@@ -1143,11 +1106,11 @@ class Task(var title: String = "") : Listable {
     }
 
     /**
-     * Gets the ArrayList of TaskIDs of the sub-Tasks of this Task
+     * Gets the ArrayList of uk.whitecrescent.waqti.task.IDs of the sub-Tasks of this Task
      *
-     * @return the ArrayList of TaskIDs of the sub-Tasks of this Task
+     * @return the ArrayList of uk.whitecrescent.waqti.task.IDs of the sub-Tasks of this Task
      */
-    fun getSubTasksIDsList(): ArrayList<TaskID> {
+    fun getSubTasksIDsList(): ArrayList<ID> {
         return this.subTasks.value
     }
 
@@ -1156,8 +1119,8 @@ class Task(var title: String = "") : Listable {
      *
      * @return the ArrayList of Tasks of the sub-Tasks of this Task
      */
-    fun getSubTasksList(): ArrayList<Task> {
-        return ArrayList(this.subTasks.value.tasks())
+    fun getSubTasksList(): List<Task> {
+        return ArrayList(this.subTasks.value.tasks).toList()
     }
 
     /**
@@ -1170,11 +1133,15 @@ class Task(var title: String = "") : Listable {
         return if (task.subTasks.value.isEmpty()) {
             0
         } else {
-            for (task0 in task.subTasks.value.tasks()) {
+            for (task0 in task.subTasks.value.tasks) {
                 list.add(getSubTasksLevelsDepth(task0) + 1)
             }
             list.max()!!
         }
+    }
+
+    private fun update() {
+        Cache.putTask(this)
     }
 
     //endregion Property setters for chaining
@@ -1185,66 +1152,77 @@ class Task(var title: String = "") : Listable {
     fun hideTime() {
         if (isNotConstraint(time)) {
             time = DEFAULT_TIME_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, time is Constraint")
     }
 
     fun hideDuration() {
         if (isNotConstraint(duration)) {
             duration = DEFAULT_DURATION_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, duration is Constraint")
     }
 
     fun hidePriority() {
         if (isNotConstraint(priority)) {
             priority = DEFAULT_PRIORITY_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, priority is Constraint")
     }
 
     fun hideLabel() {
         if (isNotConstraint(labels)) {
             labels = DEFAULT_LABELS_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, labels is Constraint")
     }
 
     fun hideOptional() {
         if (isNotConstraint(optional)) {
             optional = DEFAULT_OPTIONAL_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, optional is Constraint")
     }
 
     fun hideDescription() {
         if (isNotConstraint(description)) {
             description = DEFAULT_DESCRIPTION_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, description is Constraint")
     }
 
     fun hideChecklist() {
         if (isNotConstraint(checklist)) {
             checklist = DEFAULT_CHECKLIST_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, checklist is Constraint")
     }
 
     fun hideDeadline() {
         if (isNotConstraint(deadline)) {
             deadline = DEFAULT_DEADLINE_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, deadline is Constraint")
     }
 
     fun hideTarget() {
         if (isNotConstraint(target)) {
             target = DEFAULT_TARGET_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, target is Constraint")
     }
 
     fun hideBefore() {
         if (isNotConstraint(before)) {
             before = DEFAULT_BEFORE_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, before is Constraint")
     }
 
     fun hideSubTasks() {
         if (isNotConstraint(subTasks)) {
             subTasks = DEFAULT_SUB_TASKS_PROPERTY
+            update()
         } else throw TaskException("Cannot hide, subTasks is Constraint")
     }
 
@@ -1279,6 +1257,7 @@ class Task(var title: String = "") : Listable {
             state = TaskState.FAILED
             age++
             failedTimes.add(now)
+            update()
         } else {
             throw TaskStateException("Fail unsuccessful, unknown reason, remember only EXISTING tasks can be " +
                     "failed!", this.state)
@@ -1293,6 +1272,7 @@ class Task(var title: String = "") : Listable {
             throw TaskStateException("Sleep unsuccessful, ${this.title} is Killed!", this.state)
         } else if (canSleep()) {
             state = TaskState.SLEEPING
+            update()
         } else {
             throw TaskStateException(
                     "Sleep unsuccessful, unknown reason, remember only FAILED or EXISTING tasks can be Slept!",
@@ -1320,6 +1300,8 @@ class Task(var title: String = "") : Listable {
         } else if (canKill()) {
             state = TaskState.KILLED
             killedTime = now
+            endObservers() // TODO: 02-May-18 It's safe to do this since the lifecycle can no longer change, properties still can tho
+            update()
         } else {
             throw TaskStateException(
                     "Kill unsuccessful, unknown reason, remember only EXISTING tasks can be killed!",
@@ -1366,7 +1348,11 @@ class Task(var title: String = "") : Listable {
 
     //endregion Timers
 
-    //region Concurrency
+    //region Observers
+
+    // Can't restart them (not that I know of). dangerous!
+    // Lifecycle will not happen automatically if there are no observers checking, even when it should
+    fun endObservers() = composite.clear()
 
     /**
      * Checks the time on the `stateCheckingThread` to match it with this Task's time Constraint value.
@@ -1393,14 +1379,15 @@ class Task(var title: String = "") : Listable {
      * is done once every so often, which itself is cheap.
      *
      * @see Task.setTimeProperty
-     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     * @throws ObserverException if the Observer's `onError` is called for any reasons
      */
     private fun timeConstraintTimeChecking() {
         val originalValue = this.time.value
         var done = false
 
-        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+        val disposable = Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
+                .doOnComplete { update() }
                 .subscribeOn(TIME_CONSTRAINT_THREAD)
                 .subscribe(
                         {
@@ -1423,9 +1410,10 @@ class Task(var title: String = "") : Listable {
                             }
                         },
                         {
-                            throw ConcurrentException("Time Constraint time checking failed!")
+                            throw ObserverException("Time Constraint time checking failed!")
                         }
                 )
+        composite.add(disposable)
     }
 
     /**
@@ -1453,14 +1441,15 @@ class Task(var title: String = "") : Listable {
      * is done once every so often, which itself is cheap.
      *
      * @see Task.setTimeProperty
-     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     * @throws ObserverException if the Observer's `onError` is called for any reasons
      */
     private fun durationConstraintTimerChecking() {
         val originalValue = this.duration.value
         var done = false
 
-        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+        val disposable = Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
+                .doOnComplete { update() }
                 .subscribeOn(DURATION_CONSTRAINT_THREAD)
                 .subscribe(
                         {
@@ -1484,9 +1473,10 @@ class Task(var title: String = "") : Listable {
                             }
                         },
                         {
-                            throw ConcurrentException("Duration Constraint timer checking failed!")
+                            throw ObserverException("Duration Constraint timer checking failed!")
                         }
                 )
+        composite.add(disposable)
     }
 
     /**
@@ -1511,14 +1501,15 @@ class Task(var title: String = "") : Listable {
      * This function is only called when `checklist` is set as a Constraint.
      *
      * @see Task.setChecklistProperty
-     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     * @throws ObserverException if the Observer's `onError` is called for any reasons
      */
     private fun checklistConstraintChecking() {
         val originalValue = this.checklist.value
         var done = false
 
-        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+        val disposable = Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
+                .doOnComplete { update() }
                 .subscribeOn(CHECKLIST_CONSTRAINT_THREAD)
                 .subscribe(
                         {
@@ -1539,9 +1530,11 @@ class Task(var title: String = "") : Listable {
                             }
                         },
                         {
-                            throw ConcurrentException("Checklist Constraint checking failed")
+                            throw ObserverException("Checklist Constraint checking failed")
                         }
                 )
+
+        composite.add(disposable)
     }
 
     /**
@@ -1569,16 +1562,17 @@ class Task(var title: String = "") : Listable {
      * is done once every so often, which itself is cheap.
      *
      * @see Task.setDeadlineProperty
-     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     * @throws ObserverException if the Observer's `onError` is called for any reasons
      */
     private fun deadlineConstraintChecking() {
         var done = false
         val originalValue = this.deadline.value
         val deadlineWithGrace = this.deadline.value.plus(GRACE_PERIOD)
 
-        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+        val disposable = Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
                 .doOnSubscribe { (deadline as Constraint).isMet = true }
+                .doOnComplete { update() }
                 .subscribeOn(DEADLINE_CONSTRAINT_THREAD)
                 .subscribe(
                         {
@@ -1600,9 +1594,10 @@ class Task(var title: String = "") : Listable {
                             }
                         },
                         {
-                            throw ConcurrentException("Deadline Constraint checking failed!")
+                            throw ObserverException("Deadline Constraint checking failed!")
                         }
                 )
+        composite.add(disposable)
 
     }
 
@@ -1632,30 +1627,31 @@ class Task(var title: String = "") : Listable {
      * is done once every so often, which itself is cheap.
      *
      * @see Task.setBeforeProperty
-     * @throws ConcurrentException if the Observer's `onError` is called for any reasons or if the before Task cannot
+     * @throws ObserverException if the Observer's `onError` is called for any reasons or if the before Task cannot
      * be found in the database
      */
     private fun beforeConstraintChecking() {
         var done = false
         val originalValue = this.before.value
-        val beforeTask = DATABASE[this.before.value]
+        val beforeTask = Cache.getTask(this.before.value)
 
-        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+        val disposable = Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
+                .doOnComplete { update() }
                 .subscribeOn(BEFORE_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
+                                !Cache.containsTask(beforeTask) -> {
+                                    throw ObserverException("Before Constraint checking failed!" +
+                                            " Before is null in database")
+                                }
                                 this.before !is Constraint -> {
                                     makeNonFailableIfNoConstraints()
                                     done = true
                                 }
                                 this.before.value != originalValue -> {
                                     done = true
-                                }
-                                beforeTask == null -> {
-                                    throw ConcurrentException("Before Constraint checking failed!" +
-                                            " Before is null in database")
                                 }
                                 beforeTask.state == TaskState.KILLED -> {
                                     (this.before as Constraint).isMet = true
@@ -1670,9 +1666,10 @@ class Task(var title: String = "") : Listable {
                             }
                         },
                         {
-                            throw ConcurrentException("Before Constraint checking failed!")
+                            throw ObserverException("Before Constraint checking failed!")
                         }
                 )
+        composite.add(disposable)
     }
 
     /**
@@ -1700,18 +1697,23 @@ class Task(var title: String = "") : Listable {
      * is done once every so often, which itself is cheap.
      *
      * @see Task.setSubTasksProperty
-     * @throws ConcurrentException if the Observer's `onError` is called for any reasons
+     * @throws ObserverException if the Observer's `onError` is called for any reasons
      */
     private fun subTasksConstraintChecking() {
         val originalValue = this.subTasks.value
         var done = false
 
-        Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
+        val disposable = Observable.interval(TIME_CHECKING_PERIOD, TIME_CHECKING_UNIT)
                 .takeWhile { !done }
+                .doOnComplete { update() }
                 .subscribeOn(SUB_TASKS_CONSTRAINT_THREAD)
                 .subscribe(
                         {
                             when {
+                                !Cache.containsTasks(this.subTasks.value.tasks) -> {
+                                    throw ObserverException("SubTasks Constraint checking failed!" +
+                                            " Some SubTask is null in database")
+                                }
                                 this.subTasks !is Constraint -> {
                                     makeNonFailableIfNoConstraints()
                                     done = true
@@ -1720,13 +1722,13 @@ class Task(var title: String = "") : Listable {
                                     done = true
                                 }
                             // SubTasks contains more than 0 failed Tasks
-                                this.subTasks.value.tasks().any { it.state == TaskState.FAILED } -> {
+                                this.subTasks.value.tasks.any { it.state == TaskState.FAILED } -> {
                                     (subTasks as Constraint).isMet = false
                                     if (canFail()) fail()
                                     done = true
                                 }
                             // All SubTasks are killed
-                                this.subTasks.value.tasks()
+                                this.subTasks.value.tasks
                                         .all { it.state == TaskState.KILLED } -> {
                                     (subTasks as Constraint).isMet = true
                                     done = true
@@ -1735,14 +1737,45 @@ class Task(var title: String = "") : Listable {
                             }
                         },
                         {
-                            throw ConcurrentException("SubTasks Constraint checking failed!")
+                            throw ObserverException("SubTasks Constraint checking failed!")
+                        }
+                )
+
+        composite.add(disposable)
+    }
+
+    /*
+     * Pick one implementation to avoid memory leaks, either we have an in memory database, in which case we check if
+     * this task is in it, if it's not then it implies this task is no longer used meaning lets kill all its
+     * observers or we just call a finalizing method when we know this task will no longer be used, I don't think
+     * both can work together but I could be wrong, the first one though may be very memory expensive, or not, we
+     * have to really test this per platform, it might actually not be memory expensive, or at least its a necessary
+     * expense because we can use the in memory database to access tasks very quickly, thus making the in memory
+     * database a sort of buffer between the persistent database and the live runtime
+     */
+    private fun checkNotDead() {
+        var done = false
+        Observable.interval(1L, java.util.concurrent.TimeUnit.SECONDS)
+                .takeWhile { !done }
+                .subscribeOn(Schedulers.computation())
+                .subscribe(
+                        {
+                            if (!Cache.containsTask(this)) {
+                                endObservers()
+                                done = true
+                            }
+                        },
+                        {
+                            throw ObserverException("Checking Not Dead Failed!")
                         }
                 )
     }
 
-    //endregion Concurrency
+    //endregion Observers
 
-    //region Overriden from kotlin.Any
+    //region Overriden
+
+    override fun id() = taskID
 
     /**
      * Returns the hash code of this Task, this is the hash code of this Task's equalityBundle, see [equalityBundle]
@@ -1793,7 +1826,7 @@ class Task(var title: String = "") : Listable {
         return result.toString()
     }
 
-    //endregion Overriden from kotlin.Any
+    //endregion Overriden
 
     //region Template Task
 
@@ -1885,10 +1918,10 @@ class Task(var title: String = "") : Listable {
                 task.setTargetProperty(bundle[target] as Property<Target>)
             }
             if (bundle[before] != DEFAULT_BEFORE_PROPERTY) {
-                task.setBeforeProperty(bundle[before] as Property<TaskID>)
+                task.setBeforeProperty(bundle[before] as Property<ID>)
             }
             if (bundle[subTasks] != DEFAULT_SUB_TASKS_PROPERTY) {
-                task.setSubTasksProperty(bundle[subTasks] as Property<ArrayList<TaskID>>)
+                task.setSubTasksProperty(bundle[subTasks] as Property<ArrayList<ID>>)
             }
             return task
         }

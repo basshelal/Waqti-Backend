@@ -1,10 +1,9 @@
 package uk.whitecrescent.waqti
 
 import uk.whitecrescent.waqti.collections.Tuple
-import uk.whitecrescent.waqti.task.DATABASE
 import uk.whitecrescent.waqti.task.GRACE_PERIOD
+import uk.whitecrescent.waqti.task.ID
 import uk.whitecrescent.waqti.task.Task
-import uk.whitecrescent.waqti.task.TaskID
 
 fun sleep(seconds: Int) = Thread.sleep((seconds) * 1000L)
 
@@ -26,72 +25,32 @@ fun setGracePeriod(duration: Duration) {
 
 // Extensions
 
-fun ArrayList<Task>.taskIDs(): ArrayList<TaskID> {
-    val ids = ArrayList<TaskID>(this.size)
+fun Collection<Task>.taskIDs(): List<ID> {
+    val ids = ArrayList<ID>(this.size)
     this.forEach { ids.add(it.taskID) }
     return ids
 }
 
-val ArrayList<Task>.taskIDs: ArrayList<TaskID>
+val <E> List<E>.toArrayList: ArrayList<E>
     get() {
-        val ids = ArrayList<TaskID>(this.size)
-        this.forEach { ids.add(it.taskID) }
-        return ids
+        return ArrayList(this)
     }
 
-fun ArrayList<TaskID>.tasks(): ArrayList<Task> {
-    val tasks = ArrayList<Task>(this.size)
-    for (id in this) {
-        val task = DATABASE.get(id)
-        if (task != null) {
-            tasks.add(task)
-        }
-    }
-    return tasks
-}
+val Collection<Cacheable>.ids: List<ID>
+    get() = this.map { it.id() }
 
-val ArrayList<TaskID>.tasks: ArrayList<Task>
-    get() {
-        val tasks = ArrayList<Task>(this.size)
-        for (id in this) {
-            val task = DATABASE.get(id)
-            if (task != null) {
-                tasks.add(task)
-            }
-        }
-        return tasks
-    }
+val Collection<ID>.tasks: List<Task>
+    get() = Cache.getTasks(this)
 
-fun Collection<Tuple>.toTasks(): Array<Task> {
-    val result = ArrayList<Task>(this.size)
-    for (tuple in this) {
-        result.addAll(tuple.getAll())
-    }
-    return result.toTypedArray()
-}
-
-val Collection<Tuple>.toTasks: Array<Task>
+val Collection<Tuple>.tasks: Array<Task>
     get() {
         val result = ArrayList<Task>(this.size)
         for (tuple in this) {
-            result.addAll(tuple.getAll())
+            result.addAll(tuple.toList())
         }
         return result.toTypedArray()
     }
 
-fun TaskID.task(): Task {
-    val found = DATABASE.get(this)
-    when {
-        found == null -> throw IllegalStateException("Task Not Found!")
-        else -> return found
-    }
+fun Collection<Task>.putAll() {
+    this.forEach { Cache.putTask(it) }
 }
-
-val TaskID.task: Task
-    get() {
-        val found = DATABASE.get(this)
-        return when {
-            found == null -> throw IllegalStateException("Task Not Found!")
-            else -> found
-        }
-    }

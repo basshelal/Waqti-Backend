@@ -7,6 +7,8 @@ import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.till
 import java.util.concurrent.TimeUnit
 
+// TODO: 14-May-18 Does a Timer need a Task to exist?
+// TODO: 14-May-18 This isn't 100% Accurate, tested on Android, a second is too long
 class Timer {
 
     private val thread = Schedulers.newThread()
@@ -41,7 +43,7 @@ class Timer {
                     lastTime = now
                 },
                 {
-                    throw  ConcurrentException("Timer Failed!")
+                    throw  ObserverException("Timer Failed!")
                 }
         )
     }

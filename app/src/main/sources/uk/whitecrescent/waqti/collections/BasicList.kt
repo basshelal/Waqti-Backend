@@ -1,7 +1,7 @@
 package uk.whitecrescent.waqti.collections
 
 import io.reactivex.Observable
-import uk.whitecrescent.waqti.task.ConcurrentException
+import uk.whitecrescent.waqti.task.ObserverException
 import uk.whitecrescent.waqti.task.TIME_CHECKING_PERIOD
 import uk.whitecrescent.waqti.task.TIME_CHECKING_UNIT
 import uk.whitecrescent.waqti.task.Task
@@ -73,7 +73,7 @@ open class BasicList(tasks: Collection<Task>) : AbstractWaqtiList<Task>() {
                             }
                         },
                         {
-                            throw ConcurrentException("Concurrent List Observing failed!")
+                            throw ObserverException("Concurrent List Observing failed!")
                         }
                 )
         return this

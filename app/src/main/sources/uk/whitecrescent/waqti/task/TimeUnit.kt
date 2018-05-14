@@ -1,8 +1,9 @@
 package uk.whitecrescent.waqti.task
 
+import uk.whitecrescent.waqti.Cacheable
 import uk.whitecrescent.waqti.Duration
 
-class TimeUnit(val name: String, val duration: Duration) {
+class TimeUnit(val name: String, val duration: Duration) : Cacheable {
 
     companion object {
 
@@ -35,6 +36,10 @@ class TimeUnit(val name: String, val duration: Duration) {
             TimeUnit.allTimeUnits.remove(getTimeUnit(name, duration))
         }
 
+    }
+
+    override fun id(): ID {
+        return System.currentTimeMillis()
     }
 
     override fun hashCode() = name.hashCode() + duration.hashCode()

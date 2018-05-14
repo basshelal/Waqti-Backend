@@ -1,2 +1,0 @@
-package uk.whitecrescent.waqti
-

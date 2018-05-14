@@ -18,6 +18,7 @@ import uk.whitecrescent.waqti.task.OPTIONAL
 import uk.whitecrescent.waqti.task.Priority
 import uk.whitecrescent.waqti.task.Task
 import uk.whitecrescent.waqti.taskIDs
+import uk.whitecrescent.waqti.toArrayList
 
 @DisplayName("Other Task Tests")
 class OtherTask {
@@ -332,8 +333,8 @@ class OtherTask {
     @Test
     fun testTaskEqualsSubTasks() {
         val subTasks = arrayListOf(Task("SubTask1"), Task("SubTask2")).taskIDs()
-        val task1 = Task("Task").setSubTasksPropertyValue(subTasks)
-        val task2 = Task("Task").setSubTasksPropertyValue(subTasks)
+        val task1 = Task("Task").setSubTasksPropertyValue(subTasks.toArrayList)
+        val task2 = Task("Task").setSubTasksPropertyValue(subTasks.toArrayList)
 
         assertTrue(task1 == task2)
 
@@ -378,7 +379,7 @@ class OtherTask {
                 .setDeadlinePropertyValue(Time.of(2018, 6, 6, 6, 6))
                 .setTargetConstraintValue("My Target")
                 .setBeforePropertyValue(beforeTask)
-                .setSubTasksPropertyValue(arrayListOf(subTask1, subTask2).taskIDs())
+                .setSubTasksPropertyValue(arrayListOf(subTask1, subTask2).taskIDs().toArrayList)
 
         task.unConstrainAll()
 

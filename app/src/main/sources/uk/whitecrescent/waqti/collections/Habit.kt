@@ -4,7 +4,7 @@ import io.reactivex.Observable
 import uk.whitecrescent.waqti.Duration
 import uk.whitecrescent.waqti.Time
 import uk.whitecrescent.waqti.now
-import uk.whitecrescent.waqti.task.ConcurrentException
+import uk.whitecrescent.waqti.task.ObserverException
 import uk.whitecrescent.waqti.task.TIME_CHECKING_PERIOD
 import uk.whitecrescent.waqti.task.TIME_CHECKING_UNIT
 import uk.whitecrescent.waqti.task.Timer
@@ -43,7 +43,7 @@ class Habit(var tuple: Tuple, var interval: Duration) {
                              */
                         },
                         {
-                            throw ConcurrentException("Habit Checking failed!")
+                            throw ObserverException("Habit Checking failed!")
                         }
                 )
     }
