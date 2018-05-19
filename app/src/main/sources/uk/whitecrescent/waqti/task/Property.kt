@@ -11,6 +11,10 @@ open class Property<V>(open var isVisible: Boolean, open val value: V) {
     val constraint: Constraint<V>
         get() = Property.toConstraint(this)
 
+    // sugar for a cast, unsafe if you're not careful!
+    val asConstraint: Constraint<V>
+        get() = this as Constraint<V>
+
     override fun hashCode() =
             value!!.hashCode() + isVisible.hashCode()
 

@@ -1,11 +1,10 @@
 package uk.whitecrescent.waqti
 
-import uk.whitecrescent.waqti.task.Bundle
 import uk.whitecrescent.waqti.task.ID
 import uk.whitecrescent.waqti.task.Label
 import uk.whitecrescent.waqti.task.Priority
-import uk.whitecrescent.waqti.task.Property
 import uk.whitecrescent.waqti.task.Task
+import uk.whitecrescent.waqti.task.Template
 import uk.whitecrescent.waqti.task.TimeUnit
 import java.util.Random
 import java.util.concurrent.ConcurrentHashMap
@@ -46,7 +45,7 @@ import kotlin.collections.set
 object Cache {
 
     private val taskDB = ConcurrentHashMap<ID, Task>()
-    private val templateDB = ConcurrentHashMap<String, Bundle<String, Property<*>>>()
+    private val templateDB = ConcurrentHashMap<ID, Template>()
     private val labelsDB = ConcurrentHashMap<ID, Label>()
     private val priorityDB = ConcurrentHashMap<ID, Priority>()
     private val timeUnitDB = ConcurrentHashMap<ID, TimeUnit>()
@@ -56,16 +55,13 @@ object Cache {
 
     fun newTaskID() = taskDB.newID()
 
+    // Creates if doesn't exist, updates it if does, based on key (ID)
     fun putTask(task: Task) {
         taskDB[task.id()] = task
     }
 
     fun putTasks(tasks: Collection<Task>) {
         tasks.forEach { putTask(it) }
-    }
-
-    inline fun putTasksIf(tasks: Collection<Task>, predicate: () -> Boolean) {
-        tasks.forEach { if (predicate.invoke()) putTask(it) }
     }
 
     fun getTask(id: ID): Task {
@@ -76,21 +72,27 @@ object Cache {
         return ids.map { getTask(it) }
     }
 
+    fun removeTask(id: ID) {
+        if (taskDB.containsKey(id)) {
+            taskDB[id]!!.endObservers()
+            taskDB.remove(id)
+        }
+    }
+
     fun removeTask(task: Task) {
-        if (task in taskDB) taskDB[task].endObservers()
-        taskDB.remove(task.id())
+        removeTask(task.id())
     }
 
     fun removeTasks(tasks: Collection<Task>) {
         tasks.forEach { removeTask(it) }
     }
 
-    inline fun removeTasksIf(tasks: Collection<Task>, predicate: () -> Boolean) {
-        tasks.forEach { if (predicate.invoke()) removeTask(it) }
+    fun removeTasksIf(predicate: () -> Boolean) {
+        taskDB.forEach { if (predicate.invoke()) removeTask(it.value) }
     }
 
     fun clearTasks() {
-        taskDB.forEach { _: ID, task: Task -> task.endObservers() }
+        taskDB.forEach { it.value.endObservers() }
         taskDB.clear()
     }
 
@@ -111,7 +113,57 @@ object Cache {
 
     //region Templates
 
-    // TODO: 14-May-18 This is an issue
+    fun newTemplateID() = templateDB.newID()
+
+    fun putTemplate(template: Template) {
+        templateDB[template.id()] = template
+    }
+
+    fun putTemplates(templates: Collection<Template>) {
+        templates.forEach { putTemplate(it) }
+    }
+
+    fun getTemplate(id: ID): Template {
+        return templateDB.safeGet(id)
+    }
+
+    fun getTemplates(ids: Collection<ID>): List<Template> {
+        return ids.map { getTemplate(it) }
+    }
+
+    fun removeTemplate(id: ID) {
+        if (templateDB.containsKey(id)) {
+            templateDB.remove(id)
+        }
+    }
+
+    fun removeTemplate(template: Template) {
+        removeTemplate(template.id())
+    }
+
+    fun removeTemplates(templates: Collection<Template>) {
+        templates.forEach { removeTemplate(it) }
+    }
+
+    fun removeTemplatesIf(predicate: () -> Boolean) {
+        templateDB.forEach { if (predicate.invoke()) removeTemplate(it.value) }
+    }
+
+    fun clearTemplates() {
+        templateDB.clear()
+    }
+
+    fun containsTemplate(template: Template): Boolean {
+        return template in templateDB
+    }
+
+    fun containsTemplates(templates: Collection<Template>): Boolean {
+        return templates.all { containsTemplate(it) }
+    }
+
+    fun allTemplates(): List<Template> {
+        return templateDB.values.toList()
+    }
 
     //endregion Templates
 

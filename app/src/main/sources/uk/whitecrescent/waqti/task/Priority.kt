@@ -51,7 +51,7 @@ class Priority private constructor(var name: String, var importanceLevel: Int) :
         return System.currentTimeMillis()
     }
 
-    override fun hashCode() = name.hashCode() + importanceLevel
+    override fun hashCode() = name.hashCode() + importanceLevel.hashCode()
 
     override fun equals(other: Any?) =
             other is Priority &&

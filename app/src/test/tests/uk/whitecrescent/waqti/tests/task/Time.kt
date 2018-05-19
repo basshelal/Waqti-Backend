@@ -7,7 +7,9 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Test
 import uk.whitecrescent.waqti.Time
+import uk.whitecrescent.waqti.days
 import uk.whitecrescent.waqti.now
+import uk.whitecrescent.waqti.seconds
 import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.Constraint
 import uk.whitecrescent.waqti.task.DEFAULT_TIME
@@ -20,6 +22,9 @@ import uk.whitecrescent.waqti.task.TaskStateException
 import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.tests.TestUtils.getTasks
 import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.after
+import uk.whitecrescent.waqti.time
+import java.time.Month
 
 @DisplayName("Time Tests")
 class Time {
@@ -31,26 +36,26 @@ class Time {
         assertFalse(task.time is Constraint)
         assertEquals(DEFAULT_TIME, task.time.value)
         assertFalse(task.time.isVisible)
+        assertEquals(DEFAULT_TIME_PROPERTY, task.time)
     }
 
-    @DisplayName("Set Time Property using setTimeProperty")
+    @DisplayName("Set Time Property")
     @Test
     fun testTaskSetTimeProperty() {
         val task = testTask()
                 .setTimeProperty(
-                        Property(SHOWING, Time.of(1970, 1, 1, 1, 1))
+                        Property(SHOWING, time(1970, Month.JANUARY, 1))
                 )
 
         assertFalse(task.time is Constraint)
-        assertEquals(Time.of(1970, 1, 1, 1, 1), task.time.value)
+        assertEquals(time(1970, Month.JANUARY, 1), task.time.value)
         assertTrue(task.time.isVisible)
 
-
         task.hideTime()
-        assertEquals(Property(HIDDEN, DEFAULT_TIME), task.time)
+        assertEquals(DEFAULT_TIME_PROPERTY, task.time)
     }
 
-    @DisplayName("Set Time Property using setTimeValue")
+    @DisplayName("Set Time Property Value")
     @Test
     fun testTaskSetTimeValue() {
         val task = testTask()
@@ -66,50 +71,50 @@ class Time {
         assertEquals(Property(HIDDEN, DEFAULT_TIME), task.time)
     }
 
-    @DisplayName("Set Time Constraint using setTimeProperty")
+    @DisplayName("Set Time Constraint Property")
     @Test
     fun testTaskSetTimePropertyWithConstraint() {
         val task = testTask()
                 .setTimeProperty(
-                        Constraint(SHOWING, Time.of(1970, 1, 1, 1, 1), UNMET)
+                        Constraint(SHOWING, time(1970, Month.JANUARY, 1), UNMET)
                 )
 
         assertTrue(task.time is Constraint)
-        assertEquals(Time.of(1970, 1, 1, 1, 1), task.time.value)
+        assertEquals(time(1970, Month.JANUARY, 1), task.time.value)
         assertTrue(task.time.isVisible)
-        assertFalse((task.time as Constraint).isMet)
+        assertFalse(task.time.asConstraint.isMet)
     }
 
-    @DisplayName("Set Time Constraint using setTimeConstraint")
+    @DisplayName("Set Time Constraint")
     @Test
     fun testTaskSetTimeConstraint() {
         val task = testTask()
                 .setTimeConstraint(
-                        Constraint(SHOWING, Time.of(1970, 1, 1, 1, 1), UNMET)
+                        Constraint(SHOWING, time(1970, Month.JANUARY, 1), UNMET)
                 )
 
         assertTrue(task.time is Constraint)
-        assertEquals(Time.of(1970, 1, 1, 1, 1), task.time.value)
+        assertEquals(time(1970, Month.JANUARY, 1), task.time.value)
         assertTrue(task.time.isVisible)
-        assertFalse((task.time as Constraint).isMet)
+        assertFalse(task.time.asConstraint.isMet)
     }
 
-    @DisplayName("Set Time Constraint using setTimeConstraintValue")
+    @DisplayName("Set Time Constraint Value")
     @Test
     fun testTaskSetTimeConstraintValue() {
         val task = testTask()
-                .setTimeConstraintValue(Time.of(1970, 1, 1, 1, 1))
+                .setTimeConstraintValue(time(1970, Month.JANUARY, 1))
 
         assertTrue(task.time is Constraint)
-        assertEquals(Time.of(1970, 1, 1, 1, 1), task.time.value)
+        assertEquals(time(1970, Month.JANUARY, 1), task.time.value)
         assertTrue(task.time.isVisible)
-        assertFalse((task.time as Constraint).isMet)
+        assertFalse(task.time.asConstraint.isMet)
     }
 
     @DisplayName("Set Time Property before now")
     @Test
     fun testTaskSetTimePropertyBeforeNow() {
-        val time = now.minusSeconds(3)
+        val time = now - 3.seconds
         val task = testTask()
                 .setTimePropertyValue(time)
 
@@ -122,7 +127,7 @@ class Time {
     @DisplayName("Set Time Property after now")
     @Test
     fun testTaskSetTimePropertyAfterNow() {
-        val time = now.plusSeconds(3)
+        val time = now + 3.seconds
         val task = testTask()
                 .setTimePropertyValue(time)
 
@@ -135,7 +140,7 @@ class Time {
     @DisplayName("Set Time Constraint after now")
     @Test
     fun testTaskSetTimeConstraintAfterNow() {
-        val time = now.plusSeconds(2)
+        val time = now + 2.seconds
         val task = testTask()
                 .setTimeConstraint(Constraint(SHOWING, time, UNMET))
 
@@ -144,18 +149,18 @@ class Time {
         assertTrue(task.time is Constraint)
         assertEquals(time, task.time.value)
         assertTrue(task.time.isVisible)
-        assertFalse((task.time as Constraint).isMet)
+        assertFalse(task.time.asConstraint.isMet)
 
         sleep(4)
 
         assertTrue(task.state == TaskState.EXISTING)
-        assertTrue((task.time as Constraint).isMet)
+        assertTrue(task.time.asConstraint.isMet)
     }
 
     @DisplayName("Set Time Constraint before now")
     @Test
     fun testTaskSetTimeConstraintBeforeNow() {
-        val time = now.minusSeconds(2)
+        val time = now - 2.seconds
         val task = testTask()
                 .setTimeConstraint(Constraint(SHOWING, time, UNMET))
         assertTrue(task.state != TaskState.SLEEPING)
@@ -163,7 +168,7 @@ class Time {
         assertTrue(task.time is Constraint)
         assertEquals(time, task.time.value)
         assertTrue(task.time.isVisible)
-        assertFalse((task.time as Constraint).isMet)
+        assertFalse(task.time.asConstraint.isMet)
         sleep(3)
         assertTrue(task.state == TaskState.EXISTING)
     }
@@ -171,7 +176,7 @@ class Time {
     @DisplayName("Set Time Constraint after now on many Tasks")
     @Test
     fun testTaskSetTimeConstraintAfterNowOnManyTasks() {
-        val time = now.plusSeconds(3)
+        val time = now + 3.seconds
         val tasks = getTasks(100)
         tasks.forEach { it.setTimeConstraintValue(time) }
 
@@ -185,12 +190,12 @@ class Time {
     @Test
     fun testTaskTimeUnConstraining() {
         val task = testTask()
-                .setTimeConstraintValue(Time.from(now.plusDays(7)))
+                .setTimeConstraintValue(now + 7.days)
         sleep(2)
         assertEquals(TaskState.SLEEPING, task.state)
         assertThrows(TaskStateException::class.java, { task.kill() })
         assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
-        task.setTimeProperty((task.time as Constraint).toProperty())
+        task.setTimeProperty(task.time.asConstraint.toProperty())
 
         sleep(2)
 
@@ -202,26 +207,27 @@ class Time {
     @Test
     fun testTaskTimeConstraintReSet() {
         val task = testTask()
-                .setTimeConstraintValue(Time.from(now.plusDays(7)))
+                .setTimeConstraintValue(now + 7.days)
 
-        sleep(1)
-        assertThrows(TaskStateException::class.java, { task.kill() })
+        after(1.seconds) {
+            assertThrows(TaskStateException::class.java, { task.kill() })
+        }
         assertTrue(task.getAllUnmetAndShowingConstraints().size == 1)
 
-        val newTime = now.plusSeconds(2)
+        val newTime = now + 2.seconds
 
         task.setTimeConstraintValue(newTime)
         assertEquals(newTime, task.time.value)
 
-        sleep(4)
-
-        assertEquals(TaskState.EXISTING, task.state)
+        after(4.seconds) {
+            assertEquals(TaskState.EXISTING, task.state)
+        }
     }
 
     @DisplayName("Time Hiding")
     @Test
     fun testTimeHiding() {
-        val time = Time.from(now.plusDays(7))
+        val time = Time.from(now + 7.days)
 
         val task = testTask()
                 .setTimePropertyValue(time)
@@ -235,3 +241,4 @@ class Time {
         assertThrows(IllegalStateException::class.java, { task.hideTime() })
     }
 }
+

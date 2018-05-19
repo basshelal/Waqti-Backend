@@ -1,6 +1,8 @@
 package uk.whitecrescent.waqti.tests
 
+import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.Task
+import java.time.Duration
 
 object TestUtils {
 
@@ -13,4 +15,9 @@ object TestUtils {
         }
         return list.toList()
     }
+}
+
+inline fun after(duration: Duration, func: () -> Any) {
+    sleep(duration.seconds.toInt())
+    func.invoke()
 }

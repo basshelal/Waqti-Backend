@@ -9,16 +9,15 @@ import java.util.concurrent.TimeUnit
 
 // Type Aliases for more readable code
 typealias Description = String
+
 typealias Optional = Boolean
 typealias Target = String
-typealias Bundle<K, V> = HashMap<K, V>
 typealias ID = Long
 
 //endregion Type Aliases
 
 //region Properties & Constraints
 
-const val NUMBER_OF_PROPERTIES = 11
 
 // Used for Properties and Constraints
 const val HIDDEN = false
@@ -54,7 +53,7 @@ const val DEFAULT_DESCRIPTION = ""
 val DEFAULT_CHECKLIST = Checklist()
 const val DEFAULT_TARGET = ""
 val DEFAULT_DEADLINE: Time = Time.MAX
-const val DEFAULT_TASK_ID: Long = 0L
+const val DEFAULT_TASK_ID: ID = 0L
 val DEFAULT_SUB_TASKS = arrayListOf<ID>()
 
 //endregion Default Property Values
@@ -93,3 +92,20 @@ const val TIME_CHECKING_PERIOD = 100L
 val TIME_CHECKING_UNIT = TimeUnit.MILLISECONDS
 
 //endregion Concurrency
+
+
+val ALL_PROPERTIES = arrayOf(
+        DEFAULT_TIME_PROPERTY,
+        DEFAULT_DURATION_PROPERTY,
+        DEFAULT_PRIORITY_PROPERTY,
+        DEFAULT_LABELS_PROPERTY,
+        DEFAULT_OPTIONAL_PROPERTY,
+        DEFAULT_DESCRIPTION_PROPERTY,
+        DEFAULT_CHECKLIST_PROPERTY,
+        DEFAULT_TARGET_PROPERTY,
+        DEFAULT_DEADLINE_PROPERTY,
+        DEFAULT_BEFORE_PROPERTY,
+        DEFAULT_SUB_TASKS_PROPERTY
+)
+
+val NUMBER_OF_PROPERTIES = ALL_PROPERTIES.size

@@ -10,7 +10,6 @@ class Label private constructor(var name: String) : Cacheable {
 
         val allLabels = ArrayList<Label>()
 
-
         fun getOrCreateLabel(name: String): Label {
             val newLabel = Label(name)
             val found = Label.allLabels.find { it == newLabel }

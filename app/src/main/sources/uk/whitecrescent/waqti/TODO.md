@@ -1,7 +1,8 @@
 # TODO (Short)
 
-* Go over Task again by first going over the tests, documentation and then code of each segment of the class
+* Fix up Template Tasks and Bundles, when done implement it in the Cache
 
+* Fix the Timer
 # TODO (Long)
 
 * Write Markdown Documentation for Tuple

@@ -1,3 +1,5 @@
+@file:Suppress("NOTHING_TO_INLINE")
+
 package uk.whitecrescent.waqti
 
 
@@ -21,76 +23,86 @@ typealias MonthDay = java.time.MonthDay
 
 // Useful Extensions for java.time to make code readable and concise
 
-val now: Time
+inline val now: Time
     get() = Time.now()
 
-val today: Date
+inline val today: Date
     get() = Date.now()
 
-val tomorrow: Date
+inline val tomorrow: Date
     get() = Date.now().plusDays(1)
 
-val Number.millis: Duration
+inline val Number.millis: Duration
     get() = Duration.ofMillis(this.toLong())
 
-val Number.seconds: Duration
+inline val Number.seconds: Duration
     get() = Duration.ofSeconds(this.toLong())
 
-val Number.minutes: Duration
+inline val Number.minutes: Duration
     get() = Duration.ofMinutes(this.toLong())
 
-val Number.hours: Duration
+inline val Number.hours: Duration
     get() = Duration.ofHours(this.toLong())
 
-val Number.days: Duration
+inline val Number.days: Duration
     get() = Duration.ofDays(this.toLong())
 
-val Number.weeks: Duration
+inline val Number.weeks: Duration
     get() = Duration.ofDays(7L * this.toLong())
 
-val Number.am: LocalTime
+inline val Number.am: LocalTime
     get() = LocalTime.of(this.toInt(), 0)
 
-val Number.pm: LocalTime
+inline val Number.pm: LocalTime
     get() = LocalTime.of(this.toInt() + 12, 0)
 
-val Pair<Number, Number>.am: LocalTime
+inline val Pair<Number, Number>.am: LocalTime
     get() = LocalTime.of(this.first.toInt(), this.second.toInt())
 
-val Pair<Number, Number>.pm: LocalTime
+inline val Pair<Number, Number>.pm: LocalTime
     get() = LocalTime.of(this.first.toInt() + 12, this.second.toInt())
 
-val Triple<Number, Number, Number>.am: LocalTime
+inline val Triple<Number, Number, Number>.am: LocalTime
     get() = LocalTime.of(this.first.toInt(), this.second.toInt(), this.third.toInt())
 
-val Triple<Number, Number, Number>.pm: LocalTime
+inline val Triple<Number, Number, Number>.pm: LocalTime
     get() = LocalTime.of(this.first.toInt() + 12, this.second.toInt(), this.third.toInt())
 
-fun time(hour: Number, minute: Number): Pair<Number, Number> = Pair(hour, minute)
+inline fun time(year: Int, month: Int, dayOfMonth: Int,
+                hour: Int = 0, minute: Int = 0, second: Int = 0, nanoOfSecond: Int = 0) =
+        Time.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond)
 
-fun time(hour: Number, minute: Number, second: Number): Triple<Number, Number, Number> =
+inline fun time(year: Int, month: Month, dayOfMonth: Int,
+                hour: Int = 0, minute: Int = 0, second: Int = 0, nanoOfSecond: Int = 0) =
+        Time.of(year, month, dayOfMonth, hour, minute, second, nanoOfSecond)
+
+inline fun time(hour: Number, minute: Number): Pair<Number, Number> = Pair(hour, minute)
+
+inline fun time(hour: Number, minute: Number, second: Number): Triple<Number, Number, Number> =
         Triple(hour, minute, second)
 
-infix fun Date.at(time: LocalTime): Time = this.atTime(time)
+inline infix fun Date.at(time: LocalTime): Time = this.atTime(time)
 
-infix fun Date.at(hour: Int): Time = this.atTime(hour, 0)
+inline infix fun Date.at(hour: Int): Time = this.atTime(hour, 0)
 
-infix fun Date.at(pair: Pair<Number, Number>): Time =
+inline infix fun Date.at(pair: Pair<Number, Number>): Time =
         this.atTime(pair.first.toInt(), pair.second.toInt())
 
-infix fun Date.at(triple: Triple<Number, Number, Number>): Time =
+inline infix fun Date.at(triple: Triple<Number, Number, Number>): Time =
         this.atTime(triple.first.toInt(), triple.second.toInt(), triple.third.toInt())
 
-infix fun Number.colon(other: Number): Pair<Number, Number> = this to other
+inline infix fun Number.colon(other: Number): Pair<Number, Number> = this to other
 
-infix fun Temporal.till(other: Temporal): Duration = Duration.between(this, other)
+inline infix fun Temporal.till(other: Temporal): Duration = Duration.between(this, other)
 
-infix fun Duration.from(temporalAmount: TemporalAmount): Duration = Duration.from(temporalAmount)
+inline infix fun Duration.from(temporalAmount: TemporalAmount): Duration = Duration.from(temporalAmount)
 
-fun coming(dayOfWeek: DayOfWeek): Date {
+inline fun coming(dayOfWeek: DayOfWeek): Date {
     return Date.from(today.dayOfWeek + dayOfWeek.value.toLong())
 }
 
-fun last(dayOfWeek: DayOfWeek): Date {
+inline fun last(dayOfWeek: DayOfWeek): Date {
     return Date.from(today.dayOfWeek - dayOfWeek.value.toLong())
 }
+
+// TODO: 19-May-18 A converter ;)
