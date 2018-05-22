@@ -104,5 +104,3 @@ inline fun coming(dayOfWeek: DayOfWeek): Date {
 inline fun last(dayOfWeek: DayOfWeek): Date {
     return Date.from(today.dayOfWeek - dayOfWeek.value.toLong())
 }
-
-// TODO: 19-May-18 A converter ;)

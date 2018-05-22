@@ -1833,6 +1833,9 @@ class Task(var title: String = "") : Listable, Cacheable {
 
     companion object {
         fun fromTemplate(template: Template) = Template.fromTemplate(template)
+
+        fun taskBundlesAreSubset(superTask: Task, subTask: Task) =
+                PropertyBundle.bundlesAreSubset(PropertyBundle(superTask), PropertyBundle(subTask))
     }
 
     //endregion Template Task

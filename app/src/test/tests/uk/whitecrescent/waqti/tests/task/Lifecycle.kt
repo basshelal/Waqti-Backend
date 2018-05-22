@@ -9,7 +9,7 @@ import uk.whitecrescent.waqti.now
 import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.TaskState
 import uk.whitecrescent.waqti.task.TaskStateException
-import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.testTask
 
 @DisplayName("Lifecycle Tests")
 class Lifecycle {

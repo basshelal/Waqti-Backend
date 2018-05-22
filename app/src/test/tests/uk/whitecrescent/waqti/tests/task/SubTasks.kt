@@ -20,8 +20,8 @@ import uk.whitecrescent.waqti.task.TaskStateException
 import uk.whitecrescent.waqti.task.UNMET
 import uk.whitecrescent.waqti.taskIDs
 import uk.whitecrescent.waqti.tasks
-import uk.whitecrescent.waqti.tests.TestUtils.getTasks
-import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.getTasks
+import uk.whitecrescent.waqti.tests.testTask
 import uk.whitecrescent.waqti.toArrayList
 
 @DisplayName("SubTasks Tests")

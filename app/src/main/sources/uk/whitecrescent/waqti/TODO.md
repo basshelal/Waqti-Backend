@@ -1,5 +1,7 @@
 # TODO (Short)
 
+* Move everything to Android!
+
 * Fix up Template Tasks and Bundles, when done implement it in the Cache
 
 * Fix the Timer
@@ -46,7 +48,7 @@ will check all their elements and see for collisions
 * Recurring Tasks is a Collection of Anonymous Tasks
 
 * Anonymous Tasks are non real Tasks that constrain that the real Task must have the same non-default Properties as 
-the anonymous Task's Properties
+the anonymous Task's Properties (like a placeholder)
 
 * Macros are basically a skeleton/ framework to build up a list from, a collection of Tasks (Template or non)
 

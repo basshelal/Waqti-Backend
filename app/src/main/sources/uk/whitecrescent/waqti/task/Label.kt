@@ -2,7 +2,9 @@ package uk.whitecrescent.waqti.task
 
 import uk.whitecrescent.waqti.Cacheable
 
-class Label private constructor(var name: String) : Cacheable {
+class Label
+private constructor(var name: String)
+    : Cacheable {
 
     var children = arrayListOf<Label>()
 

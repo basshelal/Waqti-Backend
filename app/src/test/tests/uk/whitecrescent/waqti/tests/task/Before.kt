@@ -18,8 +18,8 @@ import uk.whitecrescent.waqti.task.Task
 import uk.whitecrescent.waqti.task.TaskState
 import uk.whitecrescent.waqti.task.TaskStateException
 import uk.whitecrescent.waqti.task.UNMET
-import uk.whitecrescent.waqti.tests.TestUtils.getTasks
-import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.getTasks
+import uk.whitecrescent.waqti.tests.testTask
 
 @DisplayName("Before Tests")
 class Before {

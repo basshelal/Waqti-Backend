@@ -41,6 +41,9 @@ import kotlin.collections.set
  *
  * Bassam Helal Mon-14-May-18
  *
+ * We can put the persistence database operations into a queue maybe (not entirely sure why though)
+ * Bassam Helal Mon-21-May
+ *
  * */
 object Cache {
 
@@ -49,6 +52,7 @@ object Cache {
     private val labelsDB = ConcurrentHashMap<ID, Label>()
     private val priorityDB = ConcurrentHashMap<ID, Priority>()
     private val timeUnitDB = ConcurrentHashMap<ID, TimeUnit>()
+    val test = DB<Task>()
     // TODO: 14-May-18 Collections stuff maybe but later, probably using IDs a lot
 
     //region Tasks
@@ -167,48 +171,90 @@ object Cache {
 
     //endregion Templates
 
-    //region Extensions
-
-    fun <V : Cacheable> ConcurrentHashMap<ID, V>.safeGet(id: ID): V {
-        val found = this[id]
-        if (found == null) throw CacheElementNotFoundException(id)
-        else return found
-    }
-
-    fun <V : Cacheable> ConcurrentHashMap<ID, V>.newID(): ID {
-        var id = Math.abs(Random().nextLong())
-        while (this.containsKey(id)) {
-            id = Math.abs(Random().nextLong())
-        }
-        return id
-    }
-
-    operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.get(value: V): V {
-        val found = this[value.id()]
-        if (found == null) throw CacheElementNotFoundException(value)
-        else return found
-    }
-
-    operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.set(old: V, new: V) {
-        this[old.id()] = new
-    }
-
-    operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.plus(value: V) {
-        this[value.id()] = value
-    }
-
-    operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.plus(collection: Collection<V>) {
-        collection.forEach { this.putIfAbsent(it.id(), it) }
-    }
-
-    operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.minus(value: V) {
-        this.remove(value.id())
-    }
-
-    operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.minus(collection: Collection<V>) {
-        collection.forEach { this.remove(it.id()) }
-    }
-
-    //endregion Extensions
-
 }
+
+class DB<T : Cacheable> {
+
+    private val db = ConcurrentHashMap<ID, T>()
+
+    fun newID() = db.newID()
+
+    fun put(thing: T) {
+        db[thing.id()] = thing
+    }
+
+    fun put(things: Collection<T>) =
+            things.forEach { this.put(it) }
+
+    fun get(thing: T) =
+            db.safeGet(thing.id())
+
+    fun get(things: Collection<T>) =
+            things.map { get(it) }
+
+    fun remove(id: ID) {
+        if (db.containsKey(id)) db.remove(id)
+    }
+
+    fun remove(thing: T) =
+            this.remove(thing.id())
+
+    fun remove(things: Collection<T>) =
+            things.forEach { remove(it) }
+
+    fun removeIf(predicate: () -> Boolean) =
+            db.forEach { if (predicate.invoke()) remove(it.value) }
+
+    fun clear() = db.clear()
+
+    fun contains(thing: T) = thing in db
+
+    fun containsAll(things: Collection<T>) = things.all { this.contains(it) }
+
+    fun query() = ArrayList(db.values).toList()
+}
+
+
+//region Extensions
+
+fun <V : Cacheable> ConcurrentHashMap<ID, V>.safeGet(id: ID): V {
+    val found = this[id]
+    if (found == null) throw CacheElementNotFoundException(id)
+    else return found
+}
+
+fun <V : Cacheable> ConcurrentHashMap<ID, V>.newID(): ID {
+    var id = Math.abs(Random().nextLong())
+    while (this.containsKey(id)) {
+        id = Math.abs(Random().nextLong())
+    }
+    return id
+}
+
+operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.get(value: V): V {
+    val found = this[value.id()]
+    if (found == null) throw CacheElementNotFoundException(value)
+    else return found
+}
+
+operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.set(old: V, new: V) {
+    this[old.id()] = new
+}
+
+operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.plus(value: V) {
+    this[value.id()] = value
+}
+
+operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.plus(collection: Collection<V>) {
+    collection.forEach { this.putIfAbsent(it.id(), it) }
+}
+
+operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.minus(value: V) {
+    this.remove(value.id())
+}
+
+operator fun <V : Cacheable> ConcurrentHashMap<ID, V>.minus(collection: Collection<V>) {
+    collection.forEach { this.remove(it.id()) }
+}
+
+//endregion Extensions

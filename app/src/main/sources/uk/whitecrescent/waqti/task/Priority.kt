@@ -17,7 +17,9 @@ import uk.whitecrescent.waqti.Cacheable
  * @see Task
  * @author Bassam Helal
  */
-class Priority private constructor(var name: String, var importanceLevel: Int) : Cacheable {
+class Priority
+private constructor(var name: String, var importanceLevel: Int)
+    : Cacheable {
 
     companion object {
 

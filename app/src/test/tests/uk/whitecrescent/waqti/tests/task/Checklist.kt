@@ -18,7 +18,8 @@ import uk.whitecrescent.waqti.task.SHOWING
 import uk.whitecrescent.waqti.task.TaskState
 import uk.whitecrescent.waqti.task.TaskStateException
 import uk.whitecrescent.waqti.task.UNMET
-import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.testTask
+
 
 @DisplayName("Checklist Tests")
 class Checklist {

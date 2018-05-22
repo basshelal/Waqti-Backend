@@ -7,17 +7,6 @@ import uk.whitecrescent.waqti.Time
 class PropertyBundle(val task: Task) {
 
     private val properties = arrayOf(*ALL_PROPERTIES)
-    private val timeIndex = 0
-    private val durationIndex = 1
-    private val priorityIndex = 2
-    private val labelsIndex = 3
-    private val optionalIndex = 4
-    private val descriptionIndex = 5
-    private val checklistIndex = 6
-    private val targetIndex = 7
-    private val deadlineIndex = 8
-    private val beforeIndex = 9
-    private val subTasksIndex = 10
 
     var time: Property<Time>
         set(value) {
@@ -100,4 +89,58 @@ class PropertyBundle(val task: Task) {
         assert(properties.size == 11) // TODO: 19-May-18 remember to remove this
     }
 
+    companion object {
+        fun bundlesAreSubset(superBundle: PropertyBundle, subBundle: PropertyBundle): Boolean {
+            val list = (0..10).map { true }.toMutableList()
+            assert(list.size == 11) // TODO: 22-May-18 remember to remove this
+
+            if (superBundle.time != DEFAULT_TIME_PROPERTY) {
+                list[timeIndex] = subBundle.time == superBundle.time
+            }
+            if (superBundle.duration != DEFAULT_DURATION_PROPERTY) {
+                list[durationIndex] = subBundle.duration == superBundle.duration
+            }
+            if (superBundle.priority != DEFAULT_PRIORITY_PROPERTY) {
+                list[priorityIndex] = subBundle.priority == superBundle.priority
+            }
+            if (superBundle.labels != DEFAULT_LABELS_PROPERTY) {
+                list[labelsIndex] = subBundle.labels == superBundle.labels
+            }
+            if (superBundle.optional != DEFAULT_OPTIONAL_PROPERTY) {
+                list[optionalIndex] = subBundle.optional == superBundle.optional
+            }
+            if (superBundle.description != DEFAULT_DESCRIPTION_PROPERTY) {
+                list[descriptionIndex] = subBundle.description == superBundle.description
+            }
+            if (superBundle.checklist != DEFAULT_CHECKLIST_PROPERTY) {
+                list[checklistIndex] = subBundle.checklist == superBundle.checklist
+            }
+            if (superBundle.deadline != DEFAULT_DEADLINE_PROPERTY) {
+                list[deadlineIndex] = subBundle.deadline == superBundle.deadline
+            }
+            if (superBundle.target != DEFAULT_TARGET_PROPERTY) {
+                list[targetIndex] = subBundle.target == superBundle.target
+            }
+            if (superBundle.before != DEFAULT_BEFORE_PROPERTY) {
+                list[beforeIndex] = subBundle.before == superBundle.before
+            }
+            if (superBundle.subTasks != DEFAULT_SUB_TASKS_PROPERTY) {
+                list[subTasksIndex] = subBundle.subTasks == superBundle.subTasks
+            }
+            return list.all { it == true }
+        }
+    }
+
 }
+
+private const val timeIndex = 0
+private const val durationIndex = 1
+private const val priorityIndex = 2
+private const val labelsIndex = 3
+private const val optionalIndex = 4
+private const val descriptionIndex = 5
+private const val checklistIndex = 6
+private const val targetIndex = 7
+private const val deadlineIndex = 8
+private const val beforeIndex = 9
+private const val subTasksIndex = 10

@@ -19,8 +19,8 @@ import uk.whitecrescent.waqti.task.TaskState
 import uk.whitecrescent.waqti.task.TaskStateException
 import uk.whitecrescent.waqti.task.TimeUnit
 import uk.whitecrescent.waqti.task.UNMET
-import uk.whitecrescent.waqti.tests.TestUtils
-import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.getTasks
+import uk.whitecrescent.waqti.tests.testTask
 import uk.whitecrescent.waqti.today
 
 @DisplayName("Duration Tests")
@@ -251,7 +251,7 @@ class Duration {
     @Test
     fun testTaskSetDurationConstraintOnManyTasks() {
         val duration = Duration.ofSeconds(2)
-        val tasks = TestUtils.getTasks(100)
+        val tasks = getTasks(100)
         tasks.forEach {
             it.setDurationConstraintValue(duration)
             it.startTimer()

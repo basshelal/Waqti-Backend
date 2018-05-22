@@ -15,8 +15,8 @@ import uk.whitecrescent.waqti.sleep
 import uk.whitecrescent.waqti.task.DEFAULT_BEFORE_PROPERTY
 import uk.whitecrescent.waqti.task.Task
 import uk.whitecrescent.waqti.task.Timer
-import uk.whitecrescent.waqti.tests.TestUtils.getTasks
-import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.getTasks
+import uk.whitecrescent.waqti.tests.testTask
 import uk.whitecrescent.waqti.today
 
 @DisplayName("Tuple Tests")

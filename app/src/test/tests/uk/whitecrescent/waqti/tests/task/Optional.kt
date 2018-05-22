@@ -13,7 +13,7 @@ import uk.whitecrescent.waqti.task.OPTIONAL
 import uk.whitecrescent.waqti.task.Property
 import uk.whitecrescent.waqti.task.SHOWING
 import uk.whitecrescent.waqti.task.UNMET
-import uk.whitecrescent.waqti.tests.TestUtils.testTask
+import uk.whitecrescent.waqti.tests.testTask
 
 @DisplayName("Optional Tests")
 class Optional {
